@@ -1,0 +1,41 @@
+Required dependencies:
+
+- pgplot pgplot-devel
+- proj proj-devel
+- libnova libnova-devel
+- cfitsio cfitsio-devel
+- gmp
+- CGAL CGAL-devel
+- hdf5 hdf5-devel
+- fftw fftw-devel
+- tclap
+- Qt 4.8.6
+- armadillo armadillo-devel
+
+
+To install this package you will also need to compile some external packages
+that are not provided in the standard linux repositories.
+
+To install follow the steps below. Assuming that the sources are located in 
+cpems subdirectory
+
+1) create build directory: eg.
+mkdir cpems-build
+cd cpems-build
+
+2) cmake ../cpems
+
+3) compile external packages
+make external
+
+4) compile cpems libraries
+make
+
+5) install cpems libraries
+make install
+
+
+Currently the package still requires gsl-1.8 which is provided but not compiled.
+Since it has it's own biuld we leave it to the user to build and install them
+in some visible directories.
+

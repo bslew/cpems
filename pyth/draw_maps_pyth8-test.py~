@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+import sys # get the command line arguments
+from pylab import *
+from mpl_toolkits.basemap import Basemap, shiftgrid
+import numpy as np
+#from matplotlib.basemap import Basemap, shiftgrid
+#import matplotlib.numerix.ma as M
+import matplotlib.pyplot as plt
+import matplotlib.mlab
+#import matplotlib.colors as colors
+#from matplotlib import *
+#import asciidata
+#import MA
+
+mapfile = sys.argv[1]+'.lonlatT'
+lonfile = sys.argv[1]+'.lon'
+latfile = sys.argv[1]+'.lat'
+
+
+# load data
+map=array(mlab.load(mapfile))
+
+
+
+
+#minv=MA.minimum(map)
+#maxv=MA.maximum(map)
+#print(minv,maxv)
+
+lons=array(mlab.load(lonfile))
+lats=array(mlab.load(latfile))
+#tmp=lons
+#tmp=lons[0]
+#lons=lons-tmp
+#lons[size(lons)-1]=360
+#print lons
+#map,lons = shiftgrid(180,map,lons,start=False)
+#print lons
+lons, lats = meshgrid(lons, lats)
+#lons[0]=-180
+#color_num=50
+#sys.exit()
+
+# Set up a colormap:
+palette = matplotlib.cm.jet
+#palette.set_over('w', 1.0)
+#palette.set_under('k', 1.0)
+
+
+#mapM=map
+
+figure(figsize=(8,4), dpi=70)
+
+m1=Basemap(projection='moll',lon_0=0,lat_0=0) #.5*(lons[0]+lons[-1])
+#delta=(maxv-minv)/color_num
+#levels = arange(minv-1*delta, maxv+1*delta,delta ); print(levels)
+levels=50
+#levels = arange(minv, maxv, delta ); print(levels)
+
+
+x, y = m1(lons, lats)
+
+contourf(x,y,map, levels, cmap=matplotlib.pyplot.cm.jet )
+ 
+m1.drawmapboundary(color='k', linewidth=1.0, ax=None)
+colorbar()
+show()
+
+#sys.exit()
+

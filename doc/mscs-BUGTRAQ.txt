@@ -1,0 +1,622 @@
+THIS FILE CONTAINS DESCPRIPTIONS OF ANY  BUGS FOUND SO FAR IN THE MSCS AND CPEDS PACKAGES
+=========================================================================================
+
+-----------------------------------------------------------------------------------------
+BUG NAME: "ang2pix_healpix-bug1"
+DATE: found on 2008-01-09
+CIRCUMSTANCES: 
+	found when making a circular spots with draw_maps program on a ns=512 ones values map with zeros.
+	some strange outliers from outside the defined region appeared
+DESCRIPTION:
+cpeds-pixelization error: 
+
+* the routine generally passed quite extensive tests (however not all pixels were recovered correctly -- see phd-general-notes
+for more info). Here a new test was done, checking whether the routing can correctly find the pixel numbers given the directions
+from ns=2048 and 4096 (in ns=512 this means that each pixel was divided into 16 (64 respectively) subpixels and center of these
+were given the cpeds_ang2pix_healpix routine. There were no mistakes.
+
+* there are errors in finding the correct pixel in the map in the routine
+ang2pix due to boudary conditions 
+ - in the 9'th region along bounary with region 6 
+ - in the 10'th regions along boundary with reg. 7
+ - this happens only in the southern hemisphere
+
+
+* the bug seems to be some sort of the round-off error that appears on the boundaries of the regions
+where PI/180 and PI180 ,stuff like this, numerical  differences are important.
+
+ - the bug in particular shows up in the dedicated program and consistently in the eg. modified version (within EXPERIMANTAL quotes)
+   of the draw_maps program when calling routing cpeds_ang2pix_healpix with
+	b=-64.99999999172393803
+	n.l=PI/2; 	  n.b=b*PI180;
+	cpeds_ang2pix_healpix(512,&i,PIsnd-n.b,n.l,1);
+
+returning a bug
+(3) x = -0.530167, y=0.530167 region: 9.000000
+ ^^^^ th = 155.000000, phi = 90.000000 half_pix_size = 0.001953, colnum = 271 rownum = -1 x=-0.530167 y=0.530167 reg.=9.000000
+2577919
+n: 1.560938E+02 -1.828851E+01
+----------^ this is from the check with cpeds_pix2ang_healpix which works fine.
+
+while start with
+	b=-64.99999999172393803
+	n.l=PIsnd2; 	  n.b=b*PI180;
+	cpeds_ang2pix_healpix(512,&i,PIsnd-n.b,n.l,1);
+works fine with result
+(3) x = -0.530167, y=0.530167 region: 9.000000
+ ^^^^ th = 155.000000, phi = 90.000000 half_pix_size = 0.001953, colnum = 271 rownum = 0 x=-0.530167 y=0.530167 reg.=9.000000
+2490538
+n: 9.016544E+01 -6.494808E+01
+-------^ this is a fine answer
+
+
+- a bit of the code converting into the binary representation from pixel col and row were rewritten to use only integer numbers
+which are exact and modulo operator %: this solved the above problem (the new implementation must also be faster)
+- a bit of the code converting from x,y coordinated into col and row numbers was rewritten, integer numbers utilized and
+  additional boundary conditions added for checking whether the formulas stay inside of the region
+
+* as a rule of thumb, I think that integer numbers should be used where possible
+* the main problem of the code was in part with the convertion into the binary reprezentation of the col,row numbers of the pixel
+
+INFLUENCES:
+	This bug could not influence yet any scientific result since it wasn't used actually too much.
+
+FIXED? :
+	
+-----------------------------------------------------------------------------------------
+
+BUG NAME: ang2pix_healpix-bug1
+DATE: 2008-02-08
+CIRCUMSTANCES: 	wrong pixel numbers returned by the reotune as comparred to healpix software
+DESCRIPTION:
+I temporarilly included the healpix 2.0 software routines into the cpeds code to debug the ang2pix rouities.
+I was found that the recent corrections to the code introduced more mistakes than the earlier versions.
+due to round functions in 
+/*   pix_rownum = (long int)round(pix_rownumd); // commented out on 2008-02-08 -- this was buggy as comparred with healpix routines: floor should be used instead*/
+/*   pix_colnum = (long int)round(pix_colnumd); // commented out on 2008-02-08 -- this was buggy as comparred with healpix routines: floor should be used instead*/
+  pix_rownum = (long int)floor(pix_rownumd);
+  pix_colnum = (long int)floor(pix_colnumd);
+in these bits of the code.
+This changes removed most of the discrepancies AFAIK.
+
+INFLUENCES:
+oddd-symmetries project, rotations, mpref, -- this needs to be sorted out before the end of the project.
+
+FIXED?:
+a patch has been installed into the cpeds_ang2pix_healpix routine to double check every call to the routing with the newly
+imported healpix routines. The patch stores every discrepancies to the local file
+/home/blew/programy/CPEDS/cpeds-pixelization-ang2pix.debug
+There a discrepancy in performance along generally boundaries of the regions definitions due to ascribing
+a different region number if the eg. phi=90 exactly. there's an ambiguaity in this. the original healpix code
+ascribes this to the lower region numbers, while the cpeds to higher.
+There's also some sort of discrepancy along the equator.
+The patch also calculates the angular distance between the two aswers of the codes and stores it as well.
+So far there are no larger angular separations than <2 pixels sizes.
+In time more results will be stored...
+
+
+-----------------------------------------------------------------------------------------
+
+BUG NAME: cpeds_get_ring_healpix_nest
+DATE: 2008-03-17
+CIRCUMSTANCES: when implementing and testing the differencial-calculus methods of the Mscs-map-differencial_calcus.c for the regional minkowski functionals project
+DESCRIPTION: the routine cpeds_get_ring_healpix_nest (long int nside,long int i) must return the incorect values mostly in the equatorial region of the healpix pixelization scheme. 
+INFLUENCES:
+*********************** ./Mscs-map-fourier_transforms.c
+1:1325-      th = PIsnd-mapRING->n[i].b;
+2:1326:      //ring = cpeds_get_ring_healpix_nest(nside,i);
+3:1327-      ring = cpeds_get_ring_healpix_ring(nside,i);
+4:--
+5:1347-      th = PIsnd-mapRING->n[i].b;
+6:1348:      //ring = cpeds_get_ring_healpix_nest(nside,i);
+7:1349-      ring = cpeds_get_ring_healpix_ring(nside,i);
+
+*********************** ./cpeds-pixelization.c
+9:605-  //variable defs.
+10:606:  ring = cpeds_get_ring_healpix_nest(nside,i); cpeds_pix2xy(nside,i,&x,&y,1);     region = cpeds_get_healpix_region(nside,i);
+11:607-  pixinring = cpeds_get_pixnum_in_ring_healpix(nside,ring);    subregion = region;
+
+
+and further connections via cpeds_i2j_healpix routine
+*********************** ./cpeds-pixelization.c
+1:505-  for (i=0;i<pix_num;i++) {
+2:506:    j = cpeds_i2j_healpix(nside,i,ringpixtab);
+3:507-    //j-=1; // less 1 to get the index number as we start indexig from 0
+4:--
+5:529-  for (i=0;i<pix_num;i++) {
+6:530:    j = cpeds_i2j_healpix(nside,i,ringpixtab);
+7:531-    //j-=1; // less 1 to get the index number as we start indexig from 0
+8:--
+9:557-  for (i=0;i<pix_num;i++) {
+10:558:    j = cpeds_i2j_healpix(nside,i,ringpixtab);
+11:559-    mapNEST[i] = mapRING[j];
+12:--
+13:585-  for (i=0;i<pix_num;i++) {
+14:586:    j = cpeds_i2j_healpix(nside,i,ringpixtab);
+15:587-    mapNEST[i] = mapRING[j];
+
+FIXED?:
+this is not fixed but since in the above routines like cpeds_conv_ring2nest_healpix etc. would be affected and these were storngly tested 
+then I no longer am so sure that this is a bug. hence 
+this should be treated as an allert but not necessairly as an bug report.
+This routine should be tested before further use.
+and also it'd be good to recheck all other "affected" routines.
+
+ALSO THE ROUTINE cpeds_pix2ang_healpix WOULD BE AFFECTED SINCE IT CALLS
+  cpeds_pix2xy(nside,pix,&x,&y,ordering);
+AT THE VERY BEGINNING. AND THIS ROUTINE WAS HEAVILY TESTED WITH HEALPIX
+RESULTS IN ALL RESOLUTIONS AND YIELDED NO MISTAKES.
+SO IT'S MOST LIKELY THAT THE BUG WAS NOT DUE TO THE pix2sy routine
+AFTERALL BUT SOME OTHER .
+-----------------------------------------------------------------------------------------
+
+
+BUG NAME: cpeds_cart2sph - convertion from kartesian to shperical coordinates
+DATE: 2008-05-16
+CIRCUMSTANCES: when testing the icosahedron pixelization scheme by Max Tegmark
+DESCRIPTION: the routine returned incorrect values for phi coordinate (phi=PI) even
+even though the input coord x=0 which implies phi either PI or 3/2 PI.
+INFLUENCES:
+possible back influences
+*********************** ./Mscs-topo-dodecahedron.c
+1:605-
+2:606-  xx=x;
+3:607-  yy=y*cosAx+z*sinAx;
+4:608-  zz=-y*sinAx+z*cosAx;
+5:609-
+6:610:  th = cpeds_cart2sph(0,xx,yy,zz); phi = cpeds_cart2sph(1,xx,yy,zz);
+7:611-  cpeds_check_thphi(&th,&phi);
+8:612-  pp.b=PIsnd-th; pp.l=phi; // change from (th,phi) CS to (l,b) CS
+9:613-  return pp;
+10:614-}
+11:615-
+12:--
+13:625-  xx=x*cosAy+z*sinAy;
+14:626-  yy=y;
+15:627-  zz=-x*sinAy+z*cosAy;
+16:628-
+17:629-/*   printf("xx yy zz: %lf %lf %lf\n",xx,yy,zz); */
+18:630:  th = cpeds_cart2sph(0,xx,yy,zz); phi = cpeds_cart2sph(1,xx,yy,zz);
+19:631-/*   printf("thth phiphi: %lf %lf\n",th,phi); */
+20:632-  cpeds_check_thphi(&th,&phi);
+21:633-/*   printf("thth phiphi after check: %lf %lf\n",th,phi); */
+22:634-  pp.b=PIsnd-th; pp.l=phi; // change from (th,phi) CS to (l,b) CS
+23:635-  return pp;
+
+
+*********************** ./Mscs-map-fourier_transforms.c
+4:--
+5:352-      for (i=0; i<ring_num; i++) {
+6:353:  b[count].D = sqrt(pow(b[count].R,2)+pow(b[count].I,2)); b[count].P = cpeds_cart2sph(1,b[count].R,b[count].I,0);
+7:354-  if (m == 0) { b[count].D /= 2; }
+8:--
+9:462-      for (i=0; i<ring_num; i++) {
+10:463: b[count].D = sqrt(pow(b[count].R,2)+pow(b[count].I,2)); b[count].P = cpeds_cart2sph(1,b[count].R,b[count].I,0);
+11:464- if (m == 0) { b[count].D /= 2; }
+12:--
+13:755-/*       printf("-----------> alms2num: %li\n",i);  alm[i].R = 12.12; exit(0);i=210;  */
+14:756: alm[i].R = almR;  alm[i].I = almI; alm[i].D = sqrt(pow(almR,2) + pow(almI,2)); alm[i].P = cpeds_cart2sph(1,almR,almI,0);
+15:757: i = alm2num(l,-m); alm[i].R = pow(-1,(double)m)*almR; alm[i].I = pow(-1,(double)(m+1))*almI; alm[i].D = sqrt(pow(almR,2) + pow(almI,2)); alm[i].P = cpeds_cart2sph(1,almR,almI,0);
+16:758- //if (m==0) { printf("almR = %lE, almI = %lE\n",almR,almI); }
+21:--
+22:869- almR = almR * dOm / (bl_tab[8]->get_wl(l) * bl_tab[9]->get_wl(l));      almI = almI * dOm / (bl_tab[8]->get_wl(l) * bl_tab[9]->get_wl(l));
+23:870: i = alm2num(l,m); alm[i].R = almR; alm[i].I = almI; alm[i].D = sqrt(pow(almR,2) + pow(almI,2)); alm[i].P = cpeds_cart2sph(1,almR,almI,0);
+24:871: if (m != 0) { i = alm2num(l,-m); alm[i].R = pow(-1.0,(double)m)*almR; alm[i].I = pow(-1.0,(double)(m+1))*almI; alm[i].D = sqrt(pow(almR,2) + pow(alm
+I,2)); alm[i].P = cpeds_cart2sph(1,almR,almI,0); } // this is stupid - why calculate twice almost the same thing ?
+25:872- almR = almI = 0;
+31:--
+32:1497-          alm[num1].R = pow(-1.0,(double)(-m)) * alm[num2].R; alm[num1].I = -pow(-1.0,(double)(-m)) * alm[num2].I;
+33:1498:          alm[num1].P = cpeds_cart2sph(1,alm[num1].R,alm[num1].I,0.0); // fill the rest
+34:1499-        }
+
+
+
+*********************** ./Mscs-map-io_methods.c
+1:539-  i=alm2num(l,m);
+2:540:  alm[i].R = aR;   alm[i].I = aI;   alm[i].D = sqrt(aR*aR+aI*aI);   alm[i].P = cpeds_cart2sph(1,aR,aI,0);
+3:541-}
+4:--
+5:2584-   if (strcmp(fileformat,"txt") == 0)      fscanf(f,"%lE %lE",&RE,&IM);
+6:2585:   alm[i].R = RE; alm[i].I = IM; alm[i].D = sqrt(RE*RE+IM*IM); alm[i].P = cpeds_cart2sph(1,RE,IM,0.0);
+7:2586-   //printf("RE=%lf RE=%lf RE=%lf RE=%lf\n",RE,IM,alm[i].D, alm[i].P); // debug thing
+8:--
+9:2648-       if (strcmp(fileformat,"txt") == 0) {     fscanf(f,"%lE %lE",&RE,&IM); }
+10:2649:              alm[i].R = RE; alm[i].I = IM; alm[i].D = sqrt(RE*RE+IM*IM); alm[i].P = cpeds_cart2sph(1,RE,IM,0);
+11:2650-            }
+12:--
+13:2665-          if (strcmp(fileformat,"txt") == 0) {     fscanf(f,"%lE %lE",&RE,&IM);   }
+14:2666:          alm[i].R = RE; alm[i].I = IM; alm[i].D = sqrt(RE*RE+IM*IM); alm[i].P = cpeds_cart2sph(1,RE,IM,0);
+15:2667-        }
+16:--
+17:2723-              if (strcmp(fileformat,"txt") == 0) {     fscanf(f,"%lE %lE",&RE,&IM);   }
+18:2724:              alm[i].R = RE; alm[i].I = IM; alm[i].D = sqrt(RE*RE+IM*IM); alm[i].P = cpeds_cart2sph(1,RE,IM,0);
+19:2725-            }
+20:--
+21:2739-            if (strcmp(fileformat,"txt") == 0) {     fscanf(f,"%lE %lE",&RE,&IM);   }
+22:2740:            alm[i].R = RE; alm[i].I = IM; alm[i].D = sqrt(RE*RE+IM*IM); alm[i].P = cpeds_cart2sph(1,RE,IM,0);
+23:2741-          }
+24:--
+25:2801-              if (strcmp(fileformat,"txt") == 0) {     fscanf(f,"%lE %lE",&RE,&IM);   }
+26:2802:              alm[alm2num(l,m)].R = RE; alm[alm2num(l,m)].I = IM; alm[alm2num(l,m)].D = sqrt(RE*RE+IM*IM); alm[alm2num(l,m)].P = cpeds_cart2sph(1,RE
+,IM,0);
+27:2803-            }
+28:--
+29:2823-            if (strcmp(fileformat,"txt") == 0) {    fscanf(f,"%lE %lE",&RE,&IM);   }
+30:2824:            alm[alm2num(l,m)].R = RE; alm[alm2num(l,m)].I = IM; alm[alm2num(l,m)].D = sqrt(RE*RE+IM*IM); alm[alm2num(l,m)].P = cpeds_cart2sph(1,RE,I
+M,0);
+31:2825-          }
+
+
+*********************** ./Mscs-map-random_realizations.c
+1:231-/*        num = alm2num(l,k); alm[num].I = vec[k+l] * sqrt(Clorg/Clgen); alm[num].R = alm[num].R * sqrt(Clorg/Clgen); // set the unreal part and corre
+ct the real part */
+2:232:/*        alm[num].D = sqrt(pow(alm[num].R,2)+pow(alm[num].I,2)); alm[num].P = cpeds_cart2sph(1,alm[num].R,alm[num].I,0); // fill the rest */
+3:233-
+4:234-        alm[num2].I = vec[k+l] * Nfactor; alm[num2].R *= Nfactor; // set the unreal part and correct the real part (for the R it's done here so it all
+ worked with all methods)
+5:235:  alm[num2].D = sqrt(pow(alm[num2].R,2)+pow(alm[num2].I,2)); alm[num2].P = cpeds_cart2sph(1,alm[num2].R,alm[num2].I,0.0);
+6:236-  //printf("Rlm=%lE Ilm=%lE, Dlm=%lE, philm=%.3lf |||| sqrt(Rlm^2+Ilm^2)=%lE  ||| C_l[][0] = %lE, C_l[][1] = %lE\n",alm[num2].R ,alm[num2].I, alm[num2
+].D,alm[num2].P,sqrt(alm[num2].R*alm[num2].R+alm[num2].I*alm[num2].I),C_l[l][0],C_l[l][1]);
+7:--
+8:266-    alm[num1].R = pow(-1.0,(double)(-m)) * alm[num].R; alm[num1].I = -pow(-1.0,(double)(-m)) * alm[num].I;
+9:267:    alm[num1].P = cpeds_cart2sph(1,alm[num1].R,alm[num1].I,0.0); // fill the rest
+10:268-   //printf("-:a_%li%li.R=%lE  ,   a_%li%li.I=%lE    num=%li, num1=%li, num2 = %li\n",l,-m,alm[num].R,l,m,alm[num].I,num,num1,num2);
+11:--
+12:297- alm[num1].R = alm[num1].R * Nfactor; alm[num1].I = alm[num1].I * Nfactor;
+13:298: alm[num1].D = sqrt(pow(alm[num1].R,2)+pow(alm[num1].I,2)); alm[num1].P = cpeds_cart2sph(1,alm[num1].R,alm[num1].I,0); // fill the rest
+14:299- num1++;
+*********************** ./Mscs-dodecahedron.c
+1:233-
+2:234:  th = cpeds_cart2sph(0,xx,yy,zz); phi = cpeds_cart2sph(1,xx,yy,zz);
+3:235-  pp.b=PIsnd-th; pp.l=phi;
+
+*********************** ./Mscs-map.c
+1:2738- alm[num].R = alm[num].I = val;
+2:2739: alm[num].D = sqrt(pow(alm[num].R,2)+pow(alm[num].I,2)); alm[num].P = cpeds_cart2sph(1,alm[num].R,alm[num].I,0); // fill the rest
+3:2740-      }
+4:--
+5:3157-
+6:3158:  th = cpeds_cart2sph(0,xx,yy,zz); phi = cpeds_cart2sph(1,xx,yy,zz);
+7:3159-  cpeds_check_thphi(&th,&phi);
+8:--
+9:3175-
+10:3176:  th = cpeds_cart2sph(0,xx,yy,zz); phi = cpeds_cart2sph(1,xx,yy,zz);
+11:3177-  cpeds_check_thphi(&th,&phi);
+12:--
+13:3192-
+14:3193:  th = cpeds_cart2sph(0,xx,yy,zz); phi = cpeds_cart2sph(1,xx,yy,zz);
+15:3194-  cpeds_check_thphi(&th,&phi);
+
+
+FIXED?:
+yes. code changed to
+  if (coord == 1) {
+    if (y > 0) {
+      if (x > 0) {phi = atan(y/x); }
+      if (x < 0) {phi = atan(y/x) + PI; } 
+      if (x == 0) { phi = PIsnd; }} 
+    else 
+      if (y < 0) {
+	if (x > 0) {phi = atan(y/x) + twoPI; }
+	if (x < 0) {phi = atan(y/x) + PI; } 
+	if (x == 0) { phi = PI+PIsnd; }}
+      else {    
+	if (y == 0) {
+	  if (x >= 0) {phi = 0; }
+	  if (x < 0) {phi = PI; }}
+      }
+    return phi; }
+
+earlier version had condition for each y value inexclusively i.e. one by another and not
+in the nested if-else construction.
+In fact I still don't understand why the error occured but it's gone now.
+-----------------------------------------------------------------------------------------
+
+BUG NAME: structures-length
+DATE: 2008-05-21
+CIRCUMSTANCES: when usign the map_smooth program to smooth some low resolution file
+using preloaded kp03 mask stored in res ns=512.
+DESCRIPTION:
+The object had a bug which was: lack of control of whether something is loaded eg (mask)
+when something else was demanded to be loaded from file of some other resolution (eg. temperature map)
+Then generally a totall bullshit happened to the structures of the object since no control
+over the already stored stuctures  was enforced.
+INFLUENCES:
+no much I think since I allways used resolution 512.
+but could be in principle anywhere where eg. map_smooth was used to smooth stuff as described in CIRCUMSTANCES.
+FIXED?:
+yes. now new code in routines read_binmap_parameters and read_txtmap_parameters
+does the checking and if something doesn't match change_map_resolution is performed automatically prior to the loading,
+and WARNING message is issued.
+-----------------------------------------------------------------------------------------
+
+BUG NAME: ccSHT
+DATE: 2008-07-05
+CIRCUMSTANCES: when testing the hemispherical power asymmetry
+DESCRIPTION:
+from white noise map ns=64 -> map_smooth --lmax_in 80 --lmax_out 80 test -o test2
+map_smooth --lmax_in 80 --lmax_out 80  test2 -o test3
+map_oper -c '-' test3 test2 -o diff
+the diff file has rings at the poles
+these are unsymmetrical and statistically add power to the northern hemispehre.
+the effects for the usual cmb realization map are about 3 orders of mag. smaller than the size of the fluctuations (at the poles) (this is more or less
+of the size of the healpix discrepancies)
+but for eg. l=80 only (mode Y_80_80) the size of the discrepancies can reach like >10% of the map's fluctuations.
+
+INFLUENCES: don't know exactly, but generally causes some systematical effects.
+FIXED?: 
+nope. ask the author of this software or implement some alternative
+packages
+-----------------------------------------------------------------------------------------
+
+BUG NAME: cpeds_ang_n1n2
+DATE: 2008-08-25
+CIRCUMSTANCES: when writting a code for the oddsymm project; phd version
+DESCRIPTION: 
+the routing cpeds_ang_n1n2 returns NAN -- as a result of numerical instabilities when the angle 
+is very close or equal to 180 deg, in which case the argument of the acos function is slightly outside the
+[-1,1] range and hence the acos routine returns NAN.
+INFLUENCES: hmm, better don't thing about it, but probabaly nothing serious.
+FIXED?:
+a patch has been added to the routine as:
+
+  arg=(x1*x2 + y1*y2 + z1*z2);
+  if (arg < -1.0) arg=-1.0; 
+  else {
+    if (arg > 1.0) arg=1.0;
+  }
+
+NOTE: the same patch has been added the the routine cpeds_cosang_n1n2
+
+-----------------------------------------------------------------------------------------
+
+BUG NAME: bad INC
+DATE: 2009-01-15
+CIRCUMSTANCES: when trying to reproduce the SKregstat results
+DESCRIPTION:
+The procedure for shifting maps to zero mean value didn't work properly
+for case when "perform_under_mask" was not used in program mk_INC_sim.c
+in routine shift_simDA
+
+void shift_simDA(long DAst,long DAen,map_class *DAs,double val,map_class *mask ) {
+
+was:
+      if (_perform_under_mask) for (i=0;i<GLOBAL_pix_num;i++) {	DAs[j].map->T[i]+=-DAs[j].meanT+val; } // not using handlers for speed. --wander if pay for this one day :/ // doing under mask
+      else for (i=0;i<GLOBAL_pix_num;i++) {	DAs[j].map->T[i]=DAs[j].map->m[i]*(DAs[j].map->T[i]+DAs[j].meanT+val); } // not using handlers for speed. // not doing under mask
+changed to:
+      if (_perform_under_mask) for (i=0;i<GLOBAL_pix_num;i++) {	DAs[j].map->T[i]+=-DAs[j].meanT+val; } // not using handlers for speed. --wander if pay for this one day :/ // doing under mask
+      else for (i=0;i<GLOBAL_pix_num;i++) {	DAs[j].map->T[i]=DAs[j].map->m[i]*(DAs[j].map->T[i]-DAs[j].meanT+val); } // not using handlers for speed. // not doing under mask
+---------------------------------------------------------------------------------------------------^
+
+same problem occurs in routine 
+void shift_INC(map_class *inc,double val, map_class *mask ) {
+was:
+    else for (i=0;i<GLOBAL_pix_num;i++) {	(*inc).map->T[i]=(*inc).map->m[i]*((*inc).map->T[i]+(*inc).meanT+val); } // not using handlers for speed. // not doing under mask
+changed to:
+    else for (i=0;i<GLOBAL_pix_num;i++) {	(*inc).map->T[i]=(*inc).map->m[i]*((*inc).map->T[i]-(*inc).meanT+val); } // not using handlers for speed. // not doing under mask
+
+The same problem existed in program mk_INC_WMAP.c 
+was:
+	else for (i=0;i<GLOBAL_pix_num;i++) {	DAs[j].map->T[i]=DAs[j].map->m[i]*(DAs[j].map->T[i]+DAs[j].meanT+_precalib); } // not using handlers for speed. // not doing under mask
+changed to:
+	else for (i=0;i<GLOBAL_pix_num;i++) {	DAs[j].map->T[i]=DAs[j].map->m[i]*(DAs[j].map->T[i]-DAs[j].meanT+_precalib); } // not using handlers for speed. // not doing under mask
+
+
+Another mistake with this was in line (153):
+    dT = inc.meanT+_calib;//map1.masked_pix_num;
+of the mk_INC_WMAP.c program
+changed to:
+    dT = inc.meanT-_calib;//map1.masked_pix_num;
+
+
+Another mistake in mk_INC_WMAP.c is
+  if (_type == "K") { _DAst = 0; _DAen = 1; } 
+  if (_type == "Q") { _DAst = 1; _DAen = 2; }  
+  if (_type == "V") { _DAst = 3; _DAen = 4; }  
+  if (_type == "W") { _DAst = 5; _DAen = 9; }
+  if (_type == "INC") { _DAst = 2; _DAen = 9; }
+
+should be:
+  if (_type == "K") { _DAst = 0; _DAen = 1; } 
+  if (_type == "Q") { _DAst = 2; _DAen = 3; }  
+  if (_type == "V") { _DAst = 4; _DAen = 5; }  
+  if (_type == "W") { _DAst = 6; _DAen = 9; }
+  if (_type == "INC") { _DAst = 2; _DAen = 9; }
+
+Another mistake in this program is :
+was:
+    if (_whichdata == "wmap1") { sprintf(infile,"%swmap-%s",WMAPcalc_dir,DAnames_nums[_DAst]);    DAs[i-_DAst].loadfitsT(infile,12); }     // load maps from different DAs
+    if (_whichdata == "wmap3") { sprintf(infile,"%swmap3sum-%s",WMAPcalc_dir,DAnames_nums[_DAst-10]);    DAs[i-_DAst].loadfitsT(infile,14); }     // load maps from different DAs
+    if (_whichdata == "wmap5") { sprintf(infile,"%swmap5sum-%s",WMAPcalc_dir,DAnames_nums[_DAst-20]);    DAs[i-_DAst].loadfitsT(infile,12); }     // load maps from different DAs
+
+changed to:
+
+    if (_whichdata == "wmap1") { sprintf(infile,"%swmap-%s",WMAPcalc_dir,DAnames_nums[i]);    DAs[i-_DAst].loadfitsT(infile,12); }     // load maps from different DAs
+    if (_whichdata == "wmap3") { sprintf(infile,"%swmap3sum-%s",WMAPcalc_dir,DAnames_nums[i-10]);    DAs[i-_DAst].loadfitsT(infile,14); }     // load maps from different DAs
+    if (_whichdata == "wmap5") { sprintf(infile,"%swmap5sum-%s",WMAPcalc_dir,DAnames_nums[i-20]);    DAs[i-_DAst].loadfitsT(infile,12); }     // load maps from different DAs
+
+
+INFLUENCES: don't know yet - hopefuly not much since I usually did such a stuff
+using "perform_under_mask" option to avoid discontinuities in the map.
+
+FIXED?:
+yes.
+
+
+-----------------------------------------------------------------------------------------
+
+BUG NAME: map_oper map_stats bug
+DATE: 2009-01-16
+CIRCUMSTANCES: when issuing 
+map_oper -c "shift_mean_to" wmap_imap_r9_5yr_V1_v3-Tn-bin --val 0 -m kp03 --perform_under_mask --dont_merge -o wmap_imap_r9_5yr_V1_v3--0shift  
+
+DESCRIPTION:
+when issuing the command the output ends in a deadlock
+this is due to the line
+      result.import_map_data(mask,"m",2);  result.check_mask(); if (!_dont_merge) result.mask_map_merge(); else mtab[i].calculate_map_stats(1);
+which was changed to:
+
+
+INFLUENCES:
+FIXED?:
+
+-----------------------------------------------------------------------------------------
+
+BUG NAME: mk_gauss_map_simWMAP.c
+DATE: 2009-01-21
+CIRCUMSTANCES: when running minkstat project version 2
+DESCRIPTION: the mk_gauss_map_simWMAP.c program did not pass the seed_offset variable to the object.
+	     instead it was always 0 regardless of the value given in the command line.
+
+INFLUENCES: this possibly could make some of the generated CMB maps identical when the program was
+	    started in many threads.
+FIXED?: yes. but alse see the next bug
+-----------------------------------------------------------------------------------------
+
+BUG NAME: random number generation in CMB simulations
+DATE:	  2009-01-21
+CIRCUMSTANCES: when running minkstat project version 2
+DESCRIPTION: the variable seed_offset given to map_class object is used to initiate the system RNG
+	     This seed_offset is set in the object and is used in some of the cpeds routines for random number generation.
+	     
+	     The problem was that it was not passed to the constructor of the map_class object.
+	     For current implementation the noise is generated using the separation backwards in time 
+	     (i.e. the offset is subtracted)
+	     while the signal is generated in separations in  future (the offset is added)
+	     
+INFLUENCES:  
+FIXED?:	    
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+
+BUG NAME: SPECIAL CASE !!! PROBABLY IN map_oper or something that is invoked by it
+
+DATE: 2009-01-22
+CIRCUMSTANCES: when running sims for minkstat project on cosmos 8core 64bit machine in 8 parallel threads
+
+DESCRIPTION: the initial command from the pipeline script was something like
+	     map_oper -c shift_mean_to --val 0 -m kq75 INC_w/512-1024-sim10_wmap5_INC_nol0..5-w0-w0-kq75-sm_no-Fmet_1
+
+	     the processes memory useage indicate the following memory consumption by the processes
+	     49848320 bytes -- > 5x
+	     49848320 bytes
+	     49848320 bytes
+	     49848320 bytes
+	     49848320 bytes
+	     49844224 bytes --> 2x
+	     49844224 bytes
+	     49852416 bytes --> 1x
+
+	     - the bug does not show up always, but only sometimes.
+	     - the memory consumption would indicate that something bad is happening at the beginnign of the program
+	     - the logfiles from the runs show no entries for the stalled processes which indicates that it's the beginnign
+	       of the program or that the output was not yet sent to the screen.	     
+	     - tracing the program memory consimption I couldn't reach exactly the same momory consumption 
+	       the closest memory consumption is just before the jump onto ~75Mb usage -- i.e. 49328128 bytes
+	     - all processes ran independently and all sooner or latter got stacked on map_oper command
+	       
+	     
+
+
+all processes stalled - 100% CPU usage, 
+INFLUENCES:
+FIXED?: YES
+	In short: the problem was in lack of initiation of the nside variable in the constructor.
+	This caused that the nside value was arbitray at the start of the map_oper program and when 
+	a map was loaded, and when the nside value happened to be nonzero (condition in line 89
+  if (nside != 0 && nside_loc != nside) { // nside==0 is here a check whether something is loaded - may it be a temperature map or coordinates of number of observations etc.
+     	of the Mscs-map-io_methods.c file) then the program tried to change the resolution of the map structure while there was no map structure yet at all.
+
+	The problem has been fixed by adding initiation of the nside pix_num etc variables to the constructor (more precisely to the routine 
+	void map_class::set_object_initial_variables(string _object_name) 
+	Some additional information lines were added
+
+	printf("|%s>  -- current nside is: %li\n",object_name.c_str(), nside);
+	printf("|%s>  -- the file nside appears to be: %li\n",object_name.c_str(), nside_loc);
+
+	and the 32bit routine of the stat.h library was replaced by stat64 function to include support for files greater than 2Gb.
+	These modifications were done to both methods:
+
+	void map_class::read_binmap_parameters(strarg  map_file) {
+	void map_class::read_txtmap_parameters(strarg  map_file) {
+
+	Also the map_oper program has been rewritten although formally no mistake there was.
+	The change is only to keep the map files in an array of pointers to objects rather than in array of objects.
+  
+
+
+-----------------------------------------------------------------------------------------
+
+BUG NAME: mk_gauss_map_simWMAP.c
+DATE: 2009-01-23 but was discovered earlier in the previous year
+CIRCUMSTANCES: when running many threads of this program but there's no proof that
+	       the multithreading caused it.
+
+DESCRIPTION: the program stalls at some point. the CPU usage is 100% but nothing is happening
+	     
+INFLUENCES:
+FIXED?: not yet.
+
+-----------------------------------------------------------------------------------------
+
+BUG NAME: load_mask
+DATE: 2009/02/01
+CIRCUMSTANCES: when testing map_operGUI
+DESCRIPTION: the flag mask_loaded wasn't set in routine
+void map_class::loadsave_manager(strarg whattodo, strarg fileformat, strarg what, int how, strarg where, long whatmultipole) {
+when loading masks in Tn-bin format etc.
+
+INFLUENCES: not estimated
+FIXED?: yes.
+-----------------------------------------------------------------------------------------
+
+BUG NAME: task splits in MPI routines
+DATE: 2009-04-03
+CIRCUMSTANCES: when writting MPIzed version of the draw_maps program
+DESCRIPTION: The mpref.c program had a bug in the GOMPI block
+l.253  dir_en=(world_id+1)*Ndirpn-1;
+this causes that the last direction is not processed since the loop over directions
+goes only to   for (i=dir_st;i<dir_en;i++) the last but one.
+
+This line was replaced to
+l.253  dir_en=(world_id+1)*Ndirpn;
+so as to include the missing directions.
+
+INFLUENCES: This bug influences the mpref project, some results from the PhD 
+thesis, but the influence is very small since only one direction per node
+was not processed so this wasn't really a big deal.
+
+FIXED?: yes.
+-----------------------------------------------------------------------------------------
+
+BUG NAME: antysymmetrization problem
+DATE: 2009/10/12 15:46:46 
+CIRCUMSTANCES: when runnig draw_maps Ylm --Yl 5 --Ym 1 -n 128 command
+DESCRIPTION: This is using the version of the software from MscsCPEDS-v1.0-2009-02-03-19-20-03-before-restructured-into-new-classes-new-alms_class_etc.tar.gz
+so it's not the version devel as in this directory but I want to keep a single  
+BUGTRAQ file.
+
+The problem is that the antysymmetrize_alms() functions doesn't work correctly !
+for the alms that are stored in memory as for ccSHT convention.
+The function code was just a copy from the place where simulations were generated,
+where the alms were stored in the usual form - l-major ordering beginning with l=0 m=0.
+
+INFLUENCES:
+	function - direction map_class::fit_map_dipole(double range, double acc, double *AMP, bool remove_dipole) { - 
+		 influences:
+			program map_info - this doesn't influence the minkstat project nor Almax-modulation project
+	
+	program - draw_maps - this shouldn't be a problem in any of the projects
+FIXED?:
+	YES
+-----------------------------------------------------------------------------------------
+
+BUG NAME:
+DATE:
+CIRCUMSTANCES: 
+DESCRIPTION:
+INFLUENCES:
+FIXED?:

@@ -1,0 +1,291 @@
+<!DOCTYPE QtCreatorProject>
+<qtcreator>
+ <data>
+  <variable>RunConfiguration0-CommandLineArguments</variable>
+  <valuelist type="QVariantList" />
+ </data>
+ <data>
+  <variable>RunConfiguration0-ProFile</variable>
+  <value type="QString" >task-control-client.pro</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-RunConfiguration.name</variable>
+  <value type="QString" >task-control-client</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UseDyldImageSuffix</variable>
+  <value type="bool" >false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UseTerminal</variable>
+  <value type="bool" >false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserEnvironmentChanges</variable>
+  <valuelist type="QVariantList" />
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserSetName</variable>
+  <value type="bool" >false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-type</variable>
+  <value type="QString" >Qt4ProjectManager.Qt4RunConfiguration</value>
+ </data>
+ <data>
+  <variable>activeRunConfiguration</variable>
+  <value type="int" >0</value>
+ </data>
+ <data>
+  <variable>activebuildconfiguration</variable>
+  <value type="QString" >Debug</value>
+ </data>
+ <data>
+  <variable>buildConfiguration-Debug</variable>
+  <valuemap type="QVariantMap" >
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
+   <value key="QtVersionId" type="int" >2</value>
+   <value key="buildDirectory" type="QString" >/home/blew/programy/Mscs.devel/Mscs/net/task-control-client</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Debug-buildstep0</variable>
+  <valuemap type="QVariantMap" >
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
+   <valuelist key="abstractProcess.Environment" type="QVariantList" >
+    <value type="QString" >BSTINPUTS=:/home/blew/TeX/prosper/:/home/blew/TeX/prosper/img/:/home/blew/TeX/:/home/blew/TeX/prosper/contrib:/home/blew/TeX/prosper/contrib/img:/home/blew/TeX/cjk/texinput:/home/blew/TeX/cjk/texinput/mule:/home/blew/TeX/prosper/:/home/blew/TeX/prosper/img/:/home/blew/TeX/:/home/blew/TeX/prosper/contrib:/home/blew/TeX/prosper/contrib/img:/home/blew/TeX/cjk/texinput:/home/blew/TeX/cjk/texinput/mule</value>
+    <value type="QString" >CVSROOT=blew@galaxy.astro.uni.torun.pl:/home/cvsroot</value>
+    <value type="QString" >CVS_RSH=ssh</value>
+    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-7t8KG0vVAK,guid=5905a9003dfbf3ab414108424becea2c</value>
+    <value type="QString" >DESKTOP_SESSION=kde</value>
+    <value type="QString" >DESKTOP_STARTUP_ID=</value>
+    <value type="QString" >DISABLE_IMSETTINGS=1</value>
+    <value type="QString" >DISPLAY=:0.0</value>
+    <value type="QString" >DM_CONTROL=/var/run/xdmctl</value>
+    <value type="QString" >DRY_RUN=1</value>
+    <value type="QString" >EDITOR=/usr/bin/joe</value>
+    <value type="QString" >GNOME_KEYRING_PID=2044</value>
+    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-ti4USJ/socket</value>
+    <value type="QString" >GPG_AGENT_INFO=/tmp/gpg-gdZmOD/S.gpg-agent:2139:1</value>
+    <value type="QString" >GS_LIB=</value>
+    <value type="QString" >GTK2_RC_FILES=/etc/gtk-2.0/gtkrc:/home/blew/.gtkrc-2.0::/home/blew/.kde/share/config/gtkrc-2.0</value>
+    <value type="QString" >GTK_IM_MODULE=gtk-im-context-simple</value>
+    <value type="QString" >GTK_RC_FILES=/etc/gtk/gtkrc:/home/blew/.gtkrc::/home/blew/.kde/share/config/gtkrc</value>
+    <value type="QString" >G_BROKEN_FILENAMES=1</value>
+    <value type="QString" >HISTSIZE=1000</value>
+    <value type="QString" >HOME=/home/blew</value>
+    <value type="QString" >HOSTNAME=szajcomp</value>
+    <value type="QString" >IMSETTINGS_INTEGRATE_DESKTOP=yes</value>
+    <value type="QString" >IMSETTINGS_MODULE=none</value>
+    <value type="QString" >IPOD_MOUNTPOINT=/mnt/ipod</value>
+    <value type="QString" >KDEDIRS=/usr</value>
+    <value type="QString" >KDE_FULL_SESSION=true</value>
+    <value type="QString" >KDE_IS_PRELINKED=1</value>
+    <value type="QString" >KDE_MULTIHEAD=false</value>
+    <value type="QString" >KDE_SESSION_UID=500</value>
+    <value type="QString" >KDE_SESSION_VERSION=4</value>
+    <value type="QString" >LANG=pl_PL.UTF-8</value>
+    <value type="QString" >LANGUAGE=</value>
+    <value type="QString" >LC_ALL=en_US.utf8</value>
+    <value type="QString" >LD_LIBRARY_PATH=/usr/lib/matfor3/lib:/home/blew/programy/ccSHTlib/fftw-2.1.5/fftw:/usr/lib:/usr/local/lib:/home/blew/programy/pgplot/pgplot:/usr/lib:/home/blew/google-earth:/home/blew/programy/rt4/ocra-scanning/lib:/home/blew/programy/pgplot/pgplot:/usr/lib/openmpi/lib</value>
+    <value type="QString" >LD_RUN_PATH=/usr/local/lib/:/home/blew/programy/pgplot/pgplot</value>
+    <value type="QString" >LESSOPEN=|/usr/bin/lesspipe.sh %s</value>
+    <value type="QString" >LOADEDMODULES=</value>
+    <value type="QString" >LOGNAME=blew</value>
+    <value type="QString" >MAIL=/var/spool/mail/blew</value>
+    <value type="QString" >MATFORDIR=/usr/lib/matfor3</value>
+    <value type="QString" >MATPACK=/home/blew/programy/matpack</value>
+    <value type="QString" >MODULEPATH=/usr/share/Modules/modulefiles:/etc/modulefiles</value>
+    <value type="QString" >MODULESHOME=/usr/share/Modules</value>
+    <value type="QString" >NCARG_DATABASE=/usr/lib/ncarg/database</value>
+    <value type="QString" >NCARG_FONTCAPS=/usr/lib/ncarg/fontcaps</value>
+    <value type="QString" >NCARG_GRAPHCAPS=/usr/lib/ncarg/graphcaps</value>
+    <value type="QString" >NCARG_LIB=/usr/lib/ncarg</value>
+    <value type="QString" >NCARG_NCARG=/usr/share/ncarg</value>
+    <value type="QString" >NCARG_ROOT=/usr</value>
+    <value type="QString" >PATH=/home/blew/qtsdk-2009.01/qt/bin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/ccache:/usr/local/bin:/usr/bin:/bin:/usr/games:/usr/local/sbin:/usr/sbin:/sbin:/home/blew/programy/Mscs/bin:/home/blew/programy/Mscs.devel/bin/:/home/blew/programy/rt4/ocra-scanning/bin:/home/blew/programy/matpack/bin:/home/blew/tmp/star/bin:/home/blew/programy:/home/blew/programy/CPEDS/bin/:/opt/openoffice.org3/program/:/opt/openoffice.org/basis3.0/program/:/home/blew/programy/rt4/control-system/tmp.bin:/home/blew/bin:/sbin:/usr/sbin:/opt/intel_fc_80/bin</value>
+    <value type="QString" >PGPLOT_DIR=/home/blew/programy/pgplot/pgplot</value>
+    <value type="QString" >PWD=/home/blew</value>
+    <value type="QString" >QTDIR=/home/blew/qtsdk-2009.01/qt</value>
+    <value type="QString" >QTINC=/usr/lib/qt-3.3/include</value>
+    <value type="QString" >QTLIB=/usr/lib/qt-3.3/lib</value>
+    <value type="QString" >QT_IM_MODULE=xim</value>
+    <value type="QString" >QT_PLUGIN_PATH=/home/blew/.kde/lib/kde4/plugins/:/usr/lib/kde4/plugins/</value>
+    <value type="QString" >SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/2216,unix/unix:/tmp/.ICE-unix/2216</value>
+    <value type="QString" >SHELL=/bin/bash</value>
+    <value type="QString" >SHLVL=2</value>
+    <value type="QString" >SSH_AGENT_PID=2069</value>
+    <value type="QString" >SSH_ASKPASS=/usr/bin/ksshaskpass</value>
+    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-jWgvDO2045/agent.2045</value>
+    <value type="QString" >TERM=dumb</value>
+    <value type="QString" >TEXINPUTS=:/home/blew/TeX/prosper/:/home/blew/TeX/prosper/img/:/home/blew/TeX/:/home/blew/TeX/prosper/contrib:/home/blew/TeX/prosper/contrib/img:/home/blew/TeX/cjk/texinput:/home/blew/TeX/cjk/texinput/mule</value>
+    <value type="QString" >USER=blew</value>
+    <value type="QString" >WINDOWPATH=1</value>
+    <value type="QString" >XCURSOR_THEME=default</value>
+    <value type="QString" >XDG_DATA_DIRS=/usr/share/kde-settings/kde-profile/default/share:/usr/local/share:/usr/share</value>
+    <value type="QString" >XDG_MENU_PREFIX=kde4-</value>
+    <value type="QString" >XDG_SESSION_COOKIE=4526f80e17faa816748323814a439365-1273817643.44815-381810854</value>
+    <value type="QString" >XDM_MANAGED=method=classic</value>
+    <value type="QString" >XMODIFIERS=@im=none</value>
+    <value type="QString" >_=/usr/bin/kdeinit4</value>
+    <value type="QString" >module=() {  eval `/usr/bin/modulecmd bash $*`
+}</value>
+   </valuelist>
+   <valuelist key="abstractProcess.arguments" type="QVariantList" >
+    <value type="QString" >/home/blew/programy/Mscs.devel/Mscs/net/task-control-client/task-control-client.pro</value>
+    <value type="QString" >-spec</value>
+    <value type="QString" >linux-g++</value>
+    <value type="QString" >-r</value>
+    <value type="QString" >CONFIG+=debug</value>
+   </valuelist>
+   <value key="abstractProcess.command" type="QString" >/home/blew/qtsdk-2009.01/qt/bin/qmake</value>
+   <value key="abstractProcess.enabled" type="bool" >false</value>
+   <value key="abstractProcess.workingDirectory" type="QString" >/home/blew/programy/Mscs.devel/Mscs/net/task-control-client</value>
+   <value key="buildConfiguration" type="int" >2</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Debug-buildstep1</variable>
+  <valuemap type="QVariantMap" >
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
+   <valuelist key="abstractProcess.Environment" type="QVariantList" >
+    <value type="QString" >BSTINPUTS=:/home/blew/TeX/prosper/:/home/blew/TeX/prosper/img/:/home/blew/TeX/:/home/blew/TeX/prosper/contrib:/home/blew/TeX/prosper/contrib/img:/home/blew/TeX/cjk/texinput:/home/blew/TeX/cjk/texinput/mule:/home/blew/TeX/prosper/:/home/blew/TeX/prosper/img/:/home/blew/TeX/:/home/blew/TeX/prosper/contrib:/home/blew/TeX/prosper/contrib/img:/home/blew/TeX/cjk/texinput:/home/blew/TeX/cjk/texinput/mule</value>
+    <value type="QString" >CVSROOT=blew@galaxy.astro.uni.torun.pl:/home/cvsroot</value>
+    <value type="QString" >CVS_RSH=ssh</value>
+    <value type="QString" >DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-7t8KG0vVAK,guid=5905a9003dfbf3ab414108424becea2c</value>
+    <value type="QString" >DESKTOP_SESSION=kde</value>
+    <value type="QString" >DESKTOP_STARTUP_ID=</value>
+    <value type="QString" >DISABLE_IMSETTINGS=1</value>
+    <value type="QString" >DISPLAY=:0.0</value>
+    <value type="QString" >DM_CONTROL=/var/run/xdmctl</value>
+    <value type="QString" >DRY_RUN=1</value>
+    <value type="QString" >EDITOR=/usr/bin/joe</value>
+    <value type="QString" >GNOME_KEYRING_PID=2044</value>
+    <value type="QString" >GNOME_KEYRING_SOCKET=/tmp/keyring-ti4USJ/socket</value>
+    <value type="QString" >GPG_AGENT_INFO=/tmp/gpg-gdZmOD/S.gpg-agent:2139:1</value>
+    <value type="QString" >GS_LIB=</value>
+    <value type="QString" >GTK2_RC_FILES=/etc/gtk-2.0/gtkrc:/home/blew/.gtkrc-2.0::/home/blew/.kde/share/config/gtkrc-2.0</value>
+    <value type="QString" >GTK_IM_MODULE=gtk-im-context-simple</value>
+    <value type="QString" >GTK_RC_FILES=/etc/gtk/gtkrc:/home/blew/.gtkrc::/home/blew/.kde/share/config/gtkrc</value>
+    <value type="QString" >G_BROKEN_FILENAMES=1</value>
+    <value type="QString" >HISTSIZE=1000</value>
+    <value type="QString" >HOME=/home/blew</value>
+    <value type="QString" >HOSTNAME=szajcomp</value>
+    <value type="QString" >IMSETTINGS_INTEGRATE_DESKTOP=yes</value>
+    <value type="QString" >IMSETTINGS_MODULE=none</value>
+    <value type="QString" >IPOD_MOUNTPOINT=/mnt/ipod</value>
+    <value type="QString" >KDEDIRS=/usr</value>
+    <value type="QString" >KDE_FULL_SESSION=true</value>
+    <value type="QString" >KDE_IS_PRELINKED=1</value>
+    <value type="QString" >KDE_MULTIHEAD=false</value>
+    <value type="QString" >KDE_SESSION_UID=500</value>
+    <value type="QString" >KDE_SESSION_VERSION=4</value>
+    <value type="QString" >LANG=pl_PL.UTF-8</value>
+    <value type="QString" >LANGUAGE=</value>
+    <value type="QString" >LC_ALL=en_US.utf8</value>
+    <value type="QString" >LD_LIBRARY_PATH=/usr/lib/matfor3/lib:/home/blew/programy/ccSHTlib/fftw-2.1.5/fftw:/usr/lib:/usr/local/lib:/home/blew/programy/pgplot/pgplot:/usr/lib:/home/blew/google-earth:/home/blew/programy/rt4/ocra-scanning/lib:/home/blew/programy/pgplot/pgplot:/usr/lib/openmpi/lib</value>
+    <value type="QString" >LD_RUN_PATH=/usr/local/lib/:/home/blew/programy/pgplot/pgplot</value>
+    <value type="QString" >LESSOPEN=|/usr/bin/lesspipe.sh %s</value>
+    <value type="QString" >LOADEDMODULES=</value>
+    <value type="QString" >LOGNAME=blew</value>
+    <value type="QString" >MAIL=/var/spool/mail/blew</value>
+    <value type="QString" >MATFORDIR=/usr/lib/matfor3</value>
+    <value type="QString" >MATPACK=/home/blew/programy/matpack</value>
+    <value type="QString" >MODULEPATH=/usr/share/Modules/modulefiles:/etc/modulefiles</value>
+    <value type="QString" >MODULESHOME=/usr/share/Modules</value>
+    <value type="QString" >NCARG_DATABASE=/usr/lib/ncarg/database</value>
+    <value type="QString" >NCARG_FONTCAPS=/usr/lib/ncarg/fontcaps</value>
+    <value type="QString" >NCARG_GRAPHCAPS=/usr/lib/ncarg/graphcaps</value>
+    <value type="QString" >NCARG_LIB=/usr/lib/ncarg</value>
+    <value type="QString" >NCARG_NCARG=/usr/share/ncarg</value>
+    <value type="QString" >NCARG_ROOT=/usr</value>
+    <value type="QString" >PATH=/home/blew/qtsdk-2009.01/qt/bin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/ccache:/usr/local/bin:/usr/bin:/bin:/usr/games:/usr/local/sbin:/usr/sbin:/sbin:/home/blew/programy/Mscs/bin:/home/blew/programy/Mscs.devel/bin/:/home/blew/programy/rt4/ocra-scanning/bin:/home/blew/programy/matpack/bin:/home/blew/tmp/star/bin:/home/blew/programy:/home/blew/programy/CPEDS/bin/:/opt/openoffice.org3/program/:/opt/openoffice.org/basis3.0/program/:/home/blew/programy/rt4/control-system/tmp.bin:/home/blew/bin:/sbin:/usr/sbin:/opt/intel_fc_80/bin</value>
+    <value type="QString" >PGPLOT_DIR=/home/blew/programy/pgplot/pgplot</value>
+    <value type="QString" >PWD=/home/blew</value>
+    <value type="QString" >QTDIR=/home/blew/qtsdk-2009.01/qt</value>
+    <value type="QString" >QTINC=/usr/lib/qt-3.3/include</value>
+    <value type="QString" >QTLIB=/usr/lib/qt-3.3/lib</value>
+    <value type="QString" >QT_IM_MODULE=xim</value>
+    <value type="QString" >QT_PLUGIN_PATH=/home/blew/.kde/lib/kde4/plugins/:/usr/lib/kde4/plugins/</value>
+    <value type="QString" >SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/2216,unix/unix:/tmp/.ICE-unix/2216</value>
+    <value type="QString" >SHELL=/bin/bash</value>
+    <value type="QString" >SHLVL=2</value>
+    <value type="QString" >SSH_AGENT_PID=2069</value>
+    <value type="QString" >SSH_ASKPASS=/usr/bin/ksshaskpass</value>
+    <value type="QString" >SSH_AUTH_SOCK=/tmp/ssh-jWgvDO2045/agent.2045</value>
+    <value type="QString" >TERM=dumb</value>
+    <value type="QString" >TEXINPUTS=:/home/blew/TeX/prosper/:/home/blew/TeX/prosper/img/:/home/blew/TeX/:/home/blew/TeX/prosper/contrib:/home/blew/TeX/prosper/contrib/img:/home/blew/TeX/cjk/texinput:/home/blew/TeX/cjk/texinput/mule</value>
+    <value type="QString" >USER=blew</value>
+    <value type="QString" >WINDOWPATH=1</value>
+    <value type="QString" >XCURSOR_THEME=default</value>
+    <value type="QString" >XDG_DATA_DIRS=/usr/share/kde-settings/kde-profile/default/share:/usr/local/share:/usr/share</value>
+    <value type="QString" >XDG_MENU_PREFIX=kde4-</value>
+    <value type="QString" >XDG_SESSION_COOKIE=4526f80e17faa816748323814a439365-1273817643.44815-381810854</value>
+    <value type="QString" >XDM_MANAGED=method=classic</value>
+    <value type="QString" >XMODIFIERS=@im=none</value>
+    <value type="QString" >_=/usr/bin/kdeinit4</value>
+    <value type="QString" >module=() {  eval `/usr/bin/modulecmd bash $*`
+}</value>
+   </valuelist>
+   <valuelist key="abstractProcess.arguments" type="QVariantList" >
+    <value type="QString" >-w</value>
+   </valuelist>
+   <value key="abstractProcess.command" type="QString" >/usr/bin/make</value>
+   <value key="abstractProcess.enabled" type="bool" >true</value>
+   <value key="abstractProcess.workingDirectory" type="QString" >/home/blew/programy/Mscs.devel/Mscs/net/task-control-client</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Debug-cleanstep0</variable>
+  <valuemap type="QVariantMap" >
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" >Debug</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfigurations</variable>
+  <valuelist type="QVariantList" >
+   <value type="QString" >Debug</value>
+  </valuelist>
+ </data>
+ <data>
+  <variable>buildstep0</variable>
+  <valuemap type="QVariantMap" >
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" ></value>
+   <value key="mkspec" type="QString" ></value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildstep1</variable>
+  <valuemap type="QVariantMap" >
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" ></value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildsteps</variable>
+  <valuelist type="QVariantList" >
+   <value type="QString" >trolltech.qt4projectmanager.qmake</value>
+   <value type="QString" >trolltech.qt4projectmanager.make</value>
+  </valuelist>
+ </data>
+ <data>
+  <variable>cleanstep0</variable>
+  <valuemap type="QVariantMap" >
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString" ></value>
+   <value key="clean" type="bool" >true</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>cleansteps</variable>
+  <valuelist type="QVariantList" >
+   <value type="QString" >trolltech.qt4projectmanager.make</value>
+  </valuelist>
+ </data>
+ <data>
+  <variable>defaultFileEncoding</variable>
+  <value type="QByteArray" >UTF-8</value>
+ </data>
+ <data>
+  <variable>project</variable>
+  <valuemap type="QVariantMap" />
+ </data>
+</qtcreator>

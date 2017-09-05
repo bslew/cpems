@@ -1,0 +1,384 @@
+THIS FILE CONTAINS LOG OF THE CHANGES TO THE CODE IN MSCS OR CPEDS PACKAGES DUE TO SOME OPTIMALIZATIONS IN THE OLD CODE
+THAT POSSIBLY MIGHT RESULT IN SOME NEW INCONSISTENCIES WITH THE OLDER VERSIONS OF THE CODE.
+
+THE FILE DO NOT LOG THE CHANGES DUE TO THE NORMAL DEVELOPMENT OF THE SOURCES CODES.
+
+========================================================================================================================
+
+---------------------------------------------------------
+CHANGE: 
+DATE: 2008-01-11
+FILE: cpeds-pixelization.c
+ROUTINE: cpeds_pix2colrow_healpix_nest
+DESCRIPTION:
+change of the conversion bit code to match the version in the cpeds_ang2pix_healpix routine
+since some bugs were found in there.
+
+The change include:
+* usage ingegers instead of the double numbers
+* pow --> cpeds_pow_int
+* malloc -->  new
+* 
+
+
+---------------------------------------------------------
+CHANGE: 
+DATE: 2008-01-23
+FILE: Mscs-map.c
+ROUTINE: void map_class::scramble_over_minmax(double min,double max) 
+DESCRIPTION:
+I added the lines:
+
+  maxT=max;
+  minT=min;
+
+after the scrambling is done since in case the overplots are requested in the 
+draw_maps program the overplot still used the old maxT and the scrambling
+didn't take effect on the scale in the colorbar of the plotted map.
+
+So, if some other routine or program used the scrambling and counted on
+that the old min max values in the map were kept, then it won't work
+correctly anymore.
+
+The change include:
+  maxT=max;
+  minT=min;
+
+---------------------------------------------------------
+CHANGE: 
+DATE: 2008-02-08
+FILE: cpeds-pixelization.c
+ROUTINE: cpeds_ang2pix_healpix
+DESCRIPTION:
+The healpix 2 routines were added to the CPEDS source codes in cpeds-math.h
+and in the end of cpeds-pixelization.
+A patch was addded to the routine to check and store any differences in the performance of 
+the two routines (the one from cpeds and from healpix)
+
+The change include:
+---------------------------------------------------------
+CHANGE: 
+DATE: 2008-02-08
+FILE: cpeds-pixelization.c
+ROUTINE: cpeds_ang2pix_healpix
+DESCRIPTION:
+wrong conversion from col/row numbers in double to long 
+the round routine was replaced with floor function
+
+The change include:
+
+/*   pix_rownum = (long int)round(pix_rownumd); // commented out on 2008-02-08 -- this was buggy as comparred with healpix routines: floor should be used instead*/
+/*   pix_colnum = (long int)round(pix_colnumd); // commented out on 2008-02-08 -- this was buggy as comparred with healpix routines: floor should be used instead*/
+  pix_rownum = (long int)floor(pix_rownumd);
+  pix_colnum = (long int)floor(pix_colnumd);
+
+---------------------------------------------------------
+CHANGE: clone map object flag settings
+DATE: 2008-03-13
+FILE: Mscs-map.c
+ROUTINE: void map_class::clone_object(map_class &orig) 
+DESCRIPTION:
+the routine didn't set the flags for structures loaded.
+i.e. it did set it up but latter cancelled it for making a new space and didn't reset to the original values from the parent object.
+
+The change include:
+
+  if (orig.map->T != NULL) { map_loaded = 0; makekill_space_manager("make","T",1);   for (i=0;i<pix_num;i++) map->T[i] = orig.map->T[i]; map_loaded  = orig.map_loaded; } 
+  if (orig.map->m != NULL) { mask_loaded = 0; makekill_space_manager("make","m",1);   for (i=0;i<pix_num;i++) map->m[i] = orig.map->m[i]; mask_loaded  = orig.mask_loaded; } 
+  if (orig.map->n != NULL) { coord_loaded = 0; makekill_space_manager("make","C",1);   for (i=0;i<pix_num;i++) map->n[i] = orig.map->n[i]; coord_loaded = orig.coord_loaded; } 
+  if (orig.map->N != NULL) { Nobs_loaded = 0; makekill_space_manager("make","N",1);   for (i=0;i<pix_num;i++) map->N[i] = orig.map->N[i]; Nobs_loaded = orig.Nobs_loaded; } 
+  if (orig.alms_loaded == 1) { alms_loaded = 0; makekill_space_manager("make","F",1);  for (i=0;i<alms_num;i++) alm[i] = orig.alm[i]; alms_loaded = orig.alms_loaded; }
+
+I added the map_loaded  = orig.map_loaded; like command in the end of each line
+It might have had an effect everywhere where cloning was involved.
+
+---------------------------------------------------------
+CHANGE: content of the sigma0_WMAP[30] array
+DATE: 2008-03-19
+FILE: Mscs-map.h Mscs-map.c
+ROUTINE: constructor and all other related
+DESCRIPTION:
+So far the related variables of the object were only able to store the
+sigma0 information from single year data.
+(this was actually a mistake if I wanted to generate a wmap1 sims.
+since the current sigma0 values were stored (i.e. from wmap3)
+Now wmap5 is available and hence it's necessary to extend the meaning and
+capacity  of the variables.
+
+The change include:
+  double sigma0_K1,sigma0_K2,sigma0_Q1,sigma0_Q2,sigma0_V1,sigma0_V2,sigma0_W1,sigma0_W2,sigma0_W3,sigma0_W4
+variables will still store the current sigma0 values.
+
+However the sigma0_WMAP[30] array is extended from 10 to 30 to store
+wmap1 wmap3 and wmap5 sigma zero values.
+
+
+FURTHERMORE !!!! the ordering of the data in the array is CHANGED !!!
+it used to be that the k1 and k2 data was stored in the [8] and [9] position of the array.
+NOW it is changed so that the rising array index go along with the increasing frequency from k1 to w4
+k1 = 0
+w4 = 9 for wmap1
+k1 = 10
+w4 = 19 for wmap3
+and
+k1 = 20
+w4 = 29 for wmap5
+
+This change affects the following files and routines and these needs to be modified:
+
+search for: sigma0_WMAP[i] due to change in size of the array
+
+*********************** ./mk_INC_WMAP.c
+1:57:    s[i] = inc.sigma0_WMAP[i];
+updated but not tested yet !!!
+
+*********************** ./mk_INC_sim.c
+1:268:    s[i] = obs.sigma0_WMAP[i];
+DONE but
+this program needs little rewritting !!! and can be written more efficiently
+
+*********************** ./mk_ILC_WMAP.c
+1:54:    s[i] = ilc.sigma0_WMAP[i];
+THIS PROGRAM SHOULD BE PROBABLY REMOVED FROM THE PACKAGE SINCE IT'S TASK NOW HANDLES THE MORE EXTENDED PROGRAM
+mk_ILC_sim.c
+
+*********************** ./Mscs-map.c
+1:186:  sigma0_WMAP[0] = sigma0_Q1;   sigma0_WMAP[1] = sigma0_Q2;
+2:187:  sigma0_WMAP[2] = sigma0_V1;   sigma0_WMAP[3] = sigma0_V2;
+3:188:  sigma0_WMAP[4] = sigma0_W1;   sigma0_WMAP[5] = sigma0_W2;
+4:189:  sigma0_WMAP[6] = sigma0_W3;   sigma0_WMAP[7] = sigma0_W4;
+5:190:  sigma0_WMAP[8] = sigma0_K1;   sigma0_WMAP[9] = sigma0_K2;
+6:1799: w = 0; for (l=DAst;l<=DAen;l++) { w += DAs[l].map->N[i] / pow(sigma0_WMAP[l],2); }
+7:1800: map->T[i] += DAs[j].map->T[i] * (DAs[j].map->N[i]/pow(sigma0_WMAP[j],2)) / w;
+8:1809: w = 0; for (l=DAst;l<=DAen;l++) { w += 1.0 / pow(sigma0_WMAP[l],2); }
+9:1810: map->T[i] += DAs[j].map->T[i] /pow(sigma0_WMAP[j],2) / w;
+
+DONE -- NO CHANGE IS NEEDED HERE ACTUALLY ONLY pow --> sigma0_WMAP[] * sigma0_WMAP[] done for efficiency 
+---------------------------------------------------------
+CHANGE:  DAnames_nums
+DATE: 2008-03-19
+FILE: Mscs-global-defs.[ch]
+ROUTINE: 
+DESCRIPTION: added k1 and k2 before q1 ... names for the DAs
+this may change some other stuff as well
+Changed the size ofthe arrays DAnums  DAnames and DAnames_nums to 10 from 8
+check is estract_Cl won't be messed up by this and other programs
+
+The change include:
+
+search for:
+ filenamestr DAnames_nums[10];// = {"q1","q2","v1","v2","w1","w2","w3","w4"};
+
+ filenamestr DAnames[10];// = {"k","k","q","q","v","v","w","w","w","w"};
+ long DAnums[10];// = {1,2,1,2,1,2,1,2,3,4};
+these variables in all programs and source files
+
+
+
+
+
+
+
+
+
+
+
+
+[blew@cosmos2 c++]$ findstr.sh 1 0 DAnames ""
+*********************** ./mk_gauss_map_simWMAP.c
+1:54:   sprintf(tmp,"%sDA-%s/",WMAPsim_dir,DAnames_nums[j]); sprintf(simfile,"sim%li_wmap[13]",i);
+2:55:   make_detailed_file_name(&tmpch,tmp,GLOBAL_nside,GLOBAL_lmax,simfile,DAnames[j],DAnums[j],DAnames[j],DAnums[j],"nomask","no",1);
+DONE
+*********************** ./mk_INC_sim.c
+1:267:/*     sprintf(tmp,"%sDA-%s/",WMAPsim_dir,DAnames_nums[i]); strcpy(DA1,DAnames[i]);        sprintf(sim,"sim%li_wmap1",sim_idx); */
+2:269:/*     make_detailed_file_name(&infile,tmp,GLOBAL_nside,GLOBAL_lmax,sim,DAnames[i],DAnums[i],DAnames[i],DAnums[i],"nomask","no",1); */
+3:272:    if (wmap_data == "wmap1" ) { sprintf(tmp,"%swmap-%s",WMAPcalc_dir,DAnames_nums[i]); obs.loadfitsT(tmp,12); }
+4:273:    if (wmap_data == "wmap3" ) { sprintf(tmp,"%swmap3sum-%s",WMAPcalc_dir,DAnames_nums[i]); obs.loadfitsT(tmp,14); }
+5:295:      sprintf(tmp,"%sDA-%s/",WMAPsim_dir,DAnames_nums[i]); strcpy(DA,DAnames[i]);
+6:301:      make_detailed_file_name(&infile,tmp,GLOBAL_nside,GLOBAL_lmax,sim,DAnames[i],DAnums[i],DAnames[i],DAnums[i],"nomask","no",1);
+*********************** ./map_info_sim.c
+1:133:    make_detailed_file_name(&infile,PROGRAM_DIRS[DA+7],GLOBAL_nside,GLOBAL_lmax,sim,DAnames[DA-3],DAnums[DA-3],DAnames[DA-3],DAnums[DA-3],"nomask","smooth",GLOBAL_fourier_method_num);
+DONE, not tested
+*********************** ./calculate_minkowski_functionals_WMAP.c
+1:55:/*     sprintf(infile,"%swmap-%s",program_dir,DAnames_nums[k]); */
+2:56:/*     make_detailed_file_name(&infile,program_dir,256,512,sim,DAnames[i],DAnums[i],DAnames[i],DAnums[i],"nomask","smooth",8); */
+this proram should be removed  I think
+
+
+
+
+
+[blew@cosmos2 c++]$ findstr.sh 1 0 DAnums ""
+*********************** ./mk_gauss_map_simWMAP.c
+1:55:   make_detailed_file_name(&tmpch,tmp,GLOBAL_nside,GLOBAL_lmax,simfile,DAnames[j],DAnums[j],DAnames[j],DAnums[j],"nomask","no",1);
+DONE
+*********************** ./mk_INC_sim.c
+1:269:/*     make_detailed_file_name(&infile,tmp,GLOBAL_nside,GLOBAL_lmax,sim,DAnames[i],DAnums[i],DAnames[i],DAnums[i],"nomask","no",1); */
+2:301:      make_detailed_file_name(&infile,tmp,GLOBAL_nside,GLOBAL_lmax,sim,DAnames[i],DAnums[i],DAnames[i],DAnums[i],"nomask","no",1);
+DONE but written badly
+*********************** ./map_info_sim.c
+1:133:    make_detailed_file_name(&infile,PROGRAM_DIRS[DA+7],GLOBAL_nside,GLOBAL_lmax,sim,DAnames[DA-3],DAnums[DA-3],DAnames[DA-3],DAnums[DA-3],"nomask","smooth",GLOBAL_fourier_method_num);
+DONE
+
+---------------------------------------------------------
+CHANGE: name change of the routine mk_ilcDA to mk_INC_DA 
+DATE: 2008-03-20
+FILE: Mscs-map.[hc]
+ROUTINE: 
+DESCRIPTION:
+the change of the name better reflects what the routine is actually doing
+it's the inverse noise coadding of the maps from different D/A
+
+The change include:
+
+*********************** ./Mscs-map.c
+1:1799:  if (K || KQVW) { mk_ilcDA(8,9,s,"inv_noise"); shift_mean_to(calibrate,true); sprintf(tmp,"%s512-1024-sim%li_%s_INC-k0-k0-%s-sm_no-Fmet_1",dirs[25],sim_idx,wmap_data.c_str(),"nomask"); savebinT(tmp,1); }
+2:1800:  if (Q || KQVW || INC) { mk_ilcDA(0,1,s,"inv_noise"); shift_mean_to(calibrate,true); sprintf(tmp,"%s512-1024-sim%li_%s_INC-q0-q0-%s-sm_no-Fmet_1",dirs[22],sim_idx,wmap_data.c_str(),"nomask"); savebinT(tmp,1); }
+3:1801:  if (V || KQVW || INC) { mk_ilcDA(2,3,s,"inv_noise"); shift_mean_to(calibrate,true); sprintf(tmp,"%s512-1024-sim%li_%s_INC-v0-v0-%s-sm_no-Fmet_1",dirs[23],sim_idx,wmap_data.c_str(),"nomask"); savebinT(tmp,1); }
+4:1802:  if (W || KQVW || INC) { mk_ilcDA(4,7,s,"inv_noise"); shift_mean_to(calibrate,true); sprintf(tmp,"%s512-1024-sim%li_%s_INC-w0-w0-%s-sm_no-Fmet_1",dirs[24],sim_idx,wmap_data.c_str(),"nomask"); savebinT(tmp,1); }
+5:1803:  if (INC) { mk_ilcDA(0,7,s,"inv_noise"); shift_mean_to(calibrate,true); sprintf(tmp,"%s512-1024-sim%li_%s_INC-0-0-%s-sm_no-Fmet_1",dirs[9],sim_idx,wmap_data.c_str(),"nomask");  savebinT(tmp,1); }
+6:1818:void map_class::mk_ilcDA(long DAst,long DAen,map_class* DAs,string weight) {
+
+There are no long-reaching consequences to this change I guess.
+
+---------------------------------------------------------
+CHANGE: program mk_gauss_map, option unit_alms
+DATE: 2008-07-04
+FILE: mk_gauss_map
+ROUTINE: option unit_alms
+DESCRIPTION:
+the meaning of the option is changed from making alm.R=1 which doesn't
+make much sense to making a GRF that has unit power in each l
+
+The change include:
+---------------------------------------------------------
+CHANGE: masked_pix_num
+DATE: 2009-01-13
+FILE: Mscs-map.c
+ROUTINE:  map_class::calculate_map_stats(int output) and void map_class::clean_mask()  and void map_class::invert_mask() 
+DESCRIPTION: 
+Fixing the flags for the number of masked pixels in the map when the mask 
+is removed and when calculating map statistics. 
+
+The change include:
+
+added line
+masked_pix_num=pix_num-j;
+f_sky = (double)masked_pix_num/(double)pix_num;
+
+so that the masked pixel number was updated as stuff is recaltulated
+Also in routine
+void map_class::clean_mask() {
+added
+masked_pix_num=0;  f_sky=0.0;
+multi_mask_reg_num=1;
+
+and in void map_class::invert_mask()
+added
+  masked_pix_num=pix_num-masked_pix_num; 
+  f_sky = (double)masked_pix_num/(double)pix_num;
+
+---------------------------------------------------------
+CHANGE: srand((long)time(NULL)+_seed_offset) to dodecahedron.c
+DATE: 2009-01-22
+FILE: dodecahedron.c
+ROUTINE: main()
+DESCRIPTION:
+	the srand() was not initiated for calling cpeds_random_uniform_number
+	routine. Also for prarallel runs the seed_offset variable would be in 
+	order so it was also added
+
+	This change was not tested since this modification...
+The change include:
+---------------------------------------------------------
+CHANGE: cpeds-math.c double* cpeds_random_gauss_numbers(double m, double s,long int pix_num, int method, long seed_offset, bool sims_fast) {
+
+DATE: 2009-01-22
+FILE: cpeds-math.c
+ROUTINE: double* cpeds_random_gauss_numbers(double m, double s,long int pix_num, int method, long seed_offset, bool sims_fast) {
+
+DESCRIPTION: changed the method 5 of the routine for generation of gaussian random numbers from central limit theorem. for
+    pix_num = 20;    npd=0; a = sqrt((double)(pix_num)*s); 
+    and added the seed_offset support which was missing -- also to the method 4
+    gsl_rng_set(r,(unsigned long int)(time(NULL))+seed_offset);
+    seed_offset was added
+
+
+The change include:
+---------------------------------------------------------
+CHANGE: the srand and seed_offset and cpeds_seed_offset
+DATE: 2009-01-22
+FILE: almost all where applicable in packages Mscs and CPEDS
+ROUTINE: I hope all that needed the modification
+DESCRIPTION:
+
+	The change is to remove seed_offset from the map_class and 
+	put it into the cpeds responsibilities to initiate the 
+	initial random seed with the correct offset from the level
+	of application -- i.e. when the program is started - not
+	somewhere in the eg. constructor of the object file - when
+	it would be reinitiated every time the map_class object 
+	would be generated or cloned.
+
+	To applications that possibly could be invoked in many threads
+	simultaneously I addded srand initiation  and changed
+	seed_offset to the global scope variable cpeds_seed_offset.   
+
+The change include:
+
+---------------------------------------------------------
+CHANGE: 
+DATE: 
+FILE: 
+ROUTINE: 
+DESCRIPTION:
+
+The change include:
+---------------------------------------------------------
+CHANGE: 
+DATE: 
+FILE: 
+ROUTINE: 
+DESCRIPTION:
+
+The change include:
+---------------------------------------------------------
+CHANGE: 
+DATE: 
+FILE: 
+ROUTINE: 
+DESCRIPTION:
+
+The change include:
+---------------------------------------------------------
+CHANGE: 
+DATE: 
+FILE: 
+ROUTINE: 
+DESCRIPTION:
+
+The change include:
+---------------------------------------------------------
+CHANGE: 
+DATE: 
+FILE: 
+ROUTINE: 
+DESCRIPTION:
+
+The change include:
+---------------------------------------------------------
+CHANGE: 
+DATE: 
+FILE: 
+ROUTINE: 
+DESCRIPTION:
+
+The change include:
+---------------------------------------------------------
+CHANGE: 
+DATE: 
+FILE: 
+ROUTINE: 
+DESCRIPTION:
+
+The change include:

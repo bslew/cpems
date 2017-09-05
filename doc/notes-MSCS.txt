@@ -1,0 +1,27 @@
+MAP SIMULATION:
+
+is seems that the simulation of the map in fourier space can be performad basically in two ways.
+1) one can simulate a_lm's according to the underlying power spectrum C_l by
+alm = x * sqrt(C_l) where x is a complex number of which the real and imaginary parts are driveng from the gaussian distribution.
+with zero mean and unit variance.
+In this approach the resulting simulated power spectrum will of course yield  the chi squared distribution (because of the definition of the power spectrum) 
+but the scatter - the
+uncertainty in generated C_l will be proportional to the sqrt(C_l). In a result the simulated spectrum will not follow the cosmic variance uncertainties
+and will not show it that way. The latter should be bigger at large scales where the number of degrees of freedom for sky realizations of individual  modes
+is much smaller than at small scales  - large l's.
+This constitues a problem which I in my oppinion was also ommited by authors of the GLESP paper.
+
+2) It is also possible to manitulate with the variance of the gaussian distribution with which the random numbers are generated for each C_l.
+In this approach the schape of the power spectrum also depends on the underlying C_l since if one uses for x number generation the distribution
+N(0,C_l) then the bigger C_l the bigger wider the gauss distribution function will become and the bigger probability that the generated number will 
+be farther from 0 as if compared with the case when C_l is small. When C_l is small then the Gauss distribution is very narrow and the gaussian numbers
+driven from this distribtion will more compactly be packed around 0. This results that statistically from low C_l values smaller numbers are multipilied
+by the sqrt(C_l) and for bigger C_l's bigger numbers are multiplied by sqrt(C_l). However this recipe fails.
+It seems that in this case it would be enough to use formula:
+alm = N(0,SQRT(C_l));
+
+
+3) as compared with the simulations of the Healpix package see notes from test2-notes in /home/blew/programy/healpix/Healpix-1.2-stary/bin.
+In short the results are similar - the scatter does not gets significantly smaller from l 0 to 200. Aterwards it gets smaller
+but this is rather the result of the small power in the multipole - the the inftrinsic variance of from the RNG is multiplied by smaller
+number. and the 'grass' is lower. The similar effect can also be seen before the first acoustic peak.

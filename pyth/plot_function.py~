@@ -1,0 +1,1688 @@
+#!/usr/bin/env python2.7
+#!/usr/bin/env python
+# -*- Encoding: utf-8 -*-
+
+import sys
+import os
+sys.path.append('./')
+from optparse import OptionParser
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+#
+# PROGRAM OPTIONS
+#
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+
+programDescription="""This is a simple function plotter.
+The input text files should be stored as a matrix of numbers.
+The chosen columns will be plotted.
+"""
+
+parser = OptionParser(description=programDescription)
+#parser.add_option("", "--simPrefix", dest="simPrefix", default="", type="string", help='simulation prefix', metavar="PREFIX")
+
+#parser.add_option("-f", "--file", dest="signal_file", default='277_ocraf_absron_010711.dat.totalPower.last500000', 
+#                  help="name of the file with input signal. The file should consist of 16 columns with total power signal in order as in the native ocraf format: a1 a2 b1 b2 ...", metavar="FILE")
+#parser.add_option("-D", "--boxSize", dest="boxSize", default=256, type="float", help='comoving size of the box [Mpc]', metavar="LENGTH")
+parser.add_option("", "--figSize", dest="figSize", default="19,8", type="string", help='size of the figure in inch eg. 19,8. To have A4 plot type A4.' , metavar="STRING")
+parser.add_option("", "--DPIgui", dest="DPIgui", default=70, type="int", help='DPI for plotting on the screen', metavar="NUM")
+parser.add_option("", "--DPI", dest="DPI", default=70, type="int", help='DPI for saving to file', metavar="NUM")
+parser.add_option("", "--bgcolor", dest="bgcolor", default='white', type="string",  help='color to use for the background of the figure', metavar="NUM")
+parser.add_option("", "--xticks", dest="xticks", default=0, type="int", help='x ticks to be plotted every this cells', metavar="NUM")
+parser.add_option("", "--yticks", dest="yticks", default=0, type="int", help='y ticks to be plotted every this cells', metavar="NUM")
+parser.add_option("", "--title", dest="title", default='', type="string", help='plot title', metavar="STRING")
+parser.add_option("", "--xlabel", dest="xlabel", default='x', type="string", help='plot x label', metavar="STRING")
+parser.add_option("", "--ylabel", dest="ylabel", default='y', type="string", help='plot y label', metavar="STRING")
+#parser.add_option("", "--maskBelow", dest="maskBelow", default=np.nan, type="float", help='disable plotting pixels with values below this value ', metavar="VALUE")
+#parser.add_option("", "--bad", dest="bad", default=-1, type="float", help='disable plotting pixels with these values ', metavar="VALUE")
+parser.add_option("", "--xmin", dest="xmin", default=-1, type="float", help='minimal X value in the grid to show on X axis', metavar="VALUE")
+parser.add_option("", "--xmax", dest="xmax", default=-1, type="float", help='maximal X value in the grid to show on X axis', metavar="VALUE")
+parser.add_option("", "--ymin", dest="ymin", default=-1, type="float", help='minimal Y value in the grid to show on Y axis', metavar="VALUE")
+parser.add_option("", "--ymax", dest="ymax", default=-1, type="float", help='maximal Y value in the grid to show on Y axis', metavar="VALUE")
+parser.add_option("", "--Bleft", dest="border_left", default=0.1, type="float", help='border size in the plot from the left', metavar="VALUE")
+parser.add_option("", "--Bright", dest="border_right", default=0.1, type="float", help='border size in the plot from the right', metavar="VALUE")
+parser.add_option("", "--Btop", dest="border_top", default=0.1, type="float", help='border size in the plot from the top', metavar="VALUE")
+parser.add_option("", "--Bbottom", dest="border_bottom", default=0.1, type="float", help='border size in the plot from the bottom', metavar="VALUE")
+#parser.add_option("", "--interpolation", dest="interpolation", default='nearest', type="string", help='type of interpolation to be used for plotting matrix: the allowed interpolation strings are those compatible with matplotlib eg: "nearest", "bilinear", "bicubic", "spline16", "spline36", "hanning", "hamming", "hermite", "kaiser", "quadric", "catrom", "gaussian", "bessel", "mitchell", "sinc", "lanczos" (default: nearest) ', metavar="STRING")
+parser.add_option("-o", "--outputFile", dest="outputFile", default='', type="string", help='name of the output file if --save option is used (default: "") ', metavar="STRING")
+#parser.add_option("", "--colx", dest="colx", default="0", type="string", help='comma separated string of columns to be plotted at x axis for each of the input files ', metavar="STRING", action="append")
+#parser.add_option("", "--coly", dest="coly", default="1", type="string", help='comma separated string of columns to be plotted at y axis for each of the input files ', metavar="STRING", action="append")
+parser.add_option("-x", "--colx", dest="colx", type="int",  help='number of the column to be plotted at x axis for each of the input files', action="append")
+parser.add_option("-y", "--coly", dest="coly", type="int",  help='number of the column to be plotted at y axis for each of the input files', action="append")
+parser.add_option("-l", "--label", dest="label", type="string", help='label for the curve for each of the input files', action="append")
+#parser.add_option("-w", "--width", dest="width",  help='line width for the curve for each of the input files', action="append_const", const=1.0)
+parser.add_option("-w", "--width", dest="width",  type="float", help='line width for the curve for each of the input files', action="append")
+#parser.add_option("", "--pt", dest="pt", default="", type="string", help='marker for the data points', metavar="STRING", action="append")
+#parser.add_option("", "--ls", dest="ls", default="-", type="string", help='line style: - -- -. :', metavar="STRING", action="append")
+parser.add_option("", "--pt", dest="pt",  type="string", help='marker for the data points', metavar="STRING", action="append")
+parser.add_option("", "--ps", dest="ps",  type="int", help='marker size for plots for each dataset', metavar="NUM", action="append")
+parser.add_option("", "--mew", dest="markerEdgeWidth",  type="int", default=1, help='marker edge width', metavar="NUM")
+parser.add_option("", "--ls", dest="ls",  type="string", help='line style to be used for plotting dataset. (default order is: -,-,-,-,-,-,-,--,--,--,--,--,--,--,-.,-.,-.,-.,-.,-.,-.) :', metavar="STRING", action="append")
+parser.add_option("", "--lc", dest="lc",  type="string", help='line color to be used for plotting dataset. (default order is: b,g,r,c,m,y,k,b,g,r,c,m,y,k,b,g,r,c,m,y,k)', metavar="STRING", action="append")
+parser.add_option("", "--pc", dest="pc",  type="string", help='point color for each dataset', metavar="STRING", action="append")
+parser.add_option("", "--hdu", dest="hdu", type="int", help='HDU index in the fits file of which array is to be plotted', action="append")
+parser.add_option("", "--operY", dest="operY",  type="string", default='', help='Comma separated list of operations to be performed on the input data Y before plotting. Use with valsY option.', metavar="STRING")
+parser.add_option("", "--operX", dest="operX",  type="string", default='', help='Comma separated list of operations to be performed on the input data X before plotting. Use with valsX option.', metavar="STRING")
+parser.add_option("", "--valsY", dest="valueY",  type="string", default='', help='Comma separated list of values to be used in Yoperations, for each intput file dataset.', metavar="STRING")
+parser.add_option("", "--valsX", dest="valueX",  type="string", default='', help='Comma separated list of values to be used in Xoperations, for each intput file dataset.', metavar="STRING")
+parser.add_option("", "--plotVerticalLinesWithLabelsFromFile", dest="plotVerticalLinesWithLabelsFromFile", default="", type="string", help='indicates that you want to overplot the vertical lines using the data from file. In the first column should be the number at which the vertical line should be placed and the rest of the row is used as label for that line.', metavar="FILE")
+parser.add_option("", "--plotSpecial", dest="plotSpecial", default=-1, type="int", help='number of the special block to be called', metavar="NUM")
+parser.add_option("", "--loadMask", dest="loadMask", default="", type="string", help='Loads mask as defined in this file. Each row specifies a range (from, to) to be marked on the plot. The mask data are loaded into global maskRanges array, so that it can be edit in the interactive mode', metavar="FILE")
+parser.add_option("", "--startFrom", dest="startFrom", default=0, type="int", help='starts loading from indicated row', metavar="NUM")
+parser.add_option("", "--rows", dest="rows", default=-1, type="int", help='how many rows to read', metavar="NUM")
+parser.add_option("-c", "--colColor", dest="colColor", default=-1, type="int",  help='number of the column to be used to plot in color scale', metavar="NUM")
+parser.add_option("-s", "--colSize", dest="colSize", default=-1, type="int",  help='number of the column to be used to plot data with markers size proportional to this column values', metavar="NUM")
+
+# data generating options
+parser.add_option("", "--plotCircle", dest="plotCircle", type="string",  help='circle to plot defined as l,b,r. eg. --plotCircle 10,20,5 for circle at l=10 b=20 and radii=5 deg', metavar="STRING", action="append")
+
+
+#spherical plots options
+parser.add_option("-t", "--ptype", dest="plotType", type="string",  help="plot types for this dataset [fn,map,sphere, img] (default: fn)", action="append")
+parser.add_option("", "--proj", dest="proj", default="moll", type="string",  help='projection type for --sphere mode plotting', metavar="STRING")
+parser.add_option("", "--merid", dest="meridians", default="30", type="string",  help='comma-separated list of meridians to plot. If single value is given then it is interpreted as a meridians separation [deg]', metavar="STRING")
+parser.add_option("", "--para", dest="parallels", default="15", type="string",  help='comma-separated list of parallels to plot. If single value is given then it is interpreted as a parallels separation [deg]', metavar="STRING")
+parser.add_option("", "--MPfontSize", dest="MPfontSize", default=15, type="int",  help='fornt size of meridians and parallels labels (default: 15)', metavar="NUM")
+parser.add_option("", "--MPcolor", dest="MPcolor", default="k", type="string",  help='Color the be used for plotting meridians and parallels ("map" type plots only) (default: k)', metavar="STRING")
+parser.add_option("", "--lon0", dest="lon0", default=0, type="int",  help='zero longitude for Mollweide projection plot. Use only for "sphere" plot tyle. (default: 0)', metavar="NUM")
+parser.add_option("", "--levels", dest="levels", default=50, type="int",  help='Number of levels for colorbar in the map plot ("map" type plots only) (default: 50)', metavar="NUM")
+parser.add_option("", "--vmin", dest="vmin", default=0, type="float",  help='Minimal value in the map. Below this value the setUnder option defines the color. If equal to vmax then will be calculated from the data.  ("map" type plots only) (default: 0)', metavar="NUM")
+parser.add_option("", "--vmax", dest="vmax", default=0, type="float",  help='Maximal value in the map. Above this value the setAbove option defines the color. If equal to vmax then will be calculated from the data.  ("map" type plots only) (default: 0)', metavar="NUM")
+parser.add_option("", "--setAbove", dest="setAbove", default="r", type="string",  help='Color the be used in the map type plot for values > vmax.  ("map" type plots only) (default: r)', metavar="STRING")
+parser.add_option("", "--setBelow", dest="setBelow", default="b", type="string",  help='Color the be used in the map type plot for values < vmin.  ("map" type plots only) (default: b)', metavar="STRING")
+parser.add_option("", "--colorbar", action="store_true", dest="colorbar", default=False, help='triggers showing the colorbar on plot ("map" type plots only) ')
+parser.add_option("", "--palette", dest="palette", default="jet", type="string",  help='name of the matplotlib palette to use. (jet, gray)', metavar="STRING")
+parser.add_option("", "--IMGextent", dest="IMGextent", default=",", type="string",  help='width,height of the picture to plot, given to math the axes on the other plots (need to be set by hand, for now).', metavar="STRING")
+parser.add_option("", "--sphereContour", action="store_true", dest="sphereContour", default=False, help='use fontour plot for sphere type plots insetad of pcolormesh ("sphere" type plots only) ')
+parser.add_option("", "--draw_maps_path", dest="draw_maps_path", default="/home/blew/programy/Mscs.devel/Mscs/bin/", type="string",  help='directory where the draw_maps_new program should be searched for. (useful for php script executions)', metavar="STRING")
+parser.add_option("", "--draw_maps_options", dest="draw_maps_options", default="-n 256", type="string",  help='string with options for draw_maps_new program for plotting circles (default: -n 256)', metavar="STRING")
+
+
+#
+# switches
+#
+parser.add_option("", "--grid", action="store_true", dest="grid", default=False, help="triggers showing the grid on plot")
+parser.add_option("", "--save", action="store_true", dest="save", default=False, help="triggers saving the plot a image")
+parser.add_option("", "--logX", action="store_true", dest="logX", default=False, help="triggers log X scale")
+parser.add_option("", "--logY", action="store_true", dest="logY", default=False, help="triggers log Y scale")
+parser.add_option("", "--fits", action="store_true", dest="fits", default=False, help="indicates that the input file is in fits format")
+parser.add_option("", "--binDAQd", action="store_true", dest="binDAQd", default=False, help="indicates that the input file is in binDAQd format - works only with --big option")
+parser.add_option("", "--sqrt", action="store_true", dest="sqrt", default=False, help="triggers plotting sqrt of the signal (useful for power spectra)")
+parser.add_option("", "--shift0", action="store_true", dest="shift0", default=False, help="will shift signals to zero mean before plotting")
+parser.add_option("", "--noaxes", action="store_true", dest="noAxes", default=False, help="switches axes off.")
+parser.add_option("", "--interactive", action="store_true", dest="interactive", default=False, help="enters interactive mode allowing data selection from the plot.")
+parser.add_option("", "--big", action="store_true", dest="big", default=False, help="flag to indicate that we are loading a big file. This will optimize the loading and plotting")
+parser.add_option("", "--asCol", action="store_true", dest="asCol", default=False, help="flag to indicate that we are loading a column data. Normally the load does not recognise verctor between column or row alignment, so this option helps to define which is it.")
+parser.add_option("", "--scriptMode", action="store_true", dest="scriptMode", default=False, help="flag to indicate that we are working in script mode for generating pictures and without GUI.")
+parser.add_option("", "--transparent", action="store_true", dest="transparent", default=False, help="flag to indicate that we want transparent background in the output figure .")
+parser.add_option("", "--log", action="store_true", dest="log", default=False, help="triggers logging the run to a log file: .plot_function.log")
+
+#parser.add_option("", "--zrangeSym", action="store_true", dest="zrangeSym", default=False, help="triggers showing z-range to be within the -max(abs(zmin),abs(zmax)) and +max(abs(zmin),abs(zmax)) ")
+#parser.add_option("", "--enumSlices", action="store_true", dest="enumSlices", default=False, help="triggers enumerating slices in the plot title by the slice number")
+#parser.add_option("", "--makeMovie", action="store_true", dest="makeMovie", default=False, help="triggers making movie from the slices")
+#parser.add_option("", "--maskBad", action="store_true", dest="maskBad", default=False, help="triggers masking bad pixels")
+#parser.add_option("", "--plotSpecial", action="store_true", dest="plotSpecial", default=False, help="plot special block")
+
+
+# movie options
+#parser.add_option("", "--st", dest="st", default=0, type="int", help='first slice', metavar="NUM")
+#parser.add_option("", "--en", dest="en", default=0, type="int", help='last slice', metavar="NUM")
+#parser.add_option("", "--fps", dest="fps", default=10, type="int", help='frames per second', metavar="NUM")
+
+(option, args) = parser.parse_args()
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+#
+# IMPORT REQUIRED PACKAGES
+#
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+if option.scriptMode:
+    import matplotlib
+    matplotlib.use('Agg')
+
+from pylab import *
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.mlab
+from matplotlib.ticker import FuncFormatter
+#from matplotlib.image import AxesImage
+
+from matplotlib.collections import PatchCollection
+import matplotlib.path as mpath
+import matplotlib.patches as mpatches
+import csv
+import pyfits
+import re
+
+
+from mpl_toolkits.basemap import Basemap, shiftgrid
+import matplotlib.numerix.ma as M
+
+
+# imports due for data selectors
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch, Rectangle
+from matplotlib.widgets import Button
+from matplotlib.widgets import Cursor
+from matplotlib.widgets import SpanSelector
+import Tkinter as Tk
+import tkMessageBox
+import operator
+
+# imports for img plot types
+#try:
+#    from PIL import Image
+#except ImportError, exc:
+#    raise SystemExit("PIL must be installed to run this example")
+#
+#import matplotlib.cbook as cbook
+from matplotlib.cbook import get_sample_data
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+#
+# DEFINE GLOBAL VARIABLES
+#
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+if type(option.width)!=type(list()):    option.width=list([1])
+if type(option.label)!=type(list()):    option.label=list()
+if type(option.colx)!=type(list()):    option.colx=list([0])
+if type(option.coly)!=type(list()):    option.coly=list([1])
+if type(option.hdu)!=type(list()):    option.hdu=list([1])
+if type(option.ls)!=type(list()):    option.ls=list(['-','-','-','-','-','-','-','--','--','--','--','--','--','--','-.','-.','-.','-.','-.','-.','-.'])
+if type(option.lc)!=type(list()):    option.lc=list(['b','g','r','c','m','y','k','b','g','r','c','m','y','k','b','g','r','c','m','y','k'])
+if type(option.pt)!=type(list()):    option.pt=list([None])
+if type(option.ps)!=type(list()):    option.ps=list([5])
+if type(option.pc)!=type(list()):    option.pc=list(['k'])
+if type(option.plotType)!=type(list()):    option.plotType=list(['fn'])
+#if type(option.val)!=type(list()):    option.val=list([])
+#if type(option.oper)!=type(list()):    option.oper=list([])
+
+if type(option.plotCircle)!=type(list()):    option.plotCircle=list([])
+
+MINIMAL_VALUE_FOR_LOGPLOT=1E-100
+#rcParams["text.usetex"] = False
+#import matplotlib.font_manager as fm
+#fp1=fm.FontProperties(fname="/usr/share/fonts/liberation/LiberationSans-Regular.ttf") 
+
+def toFloat(v):
+    if v=='':
+        return 0 
+    return float(v)
+
+Yoperations=option.operY.split(',')
+YoperationValues=[ toFloat(v) for v in option.valueY.split(',')]
+Xoperations=option.operX.split(',')
+XoperationValues=[ toFloat(v) for v in option.valueX.split(',')]
+
+print "Yoperations: "
+print Yoperations
+print "Yoperation values"
+print YoperationValues
+#sys.exit()
+
+if len(option.meridians.split(','))==1:
+    if option.meridians.isdigit():
+        meridians=arange(0,360,float(option.meridians))
+    else:
+        meridians=array([])
+else:
+    meridians=array([ toFloat(v) for v in option.meridians.split(',') ])
+    
+if len(option.parallels.split(','))==1:
+    if option.parallels.isdigit():
+        parallels=arange(-90,90,float(option.parallels))
+    else:
+        parallels=array([])
+else:
+    parallels=array([ toFloat(v) for v in option.parallels.split(',') ])
+
+print meridians    
+for pt in option.plotType:
+    if pt=="map" or pt=="sphere":
+        option.xlabel=''
+        option.ylabel=''
+
+
+mapBbox=None
+mapPaths=None
+projectedMapData=None
+projectMap=None
+
+
+if len(option.IMGextent.split(','))==1:
+    option.IMGextent=array([100,100])
+else:
+    option.IMGextent=array([ toFloat(v) for v in option.IMGextent.split(',') ])
+
+
+
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+# INTERACTIVE OPERATION MODE FUNCTIONS
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+
+maskLines=[]
+maskRanges=[]
+selectedLines=[]
+selectedLinesData=[]
+selectedLinesMode=False
+cursorAsCross=False
+cursor=None
+spannerOn=False
+span=None
+spannerSelectLinesOn=False
+spanSelectLines=None
+binFromWidget=None
+binWidthWidget=None
+binWidthMultiplierWidget=None
+binningParams={ 'st':1.0, 'bw': 10,'gm':1.05 }
+lastBinnedSpectra=[]
+saveWidgetMain=None
+saveWidget=None
+plotAxes=None
+plotFig=None
+saveToFile=None
+saveToFileWidget=None
+
+def printInteractiveHelp():
+    print "The following keys are active in the mask making mode:"
+    print "space - sets and stores a new [hv]line and prints its info on terminal"
+    print "d - deletes the last added 'selected line'"
+    print "p - prints the information on the stored lines"
+    print "w - saves the defined lines information to file called selectedMaskLines.txt and selectedMaskRanges.txt it also stores the binning information"
+    print "e - do the spike extraction: save the list of ranges and levels to be removed, run the extract_spikes program and plot results in a new window"
+    print "c - toggle cursor as cross"
+    print "v - toggle spanner"
+    print "f1 - prints this help"
+    print "f2 - mark and add 'selected like'"
+    print "f3 - toggle selectedLines edit mode and maskRanges edit mode"
+    print "f4 - toggle spanner for electing lines"
+    print ""
+    print "1-mouse button - view info on selected point"
+    print "2-mouse button - remove closest selectedLine/maskRange"
+
+
+#--------------------------------------------------------------------------------------------------------
+def loadMask(m):
+    tmp=np.loadtxt(m)
+    return list(tmp)
+
+
+def plotButtons(ax):
+    bprev = Button(ax, 'Extract Spikes')
+    bprev.on_clicked(extractSpikes)
+
+
+def printCurrentMaskRanges():
+    print "Current mask ranges are:"
+    print maskRanges
+def printCurrentMaskLines():
+    print 'Current mask lines are:'
+    print maskLines
+
+def printSelectedLines():
+    print 'Selected lines are:'
+    print selectedLines
+
+
+def plotSelectedLines():
+    t=array(selectedLines)
+    if len(t)>0:
+        plot(t[:,0],t[:,1], 'yo', ms=6, label='selected lines', picker=6)
+        draw()
+
+
+def makeBinningInfoWidget(event):
+
+    root = Tk.Tk()
+    
+    root.title("Power spectra binning parameters:")
+    root["padx"] = 40
+    root["pady"] = 20       
+
+    # Create a text frame to hold the text Label and the Entry widget
+    textFrame = Tk.Frame(root)
+    
+    #Create a Label in textFrame
+    binFromLabel = Tk.Label(textFrame)
+    binFromLabel["text"] = "Bin from: "
+    binFromLabel.pack(side=Tk.LEFT)
+    # Create an Entry Widget in textFrame
+    global binFromWidget
+    binFromWidget = Tk.Entry(textFrame)
+    binFromWidget["width"] = 50
+    binFromWidget.insert(0,str(binningParams['st']))
+    binFromWidget.pack(side=Tk.LEFT)
+
+    #Create a Label in textFrame
+    binWidthLabel = Tk.Label(textFrame)
+    binWidthLabel["text"] = "First bin width: "
+    binWidthLabel.pack(side=Tk.LEFT)
+    # Create an Entry Widget in textFrame
+    global binWidthWidget
+    binWidthWidget = Tk.Entry(textFrame)
+    binWidthWidget["width"] = 50
+    binWidthWidget.insert(0,str(binningParams['bw']))
+    binWidthWidget.pack(side=Tk.LEFT)
+
+    #Create a Label in textFrame
+    binWidthMultiplierLabel = Tk.Label(textFrame)
+    binWidthMultiplierLabel["text"] = "Bin width multiplier: "
+    binWidthMultiplierLabel.pack(side=Tk.LEFT)
+    # Create an Entry Widget in textFrame
+    global binWidthMultiplierWidget
+    binWidthMultiplierWidget = Tk.Entry(textFrame)
+    binWidthMultiplierWidget["width"] = 50
+    binWidthMultiplierWidget.insert(0,str(binningParams['gm']))
+    binWidthMultiplierWidget.pack(side=Tk.LEFT)
+    textFrame.pack()
+
+    button = Tk.Button(root, text="Submit", command=setBinningParameters)
+    button.pack()
+    
+    root.mainloop()
+
+def saveLastBinnedSpectraWidget(event):
+    global saveWidget
+    global saveWidgetMain
+    saveWidgetMain = Tk.Tk()
+    
+    saveWidgetMain.title("Save binned power spectra:")
+    saveWidgetMain["padx"] = 40
+    saveWidgetMain["pady"] = 20       
+
+    # Create a text frame to hold the text Label and the Entry widget
+    textFrame = Tk.Frame(saveWidgetMain)
+    
+    #Create a Label in textFrame
+    saveLabel = Tk.Label(textFrame)
+    saveLabel["text"] = "File name: "
+    saveLabel.pack(side=Tk.LEFT)
+    # Create an Entry Widget in textFrame
+    saveWidget = Tk.Entry(textFrame)
+    saveWidget["width"] = 50
+    fname=dsName[0]+"-"+DA[0]+".bin_st"+str(binningParams['st'])+"_bw"+str(binningParams['bw'])+"_gm"+str(binningParams['gm'])
+    saveWidget.insert(0,fname)
+    saveWidget.pack(side=Tk.LEFT)
+    
+    textFrame.pack()
+    button = Tk.Button(saveWidgetMain, text="Save", command=saveLastBinnedSpectra)
+#    button = Tk.Button(saveWidgetMain, text="Save", command=lambda arg=saveWidget.get(): saveLastBinnedSpectra(arg)) 
+
+    button.pack()
+    
+    saveWidgetMain.mainloop()
+
+
+def saveLastBinnedSpectra():
+#def saveLastBinnedSpectra(fname):
+#    fname=dsName[0]+"-"+DA[0]+".bin"
+    global saveWidget
+    global saveWidgetMain
+    fname=saveWidget.get().strip()
+    np.savetxt(fname,lastBinnedSpectra)
+    print "saved spectra to file: "+fname
+    saveWidgetMain.destroy()
+    saveWidgetMain=None
+
+
+
+def deleteAllMaskLines(event):
+        axes(plotAxes)
+        global maskLines
+        print "mask lines"+str(len(maskLines))
+        print "gca lines"+str(len(gca().lines))
+        st=len(gca().lines)-2*len(maskLines)
+        print "st"+str(st)
+        del gca().lines[st:len(gca().lines)]
+        maskLines=[]
+        draw()
+
+
+
+
+def deleteMaskLine(event):
+        axes(plotAxes)
+        del(gca().lines[-1]) 
+        del(gca().lines[-1]) 
+#        del(linesData[-1])
+        del(maskLines[-1])
+        draw()
+
+def deleteMaskRange(event):
+        axes(plotAxes)
+        del(gca().patches[-1]) 
+#        del(linesData[-1])
+        del(maskRanges[-1])
+        draw()
+        printCurrentMaskRanges()
+
+def deleteLastSelectedLine(n=1):
+        sl=axes(plotAxes).lines
+        i=len(sl)-1
+        d=n
+        print "selected lines count"+str(len(sl))
+        while i>=0:
+            print i
+            print sl[i].get_label()
+            if sl[i].get_label()=='selected lines':
+#                sl.pop(i)
+                del sl[i]
+#                axes(ax1).lines.pop(i)
+                d=d-1
+                if d==0:
+                    i=0
+#                i=i+1
+            i=i-1
+        del(selectedLines[-1])
+        draw()
+        printSelectedLines()
+
+def clearSelectedLines():
+        
+    sl=axes(plotAxes).lines
+    i=len(sl)-1
+    print "selected lines count "+str(len(sl))
+    while i>=0:
+        print i
+        print sl[i].get_label()
+        if sl[i].get_label()=='selected lines':
+            sl.pop(i)
+        i=i-1
+    draw()
+
+# n - line index to remove
+def clearSelectedLine(n):
+        
+    sl=axes(plotAxes).lines
+    i=0
+    k=0
+    print "selected lines count "+str(len(sl))
+    while i<len(sl):
+        print "i: "+str(i)
+        print "k: "+str(k)
+        print sl[i].get_label()
+        if sl[i].get_label()=='selected lines':
+            if k==n:
+                del sl[i]
+                i=len(sl)
+                print "removed"
+            else:
+                print "not removed"
+            k=k+1
+        i=i+1
+        
+    draw()
+    
+def deleteSelectedLine(event):
+    sl=axes(plotAxes).lines
+#        i=len(sl)-1
+    print "selected lines count"+str(len(sl))
+    x=event.xdata
+    y=event.ydata
+    slt=array(selectedLines)
+    dx=(slt[:,0]-x); dx2=dx*dx
+    dy=(slt[:,1]-y); dy2=dy*dy
+    d=sqrt(dx2+dy2)
+    row=d.argmin()
+#        print x
+#        print y
+#        print d
+#    print "will remove line: "+ str(row)
+#        j=0
+#        while i>=0:
+#            print i
+#            print sl[i].get_label()
+#            if sl[i].get_label()=='selected lines':
+#                if j==row:
+#                    del sl[i]
+#                j=j+1
+#            i=i-1
+
+#    if (sqrt(event.x-*event.x+event.y*event.y)d[row]<10:
+#    print "row:"+str(row)
+    del(selectedLines[row])
+#    print "row:"+str(row)
+#    clearSelectedLine(row)
+    clearSelectedLines()
+    plotSelectedLines()
+    draw()
+    printSelectedLines()
+
+
+def toggleCursor(event):
+    global cursor
+    global cursorAsCross
+    if cursorAsCross:
+        cursorAsCross=False
+        cursor = Cursor(plotAxes, useblit=True, color='green', linewidth=2 )
+    else:
+        del cursor
+        cursorAsCross=True
+        cursor=None
+
+def toggleSpanner(event):
+    global span
+    global spannerOn
+#    global cursorAsCross
+    if spannerOn:
+        spannerOn=False
+        if span!=None:
+            span=None
+    else:
+        spannerOn=True
+        span = SpanSelector(plotAxes, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.5, facecolor='g') )
+
+def toggleSpannerSelectLines(event):
+    global spanSelectLines
+    global spannerSelectLinesOn
+#    global cursorAsCross
+    if spannerSelectLinesOn:
+        spannerSelectLinesOn=False
+        if spanSelectLines!=None:
+            spanSelectLines=None
+    else:
+        spannerSelectLinesOn=True
+        spanSelectLines = SpanSelector(plotAxes, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.5, facecolor='r') )
+
+def extractSpikes(event):
+        fn='.selectedMaskLines.tmp';
+        mask=array(maskLines)
+        np.savetxt(fn,mask)
+        fn='.selectedMaskRanges.tmp';
+        mask=array(maskRanges)
+        np.savetxt(fn,mask)
+        global binningParams
+    
+        s=dsName[i]+'.power/'+dsName[i]+'.'+DA[j]+'.p'+binnedSuffix
+        rrastr=''
+        if len(maskLines)>0:
+            rrastr=' --removeRangeAbove .selectedMaskLines.tmp '
+        rrstr=''
+        if len(maskRanges)>0:
+            rrstr=' --removeRange .selectedMaskRanges.tmp '
+
+        cmd='extract_spikes '+s+'  -o '+s+'.nospikes.tmp'+' --maskMode '+rrstr+rrastr
+        os.system(cmd)
+        cmd='bin_function '+s+'.nospikes.tmp --fromAsArg -f '+str(binningParams['st'])+' -d '+str(binningParams['bw'])+' --gm '+str(binningParams['gm'])+'  --geo -o '+s+'.nospikes.tmp.bin'
+        os.system(cmd)
+
+        tmpfig=figure(figsize=(15,10), dpi=opt['DPIgui'])
+
+        tmpax=tmpfig.add_subplot(1,1,1)
+        s=dsName[i]+'.power/'+dsName[i]+'.'+DA[j]+'.p'+binnedSuffix+'.nospikes.tmp'
+        spectra=loadPower(s)
+        tmpax.plot(spectra[:,0],spectra[:,1], dsStyle[0], label=dsName[0]+"("+DA[j]+") no spikes", alpha=.5, picker=False)
+        spectra2=loadPower(s+'.bin')
+        tmpax.plot(spectra2[:,0],spectra2[:,1], dsStyle[1]+'v', label=dsName[0]+"("+DA[j]+") no spikes bin", alpha=.5, picker=False)
+        print "Binned spectra consists of %li points" % len(spectra2[:,1])
+        print "Binned spectra consists of %li points" % len(spectra2[:,1])
+
+        setupAxes(spectra,'loglinear',tmpax,False,False,False)
+        global lastBinnedSpectra
+        lastBinnedSpectra=spectra2
+        printPowerSpectraInfo()
+        show()
+
+
+def simplifyMask(mask):
+    print "* Removing redundant mask ranges"
+    i=0
+    j=0
+    rr=0
+    while i<len(mask):
+        j=0
+        while j<len(mask):
+            if i!=j and mask[i][0] <= mask[j][0] and mask[i][1] >= mask[j][1]:
+                print "mask range: (%lf, %lf) includes (%lf, %lf). I will remove it." % (mask[i][0],mask[i][1],mask[j][0],mask[j][1])
+                mask.pop(j)
+                j=j-1
+                if i>j: i=i-1
+                rr=rr+1
+#            print "i: %li j: %li\n" % (i,j)
+            j=j+1
+        i=i+1
+    print "* DONE. Removed %li redundant mask ranges" % rr
+
+    return mask, rr
+
+
+def on_key(event):
+    global selectedLinesMode
+# SELECTED LINES    
+    if event.key=='d':
+#        deleteMaskLine(event)
+        deleteLastSelectedLine(1)
+
+    if event.key=='f':
+        fn=dsName[0]+"-"+DA[0]+'.selectedLines.txt'
+        sl=array(selectedLines)
+        np.savetxt(fn,sl)
+        print "selected lines saved to file: "+fn
+
+    if event.key=='f2':
+        xdata = event.xdata
+        ydata = event.ydata
+        print "adding new point data: %lf, %fE" % (xdata,ydata)
+        selectedLines.append([xdata,ydata])
+#        sl=axes(ax1).lines
+#        sl.append
+
+        printSelectedLines()
+#        clearSelectedLines()
+        plotSelectedLines()
+
+    if event.key=='f3':
+        if selectedLinesMode==False:
+            print "* SETTING SELECTED LINES MODE ON (2-MOUSE BUTTON WILL REMOVE SELECTED LIES)"
+            selectedLinesMode=True
+        else:
+            print "* SETTING SELECTED LINES MODE OFF (2-MOUSE BUTTON WILL REMOVE SELECTED MASK RANGE)"
+            selectedLinesMode=False
+
+
+    if event.key=='f4':
+        toggleSpannerSelectLines(event)
+        if (spannerSelectLinesOn):
+            print "spanner SelectLines is ON"
+        else:
+            print "spanner SelectLines is OFF"
+
+
+
+# SELECTED MASK RANGES AND LINES
+    if event.key=='i':
+        printPowerSpectraInfo()
+
+    if event.key=='w':
+        fn='lastPlotFunction.selectedMaskLines.txt'
+#        fn='selectedMaskLines.txt';
+        mask=array(maskLines)
+        np.savetxt(fn,mask)
+        print "mask lines saved to file: "+fn
+        fn='lastPlotFunction.selectedMaskRanges.txt'
+#        fn='selectedMaskRanges.txt';
+
+        mask=sorted(maskRanges,key=operator.itemgetter(0))
+        i=len(mask)-1
+        while i>=0:
+            if abs(mask[i][1]-mask[i][0])<1e-5:
+                print "removing empty range: %lE %lE\n" % (mask[i][0], mask[i][1])
+                mask.pop(i)
+            i=i-1
+        mask,rr=simplifyMask(mask)
+        np.savetxt(fn,array(mask))
+        print "mask ranges saved to file: "+fn
+
+#        fn=dsName[0]+"."+DA[0]+'.selectedBinning.txt'
+#        selectedBinning=array([binningParams['st'],binningParams['bw'],binningParams['gm']])
+#        np.savetxt(fn,selectedBinning)
+#        print "selected binning parameters saved to file: "+fn
+        
+    if event.key=='c':
+        toggleCursor(event)
+
+#    if event.key=='C':
+    if event.key=='v':
+        toggleSpanner(event)
+        if spannerOn:
+            print "spanner is ON"
+        else:
+            print "spanner is OFF"
+
+    if event.key==' ':
+        print event.xdata, event.ydata
+        line=axhline(y=event.ydata, xmax=1,  color='r', lw=2)
+        line=axvline(x=event.xdata, ymax=1,  color='r', lw=2)
+#        linesData.append([event.xdata, event.ydata])
+        last=len(maskLines)-1
+        print last
+        if (len(maskLines)==0):
+            maskLines.append([event.xdata,138, event.ydata])
+        else:
+            maskLines.append([event.xdata, maskLines[last][0], event.ydata])
+        draw()
+    if event.key=='p':
+        printCurrentMaskLines()
+        printCurrentMaskRanges()
+
+
+    if event.key=='e':
+        extractSpikes()
+
+        
+
+# HELP    
+    
+    if event.key=='f1':
+        printInteractiveHelp()
+
+
+
+
+def onselect(xmin, xmax):
+#    indmin, indmax = np.searchsorted(x, (xmin, xmax))
+#    indmax = min(len(x)-1, indmax)
+
+#    thisx = x[indmin:indmax]
+#    thisy = y[indmin:indmax]
+#    line2.set_data(thisx, thisy)
+#    ax2.set_xlim(thisx[0], thisx[-1])
+#    ax2.set_ylim(thisy.min(), thisy.max())
+    axes(plotAxes)
+    if spannerOn:
+        axvspan(xmin, xmax, facecolor='b', edgecolor=None, alpha=0.3)
+        maskRanges.append([xmin,xmax])
+    elif spannerSelectLinesOn:
+        axvspan(xmin, xmax, facecolor='y', edgecolor=None, alpha=0.3)
+        selectedLinesData.append([xmin,xmax])
+        
+    plotFig.canvas.draw()
+    printCurrentMaskRanges()
+
+
+#def onclick(event):
+#    print 'button=%d, x=%d, y=%d, xdata=%f, ydata=%f'%(
+#        event.button, event.x, event.y, event.xdata, event.ydata)
+    
+#def onpick3(event):
+#    ind = event.ind
+#    print 'onpick2 line:', event.pickx, event.picky
+#    print 'onpick3 scatter:', ind, np.take(x, ind), np.take(y, ind)
+
+def deletePointedMaskRange(event):
+#    axes(ax1)
+#    del(gca().patches[-1]) 
+##        del(linesData[-1])
+#    del(maskRanges[-1])
+#    draw()
+#    print "removing mask range: "
+#    printCurrentMaskRanges()
+
+    axes(plotAxes)
+    x = event.xdata
+    print "removing at x=%f " % x
+    i=len(maskRanges)-1
+    while i>=0:
+
+#    for maskRange in maskRanges:
+        maskRange=maskRanges[i]
+        if x>maskRange[0] and x<maskRange[1]:
+            maskRanges.pop(i)
+            del(gca().patches[i]) 
+            i=0
+        i=i-1
+    plotFig.canvas.draw()
+    printCurrentMaskRanges()
+            
+
+#    if isinstance(event.artist, Line2D):
+#        thisline = event.artist
+#        ydata = thisline.get_ydata()
+#        ind = event.ind
+#        print 'onpick1 line:', zip(npy.take(xdata, ind), npy.take(ydata, ind))
+
+
+def on_pick(event):
+#    axes(ax1)
+#    del(gca().patches[-1]) 
+##        del(linesData[-1])
+#    del(maskRanges[-1])
+#    draw()
+#    print "removing mask range: "
+#    printCurrentMaskRanges()
+    mouseevent=event.mouseevent
+    artist = event.artist
+
+    if mouseevent.button==1:
+        if isinstance(event.artist, Line2D):
+            thisline = event.artist
+            xdata = thisline.get_xdata()
+            ydata = thisline.get_ydata()
+            ind = event.ind
+            print 'selected point data:', zip(np.take(xdata, ind), np.take(ydata, ind))
+        if isinstance(artist, AxesImage):
+            im = artist
+            A = im.get_array()
+            print 'onpick4 image', A.shape
+#        if isinstance(event.artist, Rectangle):
+#            patch = event.artist
+#            print 'onpick1 patch:', patch.get_path()
+
+
+
+def on_mouse_button_down(event):
+    
+    global selectedLines
+    
+    if event.button==2:
+        if selectedLinesMode:
+            deleteSelectedLine(event)
+        else:
+            deletePointedMaskRange(event)
+
+
+#    if event.button==3:
+#        xdata = event.xdata
+#        ydata = event.ydata
+#        print "adding new point data: %lf, %fE" % (xdata,ydata)
+#        selectedLines.append([xdata,ydata])
+#        printSelectedLines()
+#        t=array(selectedLines)
+#        plot(t[:,0],t[:,1], 'yo', ms=4, label='selected lines', picker=True)
+#        draw()
+
+#def chooseFileNameWidget():
+#    global saveToFile
+#    global saveToFileWidget
+#    fname=saveToFileWidget.get().strip()
+#    np.savetxt(fname,lastBinnedSpectra)
+#    print "saved spectra to file: "+fname
+#    saveWidgetMain.destroy()
+#    saveWidgetMain=None
+
+
+def map_picker(qm, mouseevent):
+    """
+    find the points within a certain distance from the mouseclick in
+    data coords and attach some extra attributes, pickx and picky
+    which are the data points that were picked
+    """
+    global mapBbox
+    global mapPaths
+    global projectedMapData
+    
+    if projectedMapData==None:
+        mapBbox=qm.get_datalim(gca().transData)
+        mapPaths=qm.get_paths()
+        projectedMapData=array([ np.mean(mapPaths[i].vertices[0:4],0) for i in arange(len(mapPaths)) ])
+#    m=array([ p[i].vertices[0] for i in arange(len(p)) ])
+#    np.savetxt("dupa",m)
+        
+#    v2= np.mean(qm.get_paths()[1].vertices[0:4],0)
+#    print v1
+#    print v2
+#    print v1-v2
+    if mouseevent.xdata is None: return False, dict()
+    xdata = projectedMapData[:,0]
+    ydata = projectedMapData[:,1]
+    maxd = mapBbox.width/300
+    d = np.sqrt((xdata-mouseevent.xdata)**2. + (ydata-mouseevent.ydata)**2.)
+
+    ind = np.nonzero(np.less_equal(d, maxd))
+    if len(ind):
+        pickx = np.mean(np.take(xdata, ind))
+        picky = np.mean(np.take(ydata, ind))
+        props = dict(ind=ind, pickx=pickx, picky=picky)
+        return True, props
+    else:
+        return False, dict()
+
+def onMapPick(event):
+    global projectMap
+    x=event.pickx
+    y=event.picky
+    print 'onMapPick line:', x,y
+    l,b = projectMap(x,y,inverse=True)
+    if l<0:
+        l=l+360
+    print 'converted coordinates: (l,b)=(%lf, %lf)' % (l,b)
+
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+
+
+
+
+
+
+
+
+def getDataMinMaxValues(ax,datax,datay):
+    xmin,xmax,ymin,ymax=ax.axis()
+    
+    minx=min(datax)
+    maxx=max(datax)
+    miny=min(datay)
+    maxy=max(datay)
+    if minx<xmin:
+        xmin=minx;
+    if miny<ymin:
+        ymin=miny;
+    if maxx>xmax:
+        xmax=maxx;
+    if maxy>ymax:
+        ymax=maxy;
+    
+    
+    return xmin,xmax,ymin,ymax;
+
+
+
+
+def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1):
+    
+    l=list()
+    lineNo=0
+    readRows=0
+
+    if option.binDAQd:
+        print 'loading data from file using y-column: %i and x column: %li' % (coly, colx)
+        import struct
+        infile = open (fname, 'rb')
+        if rowsCount==-1:
+            print 'loading 10000 records from input file'
+            rowsCount=10000
+
+        for line in arange(rowsCount):
+            line=infile.read(104)
+            line=struct.unpack('q12d',line)
+            if lineNo>=startFrom:
+#                print line
+                if colx==-1:
+                    l.append([lineNo,line[coly]])
+                else:
+                    l.append([line[colx],line[coly]])
+                readRows=readRows+1
+            lineNo=lineNo+1
+        
+    else:    
+        infile = open (fname, 'r')
+        print 'loading data from file using y-column: %i and x column: %li' % (coly, colx)
+        if rowsCount==-1:
+            for line in infile:
+                if lineNo>=startFrom:
+                    if not re.match('#', line):
+                        line = line.strip()
+                        sline = line.split()
+                        if colx==-1:
+                            l.append([lineNo,sline[coly]])
+                        else:
+                            l.append([sline[colx],sline[coly]])
+                        readRows=readRows+1
+                lineNo=lineNo+1
+        else:
+            for line in infile:
+                if lineNo>=startFrom:
+                    if not re.match('#', line):
+                        line = line.strip()
+                        sline = line.split()
+                        if colx==-1:
+                            l.append([lineNo,sline[coly]])
+                        else:
+                            l.append([sline[colx],sline[coly]])
+                        readRows=readRows+1
+                lineNo=lineNo+1
+                if readRows==rowsCount: break
+            
+        infile.close()
+        print "loaded %i lines" % readRows
+    return array(l)
+
+
+
+
+
+def XTicksFormatter(x, pos):
+    'The two args are the value and tick position'
+    Nx=size(boxSlice[:,0])
+#    x1=0.5; x2=Nx+0.5;
+    x1=0.0; x2=Nx+0.0;
+    y1=option.xmin
+    y2=option.xmax
+    return '%.2f' % ( (x-x1)*(y2-y1)/(x2-x1)+y1 )
+
+def YTicksFormatter(x, pos):
+    'The two args are the value and tick position'
+    Ny=size(boxSlice[0])
+#    x1=0.5; x2=Ny+0.5;
+    x1=0.0; x2=Ny+0.0;
+    y1=option.ymin
+    y2=option.ymax
+    return '%.2f' % ( (x-x1)*(y2-y1)/(x2-x1)+y1 )
+
+#def getMatInfo(boxSlice):
+#    vmin=nanmin(boxSlice)
+#    vmax=nanmax(boxSlice)
+#    maxabs=max([abs(vmin),abs(vmax)])
+#    print "masked statistics:"
+#    print "min: %E" % vmin
+#    print "max: %E" % vmax
+#    print "max-min: %E" % (vmax-vmin)
+#    print maxabs
+#    return vmin,vmax,maxabs
+
+
+#def getCol(i, s):
+#    reader = csv.reader(s, skipinitialspace=True)
+#    j=0;
+#    print "getCOl"
+#    for r in reader:
+##        print int(r[0])
+#        if i==j:
+#            return int(r[0])
+#        j=j+1
+#    return False
+
+
+
+#@param boxSlice - array with slices
+#@param sliceNo - index of the slice
+#@param sliceName - file name prefix of the slice
+def makeFunctionPlot(inFile):
+    global plotAxes
+    global plotFig
+    Nfiles=len(inFile)
+    
+        
+#    Nx=size(boxSlice[:,0])
+#    Ny=size(boxSlice[0])
+    if option.figSize=="A4":
+        option.figSize='11.6929,8.2677'
+
+    reader = csv.reader([option.figSize], skipinitialspace=True, delimiter=',')
+    figSize=list()
+        
+    for r in reader:
+        figSize.append(r)
+#        if (r!=''): figSize.append(r[0])
+    print figSize[0]
+    fig=figure(figsize=(float(figSize[0][0]),float(figSize[0][1])), dpi=option.DPIgui)
+    plotFig=fig
+    fig.set_facecolor(option.bgcolor)
+
+#    fig=figure(figsize=(12,12), dpi=option.DPIgui)
+    ax = subplot(111)
+    plotAxes=ax
+    fig.subplots_adjust(left=option.border_left, right=1-option.border_right, top=1-option.border_top, bottom=option.border_bottom)
+    #ax1=fig.add_subplot(2,2,1)
+
+    #
+    # define columns to plot
+    #
+#    reader = csv.reader(option.colx, skipinitialspace=True)
+#    Xcols=list()
+#    for r in reader:
+#        if (r[0]!=''): Xcols.append(int(r[0]))
+#    reader = csv.reader(option.coly, skipinitialspace=True)
+#    Ycols=list()
+#    for r in reader:
+#        if (r[0]!=''): Ycols.append(int(r[0]))
+
+    
+#    for i in arange(Nfiles):
+#        data=inFile[i]
+#        colx=Xcols[i]
+#        coly=Ycols[i]
+#    plot(data[:,colx],data[:,coly])
+    
+#    print option.colx
+    plotTypeIdx=0
+    
+    for i in arange(Nfiles):
+        plotTypeIdx=i % len(option.plotType)
+        print "Plotting dataset %i of type: %s" % (i,option.plotType[plotTypeIdx])
+        axes(ax)
+        
+        # select the right data and perform last-minute operations before plotting (only for plotTypes that are not maps)
+        if option.plotType[plotTypeIdx]=='map':
+            data=inFile[i]
+        if option.plotType[plotTypeIdx]=='img':
+            data=inFile[i]
+
+        if option.plotType[plotTypeIdx]!='map' and option.plotType[plotTypeIdx]!='img' :
+            data=array(inFile[i], dtype='float')
+#            print data
+            if option.big:
+                colx=0
+                coly=1
+            else:
+                colx=option.colx[i % len(option.colx)]
+                coly=option.coly[i % len(option.coly)]
+#            print data[:,coly]
+            if colx==-1:
+#                if len(data.shape)==1:
+#                    datax=arange(len(data))
+#                else:
+                datax=arange(len(data[:,coly]))
+            else:
+                datax=data[:,colx]
+#            print datax
+            
+#            if len(data.shape)==1:
+#                datay=data;
+#            else:
+            datay=data[:,coly]
+                
+            if option.logY:
+                for j in arange(len(datay)):
+                    if datay[j]==0:
+                        datay[j]=MINIMAL_VALUE_FOR_LOGPLOT
+                        
+            if option.sqrt:
+                for j in arange(len(datay)):
+                    datay[j]=sqrt(datay[j])
+    
+            if option.shift0:
+                datay=datay-mean(datay)
+            
+            if len(Yoperations)>0:
+#                print "performing Yoperations for dataset "+str(i)
+                if Yoperations[i % len(Yoperations)]=='+':
+                    datay=datay + YoperationValues[i % len(YoperationValues)]
+                if Yoperations[i % len(Yoperations)]=='-':
+                    datay=datay - YoperationValues[i % len(YoperationValues)]
+                if Yoperations[i % len(Yoperations)]=='*':
+                    datay=datay * YoperationValues[i % len(YoperationValues)]
+                if Yoperations[i % len(Yoperations)]=='/':
+                    datay=datay / YoperationValues[i % len(YoperationValues)]
+            if len(Xoperations)>0:
+                if Xoperations[i % len(Xoperations)]=='+':
+                    datax=datax + XoperationValues[i % len(XoperationValues)]
+                if Xoperations[i % len(Xoperations)]=='-':
+                    datax=datax - XoperationValues[i % len(XoperationValues)]
+                if Xoperations[i % len(Xoperations)]=='*':
+                    datax=datax * XoperationValues[i % len(XoperationValues)]
+                if Xoperations[i % len(Xoperations)]=='/':
+                    datax=datax / XoperationValues[i % len(XoperationValues)]
+    
+    
+            if option.colSize==-1:
+                sizeData=option.ps[i % len(option.ps)]
+            else:
+                sizeData=data[:,option.colSize]
+
+
+        ###############################################################################################
+        ###############################################################################################
+        ###############################################################################################
+        #
+        # make the various types of plots
+        #
+        ###############################################################################################
+        ###############################################################################################
+        ###############################################################################################
+    
+        ###############################################################################################
+        # img type plot
+        ###############################################################################################
+        if option.plotType[plotTypeIdx]=='img':
+#            print ax
+            axes(ax)
+#            sys.exit()
+#            img=Image.open(data)
+            img=data
+            ax2 = fig.add_axes(ax)
+            print img
+            im = imshow(img, origin='lower', extent = (0, option.IMGextent[0], 0, option.IMGextent[1]), interpolation='bicubic', alpha=0.5)
+#            hold(True)
+
+        ###############################################################################################
+        # map type plot
+        ###############################################################################################
+        
+        if option.plotType[plotTypeIdx]=='map':
+#            ax3 = fig.add_axes(ax)
+            axes(ax)
+            global projectMap
+            map=data[0]
+            lons=data[1]
+            lats=data[2]
+            map,lons = shiftgrid(180,map,lons,start=False)
+            if option.sphereContour:
+                projectMap = Basemap(projection=option.proj,lon_0=0.5*(lons[0]+lons[-1]))
+            else:
+                projectMap = Basemap(projection=option.proj,lon_0=option.lon0)
+            lons, lats = meshgrid(lons, lats)
+            if option.palette=="jet":
+                palette = matplotlib.cm.jet
+            elif option.palette=="gray":
+                palette = matplotlib.cm.gray
+            else:
+                palette = matplotlib.cm.gist_yarg
+#            palette = matplotlib.cm.jet
+            palette.set_over(option.setAbove)#, 1.0)
+            palette.set_under(option.setBelow, 1)
+            print 'map minimal value: %lE ' % np.amin(map.reshape(-1,1))
+            print 'map maximal value: %lE ' % np.amax(map.reshape(-1,1))
+            
+
+            if option.vmin==option.vmax:
+                minv= np.amin(map.reshape(-1,1))
+                maxv= np.amax(map.reshape(-1,1))
+            else:
+                minv= option.vmin
+                maxv= option.vmax
+                
+            print "minv: "+str(minv)
+            print "maxv: "+str(maxv)
+            color_num=option.levels
+            delta=(maxv-minv)/color_num
+            levels = arange(minv, maxv,delta ); #print(levels)
+            x, y = projectMap(lons, lats)
+
+            
+            
+            #set bad values
+            for j in arange(len(map)):
+                for k in arange(len(map[j])):
+                    if map[j][k]==-1: 
+                        map[j][k]=nan
+#            palette.set_bad('b', 0.0)
+#             set masked values
+#            map = ma.array(map)
+#            for j in arange(len(map)):
+#                for k in arange(len(map[j])):
+#                    if map[j][k]==-1: 
+#                        map[j][k]=ma.masked
+            
+            
+            map=np.ma.masked_invalid(map)
+            
+            
+            # this works but is slow and leaves while lines along contours. the hack below doesn't seem to help
+            if option.sphereContour:
+                cs = projectMap.contourf(x,y,map, levels, cmap=palette, norm = matplotlib.colors.normalize(vmin=levels[0], vmax=levels[-1], clip=False), extend='both', origin='upper' )
+                #            for c in cs.collections:
+                #                c.set_linewidth( 0.0 )
+            else:
+                # this is very fast and gives what I want
+                cs=pcolormesh(x, y, map.T, vmin=levels[0], vmax=levels[-1], norm=None, cmap=palette, picker=map_picker, edgecolor=None, lw=0)
+#            cs=projectMap.pcolormesh(x, y, mmap, vmin=levels[0], vmax=levels[-1], norm=None, cmap=palette, picker=map_picker, edgecolor=None, lw=0)
+            # this works fast but doesn't project correctly
+#            cs=m1.imshow(map,cmap=palette)
+
+            # draw meridians and parallels
+            if len(meridians)>0:
+                projectMap.drawmeridians(-meridians,labels=[0,0,0,1], color=option.MPcolor)
+                txtl=[]; txtb=[]; txt=[];
+                for j in range(len(meridians)):
+                    txtl.append(meridians[j]);
+                    txtb.append(-5);
+                    txt.append('%1.1f' % (meridians[j]))
+                    xpt,ypt = projectMap(-txtl[j],txtb[j])
+                    text(xpt,ypt,txt[j],fontsize=option.MPfontSize)
+
+            if len(parallels)>0:
+                projectMap.drawparallels(parallels,labels=[1,0,0,0],fontsize=option.MPfontSize, color=option.MPcolor)
+
+            projectMap.drawmapboundary(color='k', linewidth=1.0, ax=None)
+            if option.colorbar:
+                colorbar(cs)
+                
+            if option.interactive:
+                fig.canvas.mpl_connect('pick_event', onMapPick)
+
+            
+        ###############################################################################################
+        # sphere type plot
+        ###############################################################################################
+        axes(ax)
+        if option.plotType[plotTypeIdx]=='sphere':
+            global projectMap
+            lons=datax
+            lats=datay
+            map=data[:,option.colColor]
+            if projectMap==None:
+                projectMap = Basemap(projection=option.proj,lon_0=option.lon0)
+            x, y = projectMap(lons, lats)
+            if option.colColor==-1:
+                scatter(x,y, c=option.pc[i % len(option.pc) ], s=sizeData, lw=option.markerEdgeWidth ) #, marker=option.pt[i % len(option.pt)]
+            else:
+                scatter(x,y, c=map, s=sizeData, lw=option.markerEdgeWidth , marker=option.pt[i % len(option.pt)])
+                
+
+#            circ=Circle((x[0],y[0]),radius=x[0]/5)
+#            ax.add_patch(circ)
+
+            # draw meridians and parallels
+            if len(meridians)>0:
+                projectMap.drawmeridians(-meridians,labels=[0,0,0,1], color=option.MPcolor)
+#                projectMap.drawmeridians(arange(180,180.2,0.1),labels=[0,0,0,1], color=option.MPcolor)
+                txtl=[]; txtb=[]; txt=[];
+                for j in range(len(meridians)):
+                    txtl.append(meridians[j]);
+                    txtb.append(-5);
+                    txt.append('%1.1f' % (meridians[j]))
+                    xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
+                    text(xpt,ypt,txt[j],fontsize=option.MPfontSize)
+
+            if len(parallels)>0:
+                projectMap.drawparallels(parallels,labels=[1,0,0,0],fontsize=option.MPfontSize, color=option.MPcolor)
+
+            projectMap.drawmapboundary(color='k', linewidth=2.0, ax=None)
+
+
+        ###############################################################################################
+        # function type plot
+        ###############################################################################################
+        if option.plotType[plotTypeIdx]=='fn':
+            if option.colColor!=-1 or option.colSize!=-1:
+                scatter(datax,datay, c=data[:,option.colColor], s=sizeData, lw=option.markerEdgeWidth, picker=True)
+            else:
+                plot(datax,datay, lw=option.width[i % len(option.width)], marker=option.pt[i % len(option.pt)], linestyle=option.ls[i % len(option.ls)], c=option.lc[i % len(option.lc)], mew=option.markerEdgeWidth, picker=True)
+
+            if option.interactive:
+                cid = fig.canvas.mpl_connect('key_press_event', on_key)
+                fig.canvas.mpl_connect('pick_event', on_pick)
+                fig.canvas.mpl_connect('button_press_event', on_mouse_button_down)
+
+
+        
+        #
+        # plot mask ranges
+        #
+        for maskRange in maskRanges:
+            axvspan(maskRange[0],maskRange[1],  facecolor='b', edgecolor=None, alpha=0.3)
+
+
+
+        #
+        # title and labels
+        #
+    
+        if option.title!="":
+            tit=option.title
+            title(tit)
+        xlabel(option.xlabel)
+        ylabel(option.ylabel)
+        
+        #
+        # limits business
+        #
+        xmin,xmax,ymin,ymax=getDataMinMaxValues(ax,datax,datay)
+#        print xmin,xmax,ymin,ymax
+    #    if option.xmin!=-1 and option.xmax!=-1:
+    #        xlim([option.xmin,option.xmax])
+        if option.xmin!=-1:
+            xmin=option.xmin
+        if option.xmax!=-1:
+            xmax=option.xmax
+        xlim([xmin,xmax])
+    
+        if option.ymin!=-1:
+            ymin=option.ymin
+        if option.ymax!=-1:
+            ymax=option.ymax
+        ylim([ymin,ymax])
+        
+
+        #
+        # ticks business
+        #
+        if option.xticks!=0:
+            tcs=ax.get_xticks()
+            xticks(arange(tcs[0],tcs[-1],option.xticks))
+        if option.yticks!=0:
+            tcs=ax.get_yticks()
+            yticks(arange(tcs[0],tcs[-1],option.yticks))
+
+
+        if option.logX:
+            ax.set_xscale('log')
+        if option.logY:
+            ax.set_yscale('log')
+    
+        if option.grid:
+            grid(True)
+    
+        if option.plotVerticalLinesWithLabelsFromFile!="":
+            plotVerticalLinesWithLabelsFromFile(fig,ax)
+    
+        if option.plotSpecial!=-1:
+            import specialBlock
+            specialBlock.plotSpecialBlock(ax,option.plotSpecial)
+    
+        if (len(option.label)>0):
+            legend(option.label)
+    
+    if option.noAxes:
+        axis('off')
+    
+    
+####################################################################################
+# INTERACTIVE STUFF    
+    
+    if option.interactive: 
+#        plotButtons(Bax)
+#        if spannerOn==False:
+#            span = SpanSelector(ax1, onselect, 'horizontal', useblit=True, rectprops=dict(alpha=0.5, facecolor='g') )
+#        cursor = Cursor(ax1, useblit=True, color='green', linewidth=2 )
+        Bax = plt.axes([0.9, 0.03, 0.1, 0.015])
+        bExtract = Button(Bax, 'Extract Spikes')
+        bExtract.on_clicked(extractSpikes)
+        Bax = plt.axes([0.9, 0.015, 0.1, 0.015])
+        bBinConfig = Button(Bax, 'Configure binning')
+        bBinConfig.on_clicked(makeBinningInfoWidget)
+
+        Bax = plt.axes([0.8, 0.03, 0.1, 0.015])
+        bDeleteLines = Button(Bax, 'Delete all lines')
+        bDeleteLines.on_clicked(deleteAllMaskLines)
+        Bax = plt.axes([0.8, 0.015, 0.1, 0.015])
+        bDeleteLine = Button(Bax, 'Delete line')
+        bDeleteLine.on_clicked(deleteMaskLine)
+
+        Bax = plt.axes([0.7, 0.015, 0.1, 0.03])
+        bDeleteMaskRange = Button(Bax, 'Delete Mask Range')
+        bDeleteMaskRange.on_clicked(deleteMaskRange)
+
+        Bax = plt.axes([0.6, 0.015, 0.1, 0.03])
+        bSaveLastBinnedSpectra = Button(Bax, 'Save last binned spectra')
+        bSaveLastBinnedSpectra.on_clicked(saveLastBinnedSpectraWidget)
+    
+    if option.save:
+        if option.outputFile!='':
+            fname=option.outputFile
+            fig.savefig(fname, dpi=option.DPI, transparent=option.transparent)
+        else:
+            print "no output file name given, will not save"
+    else:
+        show()
+        
+    return fig
+######################################################################################
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+def plotVerticalLinesWithLabelsFromFile(fig,ax):
+    # first read the data from the file
+    f=open(option.plotVerticalLinesWithLabelsFromFile,"r")
+    freq=list()
+    labels=list()
+    for line in f:
+        s=line.split(' \t')
+        freq.append(s[0])
+        s.pop(0)
+        S=''
+        for part in s:
+            S=S+' '+part
+        labels.append(S)
+    f.close()
+    print freq
+    print labels
+    i=0
+#    dash_style = (
+#    (0, 20, -15, 30, 10),
+#    (1, 30, 0, 15, 10),
+#    (0, 40, 15, 15, 10),
+#    (1, 20, 30, 60, 10),
+#    )
+    for fx in freq:
+        
+        axvline(x=fx, color='r')
+        
+#        (dd, dl, r, dr, dp) = dash_style[i]
+        ax.text(fx, -65, labels[i], withdash=False, rotation=90, verticalalignment='top', horizontalalignment='center')
+        i=i+1
+#    sys.exit()
+
+
+
+
+    
+###########################################################################################
+###########################################################################################
+###########################################################################################
+# MAIN PROGRAM
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+formatterX = FuncFormatter(XTicksFormatter)
+formatterY = FuncFormatter(YTicksFormatter)
+
+
+#if len(args)==0:
+#    if option.st==0 and option.en==0:
+#        print "Too few parameters given"
+#        sys.exit(0)
+print
+print "Loading data"
+print
+inFile=list()
+for i in arange(len(args)):
+    plotTypeIdx=i % len(option.plotType)
+
+    print "Loading file: %s" % args[i]
+    if option.fits:
+        hdulist = pyfits.open(args[i])
+        print hdulist.info()
+        tbdata = hdulist[option.hdu[i % len(option.hdu)]].data # assuming the first extension is a table
+        s=array([])
+        print "Selected HDU coluns names"
+        print hdulist[option.hdu[i % len(option.hdu)]].columns.names
+        for c in hdulist[option.hdu[i % len(option.hdu)]].columns.names:
+            print c
+            s=np.append(s, array(tbdata.field(c)))
+        slice=transpose(s.reshape(len(hdulist[option.hdu[i % len(option.hdu)]].columns.names),-1))
+        inFile.append(slice)
+    else:
+        if option.plotType[plotTypeIdx]=='fn' or option.plotType[plotTypeIdx]=='sphere':
+            if option.big:
+                inFile.append(loadDataFromFile(args[i],option.colx[i % len(option.colx)],option.coly[i % len(option.coly)],option.startFrom,option.rows))
+            else:
+                if args[i]=="stdin":
+                    inFile.append(np.loadtxt(sys.stdin))
+                else:
+                    inFile.append(np.loadtxt(args[i]))
+        if option.plotType[plotTypeIdx]=='map':
+            inFile.append([np.loadtxt(args[i]+'.lonlatT'),np.loadtxt(args[i]+'.lon'),np.loadtxt(args[i]+'.lat')])
+        if option.plotType[plotTypeIdx]=='img':
+#            from matplotlib._png import read_png
+            import matplotlib.image as mpimg
+            arr=mpimg.imread(args[i])
+#            print args[i]
+#            fn = get_sample_data(args[i])
+#            arr = read_png(fn)
+#            print arr
+            inFile.append(arr)
+#            sys.exit()
+#            inFile.append(cbook.get_sample_data(args[i]), asfileobj=True)
+#            sys.exit()
+
+#            dpi = rcParams['figure.dpi']
+#            figsize = lena.size[0]/dpi, lena.size[1]/dpi
+            
+#            figure(figsize=figsize)
+#            ax = axes([0,0,1,1], frameon=False)
+#            ax.set_axis_off()
+    print 'shape is:'
+    print inFile[i].shape
+    print 'len shape is:'
+    print len(inFile[i].shape)
+    if len(inFile[i].shape)==0:
+        print 'single number'
+        inFile[i]=array([[inFile[i]]])
+        
+    if len(inFile[i].shape)==1 and inFile[i].shape[0]==2:
+        print 'single pair of numbers'
+        inFile[i]=array([inFile[i]])
+        
+    if len(inFile[i].shape)==1 and inFile[i].shape[0]>2:
+        print 'single vector'
+        if option.asCol:
+            print "treating this as a column vector"
+            inFile[i]=array([inFile[i]]).transpose()
+        else:
+            inFile[i]=array([inFile[i]])
+    
+#    print inFile[i]
+#    sys.exit()
+    
+print
+print "Generating data"
+print
+for i in arange(len(option.plotCircle)):
+    lbr=array([ toFloat(v) for v in option.plotCircle[i].split(',') ])
+    cmd='%sdraw_maps_new nofile %s --tl %lf --tb %lf --tv 1 --ts %lf --plot_reg_type emptydot --dont_plot_zero -o lb' % (option.draw_maps_path, option.draw_maps_options, lbr[0], lbr[1], lbr[2])
+    os.system(cmd)
+    inFile.append(np.loadtxt('lb'))
+    os.remove('lb')
+    
+
+#
+# load mask if requested
+#
+if option.loadMask!='':
+    maskRanges=loadMask(option.loadMask)
+
+
+print
+print "Plotting"
+print
+
+
+fig=makeFunctionPlot(inFile)
+print "done"
+print "---------- "
+print
+
+#if option.makeMovie:
+#    print
+#    print "Generating movie..."
+#    print
+#    cmd="mencoder mf://*.png -mf type=png:fps=%i -ovc lavc -lavcopts  vcodec=mpeg4:mbd=1:vbitrate=2800  -oac copy -o %s.avi" % (option.fps, args[0])
+#    os.system(cmd)
+#    print "done"
+#    print "---------- "
+#    print

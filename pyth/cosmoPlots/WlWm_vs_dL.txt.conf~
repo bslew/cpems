@@ -1,0 +1,16 @@
+RUN MODE: vsdL
+Wlmin: 0.000000
+Wlmax: 1.000000
+dWl: 0.010000
+Wmmin: 0.000000
+Wmmax: 1.000000
+dWm: 0.010000
+H0 [km/s/Mpc]: 70.400000
+z0: 1.000000
+w0: -1.000000
+Wb0: 0.044000
+Np: 10000
+
+Plot option: plot_matrix.py WlWm_vs_dL.txt --colorbar --xmin 0 --xmax 1 --ymin 0 --ymax 1 --grid --xlabel "$\Omega_m$" --ylabel "$\Omega_l$" --zlabel "luminosity distance [Gpc]"  --flipY --contours 10,11,12,13,14,15,16,17,18,19,20 --title "Contours: 10,11,12,13,14,15,16,17,18,19,20" --ticks 20 --save -o WlWm_vs_dL.txt.png
+
+Extra comments: 

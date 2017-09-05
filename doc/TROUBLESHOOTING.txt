@@ -1,0 +1,14 @@
+
+TROUBLESHOOTING
+
+* If after an errorless compilation and linking of the programs you encounter an error
+  like:
+	./bin/cosmocalc: symbol lookup error: ./bin/cosmocalc: undefined symbol: _ZN9QListData7detach3Ev
+  this means that you are loading libQtCore shared library different than
+  the one with which the package was compiled and you should setup correctly
+  the LD_RUN_PATH and LD_LIBRARY_PATH variables so that the correct shared
+  library was loaded at the run time.
+
+* CPEDS/src/cpeds-fits.cpp:112: error: invalid conversion from ‘const char*’ to ‘char*’
+use a newer version of fits > 3.200 is a good bet
+

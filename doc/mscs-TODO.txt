@@ -1,0 +1,26 @@
+0) things to do while programing
+
+- think about reading cmbfast power spectra - the procedure for
+  setting initial conditions .C_l..parameters can only read one format
+the problem is with cmbfast 4 column format or 2 column my format so
+the program will be unable to read in cmbfast power spectra properly
+**** solution: done in loadsave manager. parameters are set there for
+  loading. 
+
+- develop the naming in the program especially eg. for the C_th and C_l 
+should contain the informaiton about the ranges of calculated C_th and C_l respectively.
+eg. wmap-64-C_th-0-180-txt or wmap-64-C_l-0-550-txt
+but the quiestion is then - how to read them - more parameters should be passed to the load 
+methods
+
+- add ability to force loading and saving given filename. 
+
+
+- the gsl random numbers don;t work as they should - FIX IT !!!!
+
+1) things to check at testing level:
+
+- think what goes to the constructor and what goes to destructor im	map class
+- check the file i/o functions if they return the right file sizes and if 
+they set the object variables correctly.
+

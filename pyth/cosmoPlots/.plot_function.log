@@ -1,0 +1,40 @@
+Tue Sep 15 00:20:22 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py -t scat --ps 100 w0h_vs_sigma8_age -c 2
+Tue Sep 15 00:20:48 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py -t scat --ps 100 w0h_vs_sigma8_age -c 2 --colorbar
+Tue Sep 15 00:21:01 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py -t scat --ps 100 w0h_vs_sigma8_age -c 3 --colorbar
+Tue Sep 15 00:36:27 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py -t scat --ps 100 w0h_vs_sigma8_age -c 3 --colorbar
+Mon Sep 21 10:06:50 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3
+Mon Sep 21 10:09:01 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3
+Mon Sep 21 10:13:10 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 0 -y 3
+Mon Sep 21 10:15:01 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3
+Mon Sep 21 10:15:23 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 0 -y 3
+Mon Sep 21 10:15:30 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3
+Mon Sep 21 10:16:27 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3
+Mon Sep 21 10:16:44 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3 -t scat -c 0 --colorbar
+Mon Sep 21 14:10:40 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3 -t scat -c 0 --colorbar
+Mon Sep 21 14:10:46 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3
+Mon Sep 21 14:10:59 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 0
+Mon Sep 21 14:17:25 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 1 -y 3
+Mon Sep 21 14:17:51 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 0 -y 3
+Mon Sep 21 14:18:11 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 0 -y 3 --xlabel redshift --ylabel $\sigma_8$
+Mon Sep 21 14:18:18 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 0 -y 3 --xlabel redshift --ylabel $\sigma_8$ --fontSize 22
+Mon Sep 21 14:18:27 2015
+ /home/blew/programy/Mscs.devel/Mscs/bin/plot_function.py agez_vs_sigma8 -x 0 -y 3 --xlabel redshift --ylabel $\sigma_8$ --fontSize 22 --grid
