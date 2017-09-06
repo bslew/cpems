@@ -47,7 +47,7 @@ tidy :
 	rm -f *.o 
 
 install:
-	sudo cp lib/libccSHT3.a $(INSTALL_PATH)
+	sudo cp libccSHT3.a $(INSTALL_PATH)
 	sudo cp include/ccSHT3.h $(INSTALL_PATH)/../include
 	sudo cp include/fftw_complex_helper.h $(INSTALL_PATH)/../include
 	sudo cp include/generalTools.h $(INSTALL_PATH)/../include
@@ -77,6 +77,6 @@ ccSHT3.o : ccSHT3.cpp ccSHT3.h generalTools.h fftw_complex_helper.h sizedType.h
 
 
 libccSHT3.a : generalTools_ser.o fftw_complex_helper.o ccSHT3.o 
-	ar rc lib/libccSHT3.a generalTools_ser.o fftw_complex_helper.o ccSHT3.o
-	ranlib lib/libccSHT3.a
+	ar rc libccSHT3.a generalTools_ser.o fftw_complex_helper.o ccSHT3.o
+	ranlib libccSHT3.a
 
