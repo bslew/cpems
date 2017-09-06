@@ -164,6 +164,7 @@ include_directories(
 	external_packages/ccSHT3/include
 	${FITSIO_INCLUDE_DIR}
 	${OLDGSL_INCLUDE_DIR}
+	${QTCORE_HEADERS}
 #	${CPEDS_INCLUDE_DIR}
 #	${MSCS_INCLUDE_DIR}
 	)
