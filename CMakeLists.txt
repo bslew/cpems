@@ -138,6 +138,10 @@ find_path(OLDGSL_INCLUDE_DIR gsl_multifit.h
 	/usr/include/gsl
 	)
 
+find_path(QTCORE_HEADERS QList
+    /usr/include/QtCore
+    /usr/include/qt4/QtCore
+)
 
 ################################################################
 ################################################################
