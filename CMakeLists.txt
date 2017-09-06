@@ -135,6 +135,7 @@ find_path(FITSIO_INCLUDE_DIR fitsio.h
 
 find_path(OLDGSL_INCLUDE_DIR gsl_multifit.h
 	/usr/local/include/gsl 
+	/usr/include/gsl
 	)
 
 
