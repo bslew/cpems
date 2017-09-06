@@ -11,6 +11,7 @@ Required dependencies:
 - tclap
 - Qt 4.8.6
 - armadillo armadillo-devel
+- gsl-1.8
 
 
 To install this package you will also need to compile some external packages
@@ -35,7 +36,7 @@ make
 make install
 
 
-Currently the package still requires gsl-1.8 which is provided but not compiled.
-Since it has it's own biuld we leave it to the user to build and install them
-in some visible directories.
+Currently the package still requires gsl-1.8 which uses old interface.
+The package is provided but since it has it's own biuld we leave it to 
+the user to build and install it in some visible directories.
 
