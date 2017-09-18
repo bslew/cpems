@@ -119,6 +119,7 @@ double CPEDS_NP= 2000.0; 	// number of points probing an order of z range for re
 // usual astronomical definitions
 const double CPEDS_SOLAR_MASS=1.98892e30; // solar mass [kg]
 const double CPEDS_AU=1.4959787069098932e+11; // astronomical unit [m]
+const double CPEDS_SEC_IN_YR=31557600; // seconds in year
 
 const double CPEDS_ECLIPTIC_NPOLE_GAL_L=96.38397;
 const double CPEDS_ECLIPTIC_NPOLE_GAL_B=29.81144;

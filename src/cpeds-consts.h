@@ -108,6 +108,7 @@ extern  double CPEDS_NP; 	// number of points probing an order of z range for re
 // usual astronomical definitions
 extern const double CPEDS_SOLAR_MASS; // solar mass [kg]
 extern const double CPEDS_AU; // astronomical unit [m]
+extern const double CPEDS_SEC_IN_YR; // number of seconds in year = 365.25 * 24 * 3600
 
 extern const double CPEDS_ECLIPTIC_NPOLE_GAL_L; // galactic longitude of the ecliptic north pole [deg]
 extern const double CPEDS_ECLIPTIC_NPOLE_GAL_B; // galactic latitude of the ecliptic north pole [deg]

@@ -191,66 +191,133 @@ link_directories(
 ################################################################
 # Define source files
 #
+set (CPEDSLIB_HEADERS 
+    src/cpeds-common.h
+	src/cpeds-consts.h
+	src/cpeds-rng.h
+	src/cpeds-math.h 
+	src/cpeds-cosmo.h 
+	src/cpeds-pdf.h 
+	src/cpedsTime.h
+	src/cpeds-msgs.h
+	src/cpeds-point_set.h
+	src/cpeds-point2d.h
+	src/cpeds-point3d.h
+	src/cpeds-direction_set.h
+	src/cpedsFunctionDistance.h
+	src/cpeds-project.h
+	src/cpeds-smooth.h
+	src/cpeds-direction.h
+	src/cpedsMoonDirection.h
+	src/cpedsPlanetDirection.h
+	src/cpeds-function-cosmo.h
+	src/cpedsMCMC.h
+	src/cpedsMCMCset.h
+	src/Nbody_io.h
+	src/cpeds-fits.h
+	src/matrix.h
+	src/mscsVector.h
+	src/Mscs-object.h
+	src/cpeds-list.h
+	)
+
 set (CPEDSLIB_SOURCES 
-	src/cpeds-consts.cpp src/cpeds-consts.h
-	src/cpeds-rng.cpp src/cpeds-rng.h
-	src/cpeds-math.cpp src/cpeds-math.h 
+    ${CPEDSLIB_HEADERS}
+	src/cpeds-consts.cpp
+	src/cpeds-rng.cpp
+	src/cpeds-math.cpp 
 	src/cpeds-pixelization.cpp
-	src/cpeds-cosmo.cpp src/cpeds-cosmo.h 
-	src/cpeds-pdf.cpp src/cpeds-pdf.h 
-	src/cpedsTime.cpp src/cpedsTime.h
-	src/cpeds-msgs.cpp src/cpeds-msgs.h
-	src/cpeds-point_set.cpp src/cpeds-point_set.h
-	src/cpeds-direction_set.cpp src/cpeds-direction_set.h
-	src/cpedsFunctionDistance.cpp src/cpedsFunctionDistance.h
-	src/cpeds-project.cpp src/cpeds-project.h
-	src/cpeds-smooth.cpp src/cpeds-smooth.h
-	src/cpeds-direction.cpp src/cpeds-direction.h
-	src/cpedsMoonDirection.cpp src/cpedsMoonDirection.h
-	src/cpedsPlanetDirection.cpp src/cpedsPlanetDirection.h
-	src/cpeds-function-cosmo.cpp src/cpeds-function-cosmo.h
-	src/cpedsMCMC.cpp src/cpedsMCMC.h
-	src/cpedsMCMCset.cpp src/cpedsMCMCset.h
-	src/Nbody_io.cpp src/Nbody_io.h
-	src/cpeds-fits.cpp src/cpeds-fits.h
+	src/cpeds-cosmo.cpp 
+	src/cpeds-pdf.cpp 
+	src/cpedsTime.cpp
+	src/cpeds-msgs.cpp
+	src/cpeds-point_set.cpp
+	src/cpeds-direction_set.cpp
+	src/cpedsFunctionDistance.cpp
+	src/cpeds-project.cpp
+	src/cpeds-smooth.cpp
+	src/cpeds-direction.cpp
+	src/cpedsMoonDirection.cpp
+	src/cpedsPlanetDirection.cpp
+	src/cpeds-function-cosmo.cpp
+	src/cpedsMCMC.cpp 
+	src/cpedsMCMCset.cpp
+	src/Nbody_io.cpp 
+	src/cpeds-fits.cpp 
 	)
 #	${CPEDS_INCLUDE_DIR}/cpeds-msgs.h
 
 
-set (MSCSCORELIB_SOURCES 
-	src/Mscs-global-defs.cpp src/Mscs-global-defs.h
-	src/Mscs-common.cpp src/Mscs-common.h
-	src/Mscs-map.cpp src/Mscs-map.h
-	src/Mscs-map-io_methods.cpp src/Mscs-map.h
-	src/Mscs-alms.cpp src/Mscs-alms.h
-	src/Mscs-alm.cpp src/Mscs-alm.h
-	src/Mscs-map-sht.cpp src/Mscs-map.h
-	src/Mscs-map-interpolate.cpp src/Mscs-map.h
-	src/Mscs-gaussian_simulation.cpp src/Mscs-gaussian_simulation.h
-	src/mscsMapINC.cpp src/mscsMapINC.h
-	src/Mscsgrid.cpp src/Mscsgrid.h
+set (MSCSCORELIB_HEADERS
+	src/Mscs-global-defs.h
+	src/Mscs-common.h
+	src/Mscs-map.h
+	src/Mscs-alms.h
+	src/Mscs-alm.h
+	src/Mscs-gaussian_simulation.h
+	src/mscsMapINC.h
+	src/Mscsgrid.h
 	)		
 
+
+set (MSCSCORELIB_SOURCES
+    ${MSCSCORELIB_HEADERS} 
+	src/Mscs-global-defs.cpp
+	src/Mscs-common.cpp 
+	src/Mscs-map.cpp 
+	src/Mscs-map-io_methods.cpp 
+	src/Mscs-alms.cpp 
+	src/Mscs-alm.cpp 
+	src/Mscs-map-sht.cpp 
+	src/Mscs-map-interpolate.cpp 
+	src/Mscs-gaussian_simulation.cpp 
+	src/mscsMapINC.cpp 
+	src/Mscsgrid.cpp 
+	)		
+
+
+set (MSCSFNLIB_HEADERS
+	src/mscsFunction3dCLEAN.h
+	src/Mscs-function.h
+	src/Mscs-map-window_function.h
+	src/Mscs-map-beam_function.h
+	src/Mscs-correlation_function.h
+	src/Mscs-function3dreg.h
+	src/Mscs-function3dregc.h
+	src/Mscs-function3dregc.h
+	src/subdomain.h
+	src/mscsSurface3dregc.h
+	src/mscsLine.h
+	src/Mscs-function2dreg.h
+	src/Mscs-angular_power_spectrum.h
+	src/mandelbrotSet.h
+	src/pointsDensity.h
+	src/mscsFunctionFit.h
+	src/MscsPDF2D.h
+	src/MscsPDF1D.h
+	)
+
 set (MSCSFNLIB_SOURCES
-	src/mscsFunction3dCLEAN.cpp src/mscsFunction3dCLEAN.h
-	src/Mscs-function.cpp src/Mscs-function.h
-	src/Mscs-function-hdf5.cpp src/Mscs-function.h
-	src/Mscs-map-window_function.cpp src/Mscs-map-window_function.h
-	src/Mscs-map-beam_function.cpp src/Mscs-map-beam_function.h
-	src/Mscs-correlation_function.cpp src/Mscs-correlation_function.h
-	src/Mscs-function3dreg.cpp src/Mscs-function3dreg.h
-	src/Mscs-function3dregc.cpp src/Mscs-function3dregc.h
-	src/Mscs-function3dregc-hdf5.cpp src/Mscs-function3dregc.h
-	src/subdomain.cpp src/subdomain.h
-	src/mscsSurface3dregc.cpp src/mscsSurface3dregc.h
-	src/mscsLine.cpp src/mscsLine.h
-	src/Mscs-function2dreg.cpp src/Mscs-function2dreg.h
-	src/Mscs-angular_power_spectrum.cpp src/Mscs-angular_power_spectrum.h
-	src/mandelbrotSet.cpp src/mandelbrotSet.h
-	src/pointsDensity.cpp src/pointsDensity.h
-	src/mscsFunctionFit.cpp src/mscsFunctionFit.h
-	src/MscsPDF2D.cpp src/MscsPDF2D.h
-	src/MscsPDF1D.cpp src/MscsPDF1D.h
+    ${MSCSFNLIB_HEADERS}
+	src/mscsFunction3dCLEAN.cpp
+	src/Mscs-function.cpp 
+	src/Mscs-function-hdf5.cpp 
+	src/Mscs-map-window_function.cpp 
+	src/Mscs-map-beam_function.cpp 
+	src/Mscs-correlation_function.cpp 
+	src/Mscs-function3dreg.cpp 
+	src/Mscs-function3dregc.cpp 
+	src/Mscs-function3dregc-hdf5.cpp 
+	src/subdomain.cpp 
+	src/mscsSurface3dregc.cpp 
+	src/mscsLine.cpp 
+	src/Mscs-function2dreg.cpp 
+	src/Mscs-angular_power_spectrum.cpp 
+	src/mandelbrotSet.cpp 
+	src/pointsDensity.cpp 
+	src/mscsFunctionFit.cpp 
+	src/MscsPDF2D.cpp 
+	src/MscsPDF1D.cpp 
 	)
 #	src/Mscs-minkowski-f.c src/Mscs-minkowski-f.h
 #	src/Mscs-topo-dodecahedron.c Mscs-topo-dodecahedron.h
@@ -260,16 +327,31 @@ set (MSCSFNLIB_SOURCES
 #	src/Mscs-transfer_function.c src/Mscs-transfer_function.h
 #	src/Mscs-matter_power_spectrum.cpp src/Mscs-matter_power_spectrum.h
 
+set (MSCSPLOTLIB_HEADERS
+	src/Mscs-map_plot.h
+	src/Mscs-colormap.h
+	src/Mscs-map_proj.h
+	)
+
 set (MSCSPLOTLIB_SOURCES
-	src/Mscs-map_plot.cpp src/Mscs-map_plot.h
-	src/Mscs-colormap.cpp src/Mscs-colormap.h
-	src/Mscs-map_proj.cpp src/Mscs-map_proj.h
+    ${MSCSPLOTLIB_HEADERS}
+	src/Mscs-map_plot.cpp
+	src/Mscs-colormap.cpp
+	src/Mscs-map_proj.cpp
+	)
+
+
+set (MSCSWMAPLIB_HEADERS
+	src/Mscs-WMAPspecifications.h
+	src/Mscs-WMAPsimulation.h
+	src/MscsWMAPdata.h
 	)
 	
 set (MSCSWMAPLIB_SOURCES
-	src/Mscs-WMAPspecifications.cpp src/Mscs-WMAPspecifications.h
-	src/Mscs-WMAPsimulation.cpp src/Mscs-WMAPsimulation.h
-	src/MscsWMAPdata.cpp src/MscsWMAPdata.h
+    ${MSCSWMAPLIB_HEADERS}
+	src/Mscs-WMAPspecifications.cpp 
+	src/Mscs-WMAPsimulation.cpp 
+	src/MscsWMAPdata.cpp 
 	)
 	
 ################################################################
@@ -283,6 +365,7 @@ add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
 add_library(Mscsplot STATIC ${MSCSPLOTLIB_SOURCES} )
 add_library(MscsWMAP STATIC ${MSCSWMAPLIB_SOURCES} )
 
+#add_library(${PROJECT_BINARY_DIR}/external_packages/
 #add_dependencies(CPEDS slaRefr novas ccSHT3 velKB)
 
 ################################################################
@@ -628,6 +711,14 @@ set (CPEMS_LIBS
 	MscsWMAP
 	)
 
+set (CPEMS_HEADERS
+	${CPEDSLIB_HEADERS}
+	${MSCSCORELIB_HEADERS}
+	${MSCSFNLIB_HEADERS}
+	${MSCSPLOTLIB_HEADERS}
+	${MSCSWMAPLIB_HEADERS}
+	)
+
 set (LIBRARIES 
 	${CPEMS_LIBS}
 	${NOVA_LIB}
@@ -736,6 +827,19 @@ install (TARGETS
 	${CPEMS_LIBS}
 	DESTINATION lib)
 
+install (FILES
+    ${PROJECT_BINARY_DIR}/external_packages/velKB/libvelKB.a
+    ${PROJECT_BINARY_DIR}/external_packages/sla-refr/libslaRefr.a
+    ${PROJECT_BINARY_DIR}/external_packages/novas/libnovas.a
+    ${PROJECT_BINARY_DIR}/external_packages/ccSHT3/libccSHT3.a
+    
+    DESTINATION lib)
+
+install (FILES 
+	${CPEMS_HEADERS}
+	DESTINATION include/cpems)
+
+    
 #install (TARGETS 
 #	${CPEMS_LIBS}
 #	DESTINATION lib)
