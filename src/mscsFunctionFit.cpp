@@ -722,6 +722,15 @@ void mscsFunctionFit::print_state (size_t iter, gsl_multifit_fdfsolver * s) {
 
 
 /***************************************************************************************/
+/*
+ * Comment: Depreciated example for gsl < 2.x
+ * 
+ * author: blew
+ * date: Sep 20, 2017 2:59:53 PM
+ *
+ */
+
+/*
 cpedsList<double> mscsFunctionFit::fitData(cpedsList<double>& initGuessVals, cpedsList<double>& errors, string model ) {
 	_mscsFunctionFit_data.fitedParam.clear();
 	_mscsFunctionFit_data.fitedParamErr.clear();
@@ -733,10 +742,10 @@ cpedsList<double> mscsFunctionFit::fitData(cpedsList<double>& initGuessVals, cpe
 	const size_t paramCount = initGuessVals.size();
 
 	gsl_matrix *covar = gsl_matrix_alloc (paramCount, paramCount);
-	gsl_matrix *J;  /* BLcomment (Aug 28, 2017, 7:49:04 PM): 
+	gsl_matrix *J;   BLcomment (Aug 28, 2017, 7:49:04 PM): 
 		A new matrix to hold covariance matrix since the new GSL gsl_multifit_fdfsolver structure
 		does not have this member anymore.
-	*/
+	
 	double *x=extractArguments();
 	double *y=extractValues();
 	double *sigma=errors.toCarray();
@@ -774,6 +783,157 @@ cpedsList<double> mscsFunctionFit::fitData(cpedsList<double>& initGuessVals, cpe
 	
 	 gsl_multifit_covar (s->J, 0.0, covar); // BLcomment (Aug 28, 2017, 7:50:58 PM): this does not compile with gsl>=2.3.1
 //	gsl_multifit_covar(J,0.0, covar);
+	
+#define FIT(i) gsl_vector_get(s->x, i)
+#define ERR(i) sqrt(gsl_matrix_get(covar,i,i))
+	
+	double chi = gsl_blas_dnrm2(s->f);
+	double dof = n - paramCount;
+	double c = GSL_MAX_DBL(1, chi / sqrt(dof)); 
+//	printf("chi %lf, dof %lf, iter: %li, status: %i\n",chi,dof, iter, _mscsFunctionFit_data.status);
+//	printf("chisq/dof = %g\n",  pow(chi, 2.0) / dof);
+	//	
+	//	printf ("A      = %.5f +/- %.5f\n", FIT(0), c*ERR(0));
+	//	printf ("lambda = %.5f +/- %.5f\n", FIT(1), c*ERR(1));
+	//	printf ("b      = %.5f +/- %.5f\n", FIT(2), c*ERR(2));
+	
+//	printf ("status = %s\n", gsl_strerror (_mscsFunctionFit_data.status));
+	
+	_mscsFunctionFit_data.cov.SetSize(initGuessVals.size(),initGuessVals.size());
+	for (long i = 0; i < initGuessVals.size(); i++) {
+		_mscsFunctionFit_data.fitedParam.append(FIT(i));
+		_mscsFunctionFit_data.fitedParamErr.append(c*ERR(i));
+		for (long j = 0; j < initGuessVals.size(); j++) {
+			_mscsFunctionFit_data.cov(i,j)=gsl_matrix_get(covar,i,j);
+		}
+	}
+	_mscsFunctionFit_data.chisq=pow(chi, 2.0) / dof;
+	_mscsFunctionFit_data.DOF=dof;
+	//	_mscsFunctionFit_data.bestFitModel.importFunction(d.x,d.y,d.n);
+	
+	gsl_multifit_fdfsolver_free (s);
+	gsl_matrix_free (covar);
+	delete [] x;
+	delete [] y;
+	delete [] sigma;
+	delete [] param_ini;
+	
+	if (cpeds_isnan(_mscsFunctionFit_data.chisq)) { 
+		_mscsFunctionFit_data.chisq=-1;
+		_mscsFunctionFit_data.status=-1; 
+		printf("chisq is nan, something must be wrong\n");
+	}
+	else {
+		_mscsFunctionFit_data.status=0;
+	}
+	
+	return _mscsFunctionFit_data.fitedParam;
+}
+*/
+/***************************************************************************************/
+/*
+ * Comment: updated version for gsl > 2.x
+ * 
+ * author: blew
+ * date: Sep 20, 2017 3:00:23 PM
+ *
+ */
+
+cpedsList<double> mscsFunctionFit::fitData(cpedsList<double>& initGuessVals, cpedsList<double>& errors, string model ) {
+	_mscsFunctionFit_data.fitedParam.clear();
+	_mscsFunctionFit_data.fitedParamErr.clear();
+	
+//	const gsl_multifit_nlinear_type *T = gsl_multifit_nlinear_trust;
+//	gsl_multifit_nlinear_workspace *w;
+//	gsl_multifit_nlinear_fdf fdf;
+//	gsl_multifit_nlinear_parameters fdf_params=gsl_multifit_nlinear_default_parameters();
+
+	const gsl_multifit_fdfsolver_type *T;
+	gsl_multifit_fdfsolver *s;
+	unsigned int i, iter = 0;
+	const size_t n = pointsCount();
+	const size_t paramCount = initGuessVals.size();
+
+	gsl_vector *f;
+	gsl_matrix *covar = gsl_matrix_alloc (paramCount, paramCount);
+	//gsl_matrix *J;  
+	/* BLcomment (Aug 28, 2017, 7:49:04 PM): 
+		A new matrix to hold covariance matrix since the new GSL gsl_multifit_fdfsolver structure
+		does not have this member anymore.
+	*/
+    gsl_matrix*  J = gsl_matrix_alloc(n, paramCount);
+
+//	/* define the function to be minimized */
+//	fdf.f = expb_f;
+//	fdf.df = expb_df;   /* set to NULL for finite-difference Jacobian */
+//	fdf.fvv = NULL;     /* not using geodesic acceleration */
+//	fdf.n = n;
+//	fdf.p = p;
+//	fdf.params = &d;
+//
+//	/* allocate workspace with default parameters */
+//	w = gsl_multifit_nlinear_alloc (T, &fdf_params, n, p);
+//	
+//	/* initialize solver with starting point and weights */
+//	gsl_multifit_nlinear_winit (&x.vector, &wts.vector, &fdf, w);
+//	
+//	/* compute initial cost function */
+//	f = gsl_multifit_nlinear_residual(w);
+//	gsl_blas_ddot(f, f, &chisq0);
+//	
+//	/* solve the system with a maximum of 20 iterations */
+//	status = gsl_multifit_nlinear_driver(20, xtol, gtol, ftol,
+//			callback, NULL, &info, w);
+//	
+//	/* compute covariance of best fit parameters */
+//	J = gsl_multifit_nlinear_jac(w);
+//	gsl_multifit_nlinear_covar (J, 0.0, covar);
+//	
+//	/* compute final cost */
+//	gsl_blas_ddot(f, f, &chisq);
+//	
+//#define FIT(i) gsl_vector_get(w->x, i)
+//#define ERR(i) sqrt(gsl_matrix_get(covar,i,i))
+
+	
+	double *x=extractArguments();
+	double *y=extractValues();
+	double *sigma=errors.toCarray();
+	
+	fitData_t d = { n, x, y, sigma};
+	
+	double *param_ini = initGuessVals.toCarray();
+	gsl_vector_view paramVec = gsl_vector_view_array (param_ini, paramCount);
+	
+	
+	if (model!="") select_model(model);
+	_mscsFunctionFit_data.fit.n = n;
+	_mscsFunctionFit_data.fit.p = paramCount;
+	_mscsFunctionFit_data.fit.params = &d;
+	
+	T = gsl_multifit_fdfsolver_lmsder;
+	s = gsl_multifit_fdfsolver_alloc (T, n, paramCount);
+	gsl_multifit_fdfsolver_set (s, &_mscsFunctionFit_data.fit, &paramVec.vector);
+	
+//	print_state (iter, s);
+	
+	do {
+		iter++;
+		_mscsFunctionFit_data.status = gsl_multifit_fdfsolver_iterate (s);
+		if (_mscsFunctionFit_data.status!=0 and msgs->getVerbosity()>Low)
+			printf ("status = %s\n", gsl_strerror (_mscsFunctionFit_data.status));
+		
+//		print_state (iter, s);
+		
+		if (_mscsFunctionFit_data.status)
+			break;
+		
+		_mscsFunctionFit_data.status = gsl_multifit_test_delta (s->dx, s->x,1e-5, 1e-5);
+	} while (_mscsFunctionFit_data.status == GSL_CONTINUE && iter < 5000);
+	
+//	 gsl_multifit_covar (s->J, 0.0, covar); // BLcomment (Aug 28, 2017, 7:50:58 PM): this does not compile with gsl>=2.3.1
+    gsl_multifit_fdfsolver_jac (s, J);
+	gsl_multifit_covar(J,0.0, covar);
 	
 #define FIT(i) gsl_vector_get(s->x, i)
 #define ERR(i) sqrt(gsl_matrix_get(covar,i,i))

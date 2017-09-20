@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
 			break;
 
 		case 9:
-			fit.load("/data/cosmo-data/radio-catalogs/rtv3c15ghz/rtv9c15ghz_cross_north6cm--alpha.h");
+			fit.load("/home/blew/cosmo-data/radio-catalogs/rtv3c15ghz/rtv9c15ghz_cross_north6cm--alpha.h");
 			fit.checkRanges();
 			ini.append(30);
 			ini.append(0.22);
@@ -1185,6 +1185,8 @@ void makeLMFitTest() {
 	const gsl_rng_type * type;
 	gsl_rng * r;
 	
+    gsl_matrix*  J = gsl_matrix_alloc(n, p);
+
 	gsl_rng_env_setup();
 	
 	type = gsl_rng_default;
@@ -1231,8 +1233,10 @@ void makeLMFitTest() {
 	}
 	while (status == GSL_CONTINUE && iter < 500);
 	
-	gsl_multifit_covar (s->J, 0.0, covar);
-
+//	gsl_multifit_covar (s->J, 0.0, covar);
+    gsl_multifit_fdfsolver_jac (s, J);
+	gsl_multifit_covar(J,0.0, covar);
+	
 #define FIT(i) gsl_vector_get(s->x, i)
 #define ERR(i) sqrt(gsl_matrix_get(covar,i,i))
 	
