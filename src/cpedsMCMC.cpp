@@ -1169,6 +1169,7 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints) {
 	bins.clear();
 	pdf=states.binFunction(dx,bins,"bin_center","max");
 	pdf.checkRanges();
+//	pdf.save("rusty.pdf");
 	pdf.interpolate(pdf.getMinArg(),pdf.getMaxArg(),pdfPoints,true,"cspline");
 	pdf/=pdf.getMaxValue();
 

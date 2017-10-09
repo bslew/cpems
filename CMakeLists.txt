@@ -219,6 +219,7 @@ set (CPEDSLIB_HEADERS
 	src/mscsVector.h
 	src/Mscs-object.h
 	src/cpeds-list.h
+	src/MClink.h
 	)
 
 set (CPEDSLIB_SOURCES 
@@ -241,6 +242,7 @@ set (CPEDSLIB_SOURCES
 	src/cpedsPlanetDirection.cpp
 	src/cpeds-function-cosmo.cpp
 	src/cpedsMCMC.cpp 
+	src/MClink.cpp
 	src/cpedsMCMCset.cpp
 	src/Nbody_io.cpp 
 	src/cpeds-fits.cpp 

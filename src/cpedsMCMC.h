@@ -196,6 +196,7 @@ class cpedsMCMC {
 				QList<string> implementationNote; //!< this list will be stored in the setup file as an extra block. You can describe here the features of your particular implementation of the derived class
 				long PDF1d_pointsCount; //!< number of points used to store estimated 1d PDFs
 				long PDF2d_pointsCount; //!< number of points used to store estimated 2d PDFs
+//				bool calculate1Dpdf;				
 				bool calculate2Dpdf;				
 		} IOcontrol_t;
 		
@@ -378,6 +379,7 @@ class cpedsMCMC {
 		void savePriors();
 		void save1Dposteriors();
 		void save2Dposteriors();
+//		void setCalculate1Dposteriors(bool tf) {_IOcontrol.calculate1Dpdf=tf; }
 		void setCalculate2Dposteriors(bool tf) {_IOcontrol.calculate2Dpdf=tf; }
 		void calculate1Dposteriors();
 		void calculate2Dposteriors();
