@@ -108,6 +108,7 @@ add_dependencies(external Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
 # Find required packages
 #
 find_package(Qt4 4.8 REQUIRED)
+FIND_PACKAGE(GSL 2 REQUIRED)
 #find_package(libnova REQUIRED)
 #find_package(m REQUIRED)
 #find_package(proj REQUIRED)
