@@ -532,7 +532,8 @@ double cpeds_local_sidereal_time(double localJulianTime, double lon);
 	@param ut1_utc - UT1-UTC = dUT [s]
 	@param DeltaAT - TAI-UTC [integer s] - number of leap seconds since the beginning of TAI (this is now provided by the astro_time server)
 	@param longitude - RT32 longitude [s] = RTLON[deg]/15*3600
-	@return mean local sidereal time [seconds]
+	@param LSTtype - 0 - mean, 1 - true
+	@return mean (or apparent) local sidereal time [seconds]
 
 	TT-TAI = 32.184 s
 	
@@ -540,7 +541,7 @@ double cpeds_local_sidereal_time(double localJulianTime, double lon);
 	\date Jun 14, 2013, 7:08:13 PM
 	\author Bartosz Lew
 */
-double cpeds_local_sidereal_time_novas(double jd_ut1, double ut1_utc, double DeltaAT,double longitude );
+double cpeds_local_sidereal_time_novas(double jd_ut1, double ut1_utc, double DeltaAT,double longitude, int LSTtype=0 );
 
 
 // ****************************************************************************************************************
@@ -1865,6 +1866,19 @@ void* cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12
 */
 void cpeds_matrix_derivative(matrix<double>* m, double* yvals);
 
+/*!
+	\brief calculate derivative 
+	\details 
+	@param
+	@return
+	
+	In order to minimize numerical noise the function should 
+	be sampled on equal grid. In case of periodic calculations, this means that
+	the distance between the first and the last point should not be  equal to the period,
+	bacause they are formally the same point.
+
+	\date Nov 12, 2017, 5:48:24 PM
+*/
 void cpeds_derivative(double* x, double* y, long size, double* periodX=NULL, double *periodY=NULL);
 double cpeds_getMinAbs3(double v1, double v2, double v3);
 //cpeds_PDF_info* cpeds_get_PDF_info(double *X,double *Y, long N, cpeds_queue_double *CL);

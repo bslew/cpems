@@ -139,6 +139,7 @@ class cpedsMCMC {
 				long keepDirectionStepGenerationFailuresNumber; //!< maximal number of failures to generate the next step in given direction before dropping that direction (this prevents chain from trying to keep direction when staying on wall)
 				long rejectedLinkNumber; //!< number of links that were prepended before the beginning of the chain to store the location of the true first link in the chain.
 				long rejectionsCount; //!< current number of rejected states
+				long userOutputFrequency; //!< output info about MCMC walk every this number of MCMC states
 		} walk_t;
 		
 		typedef struct {
@@ -471,6 +472,9 @@ class cpedsMCMC {
 		}
 		void setTemperatures(double initial, double final) { _cooling.initialTemperature=initial; _cooling.finalTemperature=final; updateCoolingPDF();  }
 		void setInitialWalkStepSize(double size) { _walk.initialPDFstepCRfractionAfterBurnIn=size; }
+		
+		void setWalkInfoOutputFrequency(long everyNstates) { _walk.userOutputFrequency=everyNstates;	}
+		long getWalkInfoOutputFrequency() { return _walk.userOutputFrequency;	}
 		
 		/*!
 			\brief add a string about particular implementation 

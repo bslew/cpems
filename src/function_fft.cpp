@@ -1212,10 +1212,11 @@ void parseOptions(int argc, char** argv) {
 				"match - use x and x2 information to interpolate the two functions to a common argument values. This uses the -r option for interpolations.\n"
 				"If --Nx option is given then only Nx samples are used.\n"
 				"(default: none)",false,"","string"); cmd.add(correlation);
-		ValueArg<long> corrStep("","corrStep","offset in number of samples for correlation function calculations.",false,0,"long"); cmd.add(corrStep);
-		ValueArg<long> corrNum("","corrNum","Number of points in the correlation coefficient function - corresponds to the "
-				"number of times of shifting one function wrt other."
-				"(default: 0 - means until period wrap.)",false,0,"long"); cmd.add(corrNum);
+		ValueArg<long> corrStep("","corrStep","offset in number of samples for correlation function calculations."
+				"More specifically this value indicates by how many samples the two functions are shifted wrt each other.",false,1,"long"); cmd.add(corrStep);
+		ValueArg<long> corrNum("","corrNum","Number of points in the correlation coefficient function used for calculating "
+				"cross-correlation function value."
+				"(default: 0 - means all data samples are used)",false,0,"long"); cmd.add(corrNum);
 		
 		SwitchArg calcDistance1D("","calcDistance1D", "Calculate distance between point sets defined in the two files."
 				"If the point sets are defined for different x values interpolation is done in the second set to the x values from the"
@@ -1592,16 +1593,19 @@ mscsFunction calculateCorrelationFunction(mscsFunction &f1, mscsFunction &f2,cpe
 		
 		//		f1.interpolate(xSt,xEn,dx,true,"linear",true);
 		//		f2.interpolate(xSt,xEn,dx,true,"linear",true);
+		msgs->say("interpolating f1",Medium);
 		f1.interpolate(xSt,xEn,dx,true,"cspline",true);
+		msgs->say("interpolating f2",Medium);
 		f2.interpolate(xSt,xEn,dx,true,"cspline",true);
-		
+
+		msgs->say("removing data outside of: [%lE,%lE]",xSt,xEn,Medium);
 		f1.deleteOutsideOf(xSt,xEn);
 		f2.deleteOutsideOf(xSt,xEn);
 		
-		if (_testCorrelation) {
+//		if (_testCorrelation) {
 			f1.save("corrTest.f1.int");
 			f2.save("corrTest.f2.int");
-		}
+//		}
 		
 		
 	}
@@ -1609,8 +1613,8 @@ mscsFunction calculateCorrelationFunction(mscsFunction &f1, mscsFunction &f2,cpe
 	// calculate correlation function
 	//
 	
+	msgs->say("Calculating cross-correlation (sample step: %li, corrNum: %li)",_corrStep,_corrNum,Medium);
 	f=f1.correlationCoefficientFunction(f2,_corrStep,_corrNum);
-	
 	return f;
 }
 

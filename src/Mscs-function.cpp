@@ -2313,7 +2313,7 @@ mscsFunction& mscsFunction::binFunctionLin2geo(long imin, double firstBin, doubl
 
 /***************************************************************************************/
 mscsFunction mscsFunction::powerSpectrum(mscsFunction* re, mscsFunction* im, double regridX, bool calibrateByPointsCount) {
-	mscsFunction P("power spectrum");
+	mscsFunction P("power spectrum", getVerbosityLevel());
 	if (re!=NULL) re->clearFunction();
 	if (im!=NULL) im->clearFunction();
 	long N;
@@ -3644,11 +3644,14 @@ mscsFunction mscsFunction::correlationCoefficientFunction(mscsFunction& f2, long
 	//	long i=0;
 	//	while (i<N) {
 	for (long i = 0; i < N; i+=step) {
+//		printf("i:%li, x:%lf cov: %lf\n ",i,i*dx,cpeds_covariance(d1,d2,n)/s);
 		corr.newPoint(i*dx,cpeds_covariance(d1,d2,n)/s);
 		// shift array in f2
-		cpeds_shift_array(d2,n2,step,true);
+//		printf("i:%li, x:%lf\n ",i,i*dx);
+		cpeds_shift_array(d2,n,step,true);
 		//		i+=step;
 	}
+
 	delete [] d1;
 	delete [] d2;
 	return corr;
@@ -3705,9 +3708,13 @@ mscsFunction& mscsFunction::convertUnixTimeToJD_x() {
 	return *this;	
 }
 /***************************************************************************************/
-vector<double> mscsFunction::findRoot() {
+vector<double> mscsFunction::findRoot(double period) {
 	vector<double> r;
 	double x1,x2,y1,y2;
+
+	if (period>0) {
+		newPoint(getx(0)+period,getY(0));
+	}
 	
 	x1=getX(0);
 	y1=getY(0);
@@ -3716,7 +3723,7 @@ vector<double> mscsFunction::findRoot() {
 		x2=getX(i);
 		y2=getY(i);
 		
-		if (y1<0 and y2>0) {
+		if (y1<0 and y2>=0) {
 			// found root
 			mscsFunction tmp;
 			tmp.newPoint(y1,x1);
@@ -3725,7 +3732,7 @@ vector<double> mscsFunction::findRoot() {
 		}
 		else {
 			
-			if (y1>0 and y2<0) {
+			if (y1>0 and y2<=0) {
 				// found root
 				mscsFunction tmp;
 				tmp.newPoint(y1,x1);
@@ -3738,5 +3745,13 @@ vector<double> mscsFunction::findRoot() {
 		y1=getY(i);
 		
 	}
+
+	if (period>0) {
+		for (unsigned long i = 0; i < r.size(); i++) {
+			if (r[i]>x1+period) r[i]-=period;
+		}
+		deletePoint();
+	}
+
 	return r;
 }

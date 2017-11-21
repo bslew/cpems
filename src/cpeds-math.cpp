@@ -463,11 +463,11 @@ double cpeds_local_sidereal_time(double localJulianTime, double lon) {
 	return T0/24.0*twoPI; // this is the local star time // this calculation can be improved, I know :)
 }
 /***************************************************************************************/
-double cpeds_local_sidereal_time_novas(double jd_ut1, double ut1_utc, double DeltaAT,double longitude ) {
+double cpeds_local_sidereal_time_novas(double jd_ut1, double ut1_utc, double DeltaAT,double longitude, int LSTtype ) {
 	double tt_ut1=DeltaAT+CPEDS_TT_TAI-ut1_utc;
 	double lst=0; // hours
-	//	sidereal_time(jd_ut1,0,tt_ut1,1,1,0,&alst);		
-	sidereal_time(jd_ut1,0,tt_ut1,0,1,0,&lst);		 // this is mean LST which should be used when nutation in enabled converting coordinates
+//	sidereal_time(jd_ut1,0,tt_ut1,1,1,0,&alst);		
+	sidereal_time(jd_ut1,0,tt_ut1,LSTtype,1,0,&lst);		 // this is mean LST which should be used when nutation in enabled converting coordinates
 	lst=lst*3600+longitude; 
 	if (lst>86400) lst-=86400;
 	return lst;
@@ -4583,28 +4583,84 @@ void cpeds_derivative(double* x, double* y, long size, double* periodX, double *
 	double dx1,dx2,Dj;
 	
 	if (periodY==NULL) {
-		// the first value
-		dx1=x[1]-x[0];
-		D = ( y[1]-y[0] )/ dx1;
-		// the i'th point
-		for (i=1;i<rowsleo;i++) {
-			dx1=x[i]-x[i-1];
-			dx2=x[i+1]-x[i];
-			// store the derivative value from the previous row
-			Dj=D;
+		if (periodX==NULL) {
+			// the first value
+			dx1=x[1]-x[0];
+			D = ( y[1]-y[0] )/ dx1;
+			// the i'th point
+			for (i=1;i<rowsleo;i++) {
+				dx1=x[i]-x[i-1];
+				dx2=x[i+1]-x[i];
+				// store the derivative value from the previous row
+				Dj=D;
+				// derive the derivative value from the current row
+				D = 0.5*(  ( y[i]-y[i-1] )/ dx1 + ( y[i+1]-y[i] )/ dx2  );
+				// overwrite the value from the row above back in the matrix with its derivative
+				y[i-1]=Dj;
+			}
+			
+			// the last row
+			dx2=x[rowsleo]-x[rowslet];
 			// derive the derivative value from the current row
-			D = 0.5*(  ( y[i]-y[i-1] )/ dx1 + ( y[i+1]-y[i] )/ dx2  );
+			y[rowsleo] = ( y[rowsleo]-y[rowslet] )/ dx2;
+			
 			// overwrite the value from the row above back in the matrix with its derivative
-			y[i-1]=Dj;
+			y[rowslet]=D;		 
 		}
-		
-		// the last row
-		dx2=x[rowsleo]-x[rowslet];
-		// derive the derivative value from the current row
-		y[rowsleo] = ( y[rowsleo]-y[rowslet] )/ dx2;
-		
-		// overwrite the value from the row above back in the matrix with its derivative
-		y[rowslet]=D;		  
+		else {
+//			// the first value
+//			dx1=x[1]-x[0];
+			if (rows<2) return;
+			long i,iprev,inext;
+			double f0=y[0];
+			double fprev = y[rowsleo];
+			double f=y[0];
+			double fnext=y[1];
+//			double thres=1e-14;
+			iprev=rowsleo;
+			i=0;
+			inext=1;
+			dx1=x[0]-x[rowsleo]+*periodX;
+//			if (dx1<thres) dx1=x[0]-x[rowsleo-1]+*periodX;
+			dx2=x[1]-x[0];
+			// derive the derivative value from the current row
+			D = 0.5*(  ( f-fprev )/ dx1 + ( fnext-f )/ dx2  );
+			i=0;
+//			printf("%i x:%lf yprev:%lf y:%lf ynext:%lf dx1:%lf dx2:%lf D:%lf\n",i,x[i],fprev,f,fnext,dx1,dx2,D);
+			// overwrite the value from the row above back in the matrix with its derivative
+			y[i]=D;
+
+			// the i'th point
+			for (i=1;i<rowsleo;i++) {
+				// store function values
+				fprev=f;
+				f=fnext;
+				fnext=y[(i+1) % rows];
+
+				dx1=x[i]-x[(i-1+rows) % rows];
+				dx2=x[(i+1) % rows]-x[i];
+				// derive the derivative value from the current row
+				D = 0.5*(  ( f-fprev )/ dx1 + ( fnext-f )/ dx2  );
+//				printf("%i x:%lf yprev:%lf y:%lf ynext:%lf dx1:%lf dx2:%lf D:%lf\n",i,x[i],fprev,f,fnext,dx1,dx2,D);
+				// overwrite the value from the row above back in the matrix with its derivative
+				y[i]=D;
+			}
+
+			// the last point
+			i=rowsleo;
+			fprev=f;
+			f=fnext;
+			fnext=f0;
+			dx1=x[rowsleo]-x[rowslet];
+			dx2=x[0]-x[rowsleo]+*periodX;
+//			if (dx2<thres) dx2=x[1]-x[rowsleo]+*periodX;
+			D = 0.5*(  ( f-fprev )/ dx1 + ( fnext-f )/ dx2  );
+			i=rowsleo;
+			// overwrite the value from the row above back in the matrix with its derivative
+			y[i]=D;
+//			printf("%i x:%lf yprev:%lf y:%lf ynext:%lf dx1:%lf dx2:%lf D:%lf\n",i,x[i],fprev,f,fnext,dx1,dx2,D);
+						
+		}
 	}
 	else {
 		double D1,D2,d1,d2,d3;

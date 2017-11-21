@@ -1104,9 +1104,11 @@ class mscsFunction : public mscsObject {
     \details
     @param inPlace - if true then no extra memory is allocated for derivation and the derivative is stored in the object - THIS IS NOT IMPLEMENTED YET\n
                      if flase then the original function is not changed and derivative is returned. Will allocate memory for another function
-    @param periodX - not used at the moment
-    @param periodY - value that specifies the pediod and implicitly the range of allowec y-values of the function [0,pediodY). If function detects that the function values had been wrapped around period
-    then the derivative will choose the smaller of the two possible values of the derivative.
+    @param periodX - if NULL then non-periodic derivative is calculated and if anything else, then periodic derivative is calculated. No particular value 
+    is returned.
+    @param periodY - value that specifies the pediod and implicitly the range of allowec y-values of the function [0,pediodY). 
+    If function detects that the function values had been wrapped around period
+    then the derivative will choose the smaller of the two possible values of the derivative. Special use only.
     @return calculated derivative of the initial function
 
     \date 2010/01/19 10:09:00
@@ -1197,7 +1199,15 @@ class mscsFunction : public mscsObject {
   */
   const mscsFunction extrapolate(double from, double to, double dx, bool inPlace=false, string type="linear");
 
-  vector<double> findRoot();
+  /*!
+	\brief find estimates of roots of the tabulated function
+	\details 
+	@param periodic - if >0 then the root is calculated on periodic boundary conditions assuming the specified period
+	@return vector of roots
+
+	\date Nov 12, 2017, 8:03:04 PM
+   */
+  vector<double> findRoot(double period=0);
 
   /*!
     \brief integrates the function the returns the result

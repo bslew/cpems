@@ -104,6 +104,7 @@ int main(int argc, char** argv) {
 		printf("51 - test mscsFunction3dregc triangulation interpolation\n");
 		printf("52 - test mscsPDF2D contours\n");
 		printf("53 - test mscsPDF1D CR\n");
+		printf("54 - test mscsFunction derivative\n");
 		exit(0);
 	}
 	long testNo=strtol(argv[1],NULL,10);
@@ -1081,6 +1082,30 @@ int main(int argc, char** argv) {
 			v.print();
 
 			break;
+		}
+		case 54:
+		{
+			double T=1;
+			f.mkSin(0,0.999,0.01,T,0,1);
+			f.save("sin");
+			long i=0;
+//			printf("%li\n",(i-1) % 10);
+//			exit(0);
+			f.derivative(true,&T);
+			f.save("sin-deriv");
+			break;
+		}
+		case 55:
+		{
+			f.mkSin(0,100,1,1,0,1);
+			double* d=f.extractArguments();
+			long n=f.pointsCount();
+			f.save("in");
+			cpeds_save_matrix(d,n,1,"in0");
+			cpeds_shift_array(d,n,1,true);
+			cpeds_save_matrix(d,n,1,"in1");
+			cpeds_shift_array(d,n,11,true);
+			cpeds_save_matrix(d,n,1,"in12");
 		}
 		default:
 			break;

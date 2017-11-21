@@ -94,6 +94,7 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_walk.keepDirectionStepGenerationFailuresNumber=50;
 	_walk.rejectedLinkNumber=0;
 	_walk.uphillClimbing=true;
+	_walk.userOutputFrequency=1000;
 	
 	//
 	// set the cooling PDF and corresponding RNG for "down-hill" walk
@@ -432,7 +433,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 		//
 		// output
 		//
-		if (length() % 1000 == 0 or walk==false or msgs->getVerbosity()>=High)
+		if (length() % getWalkInfoOutputFrequency() == 0 or walk==false or msgs->getVerbosity()>=High)
 			msgs->say("MC length: %.0f, X2: %f, bf. X2: %f, cur. temp. %f, min. temp. %f ",double(length()),current().chisq(),_bestFit.chisq(),getTemperature(), getFinalTemperature(),Medium);
 	}
 	if (_walk.rejectionsCount>=_cooling.maximalRejectionsCount) { msgs->say("Breaking the chain. _maximalRejectionsCount reached: "+msgs->toStr(_walk.rejectionsCount),Medium); }

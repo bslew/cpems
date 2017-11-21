@@ -842,6 +842,16 @@ install (FILES
 	${CPEMS_HEADERS}
 	DESTINATION include/cpems)
 
+install (FILES 
+    ${PROJECT_SOURCE_DIR}/pyth/plot_function.py
+    ${PROJECT_SOURCE_DIR}/pyth/plot_matrix.py
+    ${PROJECT_SOURCE_DIR}/pyth/mat_oper.py
+    ${PROJECT_SOURCE_DIR}/pyth/mat_oper.py
+    
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                    GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+	DESTINATION bin)
+#    ${PROJECT_SOURCE_DIR}/pyth/pyCPEDScommonFunctions/cal2jd.py
     
 #install (TARGETS 
 #	${CPEMS_LIBS}

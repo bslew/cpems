@@ -51,7 +51,7 @@ parser.add_option("-o", "", dest="outfile", default="out", type="string", help='
 
 
 # switches
-# parser.add_option("", "--saveClusterPart", action="store_true", dest="saveClusterPart", default=False, help="triggers saving particles positions that form found clusters. This option may produce large amounts of data, but may be useful for control visualizations ")
+parser.add_option("", "--test", action="store_true", dest="test", default=False, help="triggers test mode")
 
 
 
@@ -84,18 +84,28 @@ parser.add_option("-o", "", dest="outfile", default="out", type="string", help='
 ################################################################################################################################################
 # MAIN PROGRAM
 # print args
+
+if option.test:
+    dt='2017-10-27 09:10:11'
+    print dt,' UTC is ',cpedsPythCommon.cal2jd(dt)
+    sys.exit()
+
+
 data=np.loadtxt(args[0], dtype="string")
+np.set_printoptions(precision=15,suppress=True)
 
 dt=data[:,[option.col,option.col+1]]
 dt=map(' '.join, zip(dt[:,0],dt[:,1]))
 # print dt
-jd=cpedsPythCommon.cal2jd(dt)
-
-data[:,option.col]=jd
-data=scipy.delete(data,option.col+1,1)
-data=np.array(data,dtype="float")
+# jd=cpedsPythCommon.cal2jd(dt).astype("|S30")
+jd=np.array(['%.15f' % JD for JD in cpedsPythCommon.cal2jd(dt)]).reshape([len(dt),1])
+# print jd
+# data[:,option.col]=jd #.astype("|S20")
+# data=scipy.delete(data,option.col+1,1)
+data=np.hstack([jd,data[:,option.col+2:]])
+# data=np.array(data,dtype="float")
 # print data
-np.savetxt(option.outfile, data, fmt="%.6f")
+np.savetxt(option.outfile, data, fmt="%s")
 # print data
 
 # data1=None

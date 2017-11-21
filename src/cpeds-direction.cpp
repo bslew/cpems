@@ -288,7 +288,7 @@ DirectionRaDec DirectionAh::toRaDec(const cpedsDirection& observer, double JD, b
 	  return DirectionRaDec(position.ra, position.dec,JD)*PI180;
 }
 /* ************************************************************************************************************************************************************************************ */
-DirectionRaDec DirectionAh::toRaDec(const cpedsDirection& observer, double JD, double ut1_utc, double DeltaAT, bool localTime, double polar_x, double polar_y, double P, double T, bool refract) const {
+DirectionRaDec DirectionAh::toRaDec(const cpedsDirection& observer, double JD, double ut1_utc, double DeltaAT, bool localTime, double polar_x, double polar_y, double P, double T, bool refract, int LSTtype) const {
 //	double tt_ut1=DeltaAT+CPEDS_TT_TAI_OFFSET-ut1_utc;
 
 	if (localTime) JD-=observer.lon()/twoPI; // convert to JD utc
@@ -297,7 +297,7 @@ DirectionRaDec DirectionAh::toRaDec(const cpedsDirection& observer, double JD, d
 
 	  cpedsDirection hadec = cpeds_horizontalToEquatorialFirst(A(),h(),observer.lat());
 	  double lon_sec = observer.lon()*PI180inv/15*3600;
-	  double lst=cpeds_local_sidereal_time_novas(JD+ut1_utc/86400.0,ut1_utc,DeltaAT,lon_sec)/86400*twoPI; // [rad]
+	  double lst=cpeds_local_sidereal_time_novas(JD+ut1_utc/86400.0,ut1_utc,DeltaAT,lon_sec,LSTtype)/86400*twoPI; // [rad]
 //	  printf("lst novas: %.15lf\n",lst*PI180inv/15*3600);
 //	  lst=cpeds_local_sidereal_time(JD+lon_sec/86400+ut1_utc/86400.0,observer.lon()*PI180inv); // this is consistent with novas LST
 //	  printf("lst cpeds: %.15lf\n",lst*PI180inv/15*3600);

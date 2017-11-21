@@ -32,7 +32,7 @@ parser = OptionParser(description=programDescription)
 # parser.add_option("-f", "--file", dest="signal_file", default='277_ocraf_absron_010711.dat.totalPower.last500000', 
 #                  help="name of the file with input signal. The file should consist of 16 columns with total power signal in order as in the native ocraf format: a1 a2 b1 b2 ...", metavar="FILE")
 # parser.add_option("-D", "--boxSize", dest="boxSize", default=256, type="float", help='comoving size of the box [Mpc]', metavar="LENGTH")
-parser.add_option("", "--figSize", dest="figSize", default="19,8", type="string", help='size of the figure in inch eg. 19,8. To have A4 plot type A4.' , metavar="STRING")
+parser.add_option("", "--figSize", dest="figSize", default="12,12", type="string", help='size of the figure in inch eg. 19,8. To have A4 plot type A4.' , metavar="STRING")
 parser.add_option("", "--figCols", dest="figCols", default='1', type="string", help='''Number of columns in the plot in multiplot mode.
     If a list of integers, the numbers indicate relative sub-plot sizes: e.g. '[1,2]' indicates two subplots with width ratio 1:2 respectively.
     If a single value is required use '[1]'. ''' , metavar="VALUE")
@@ -135,7 +135,8 @@ parser.add_option("", "--startFrom", dest="startFrom", default=0, type="int", he
 parser.add_option("", "--rows", dest="rows", type="int", help='how many rows to read', metavar="NUM", action="append")
 parser.add_option("", "--every", dest="every", type="int", help='plot every this data row', metavar="NUM", action="append")
 parser.add_option("", "--bin", dest="bin", type="int", help='plot binned data', metavar="NUM", action="append")
-parser.add_option("-c", "--colColor", dest="colColor", default=-1, type="int", help='number of the column to be used to plot in color scale', metavar="NUM")
+# parser.add_option("-c", "--colColor", dest="colColor", default=-1, type="int", help='number of the column to be used to plot in color scale', metavar="NUM")
+parser.add_option("-c", "--colColor", dest="colColor", type="int", help='number of the column to be used to plot in color scale', action="append")
 parser.add_option("-s", "--colSize", dest="colSize", default=-1, type="int", help='number of the column to be used to plot data with markers size proportional to this column values', metavar="NUM")
 parser.add_option("", "--legendLoc", dest="legendLoc", default='ur', type="string", help='default location of the plot legend: ur,ul, br,bl ("None" if not wanted in given panel)', metavar="STRING")
 parser.add_option("", "--legendPatternLength", dest="legendPatternLength", default=3, type="float", help='default length of lines pattern that show up in legend (default: 3)', metavar="VALUE")
@@ -431,6 +432,7 @@ if type(option.x2) != type(list()):    option.x2 = list()
 if type(option.y2) != type(list()):    option.y2 = list()
 if type(option.colx) != type(list()):    option.colx = list([0])
 if type(option.coly) != type(list()):    option.coly = list([1])
+if type(option.colColor) != type(list()):    option.colColor = list([-1])
 if type(option.zorder) != type(list()):    option.zorder = list()
 if type(option.xlabel) != type(list()):   option.xlabel = list(['x'])
 if type(option.ylabel) != type(list()):   option.ylabel = list(['y'])
@@ -465,10 +467,10 @@ if inFilesNum == 1:
 	while colsxy > len(args):
 		args.append(inFile)
 		print args
-if type(option.xmin) != type(list()):    option.xmin = list([-1])
-if type(option.xmax) != type(list()):    option.xmax = list([-1])
-if type(option.ymin) != type(list()):    option.ymin = list([-1])
-if type(option.ymax) != type(list()):    option.ymax = list([-1])
+if type(option.xmin) != type(list()):    option.xmin = list([None])
+if type(option.xmax) != type(list()):    option.xmax = list([None])
+if type(option.ymin) != type(list()):    option.ymin = list([None])
+if type(option.ymax) != type(list()):    option.ymax = list([None])
 if type(option.datexmin) != type(list()):    option.datexmin = list([-1])
 if type(option.datexmax) != type(list()):    option.datexmax = list([-1])
 if type(option.xticks) != type(list()):    option.xticks = list([0])
@@ -2018,9 +2020,9 @@ def formatXaxisDates(figIdx):
 #                fig.autofmt_xdate()
 
     ymin, ymax = ax.get_ylim()
-    if option.ymin[figIdx % len(option.ymin)] != -1:
+    if option.ymin[figIdx % len(option.ymin)] != None:
         ymin = option.ymin[figIdx % len(option.ymin)]
-    if option.ymax[figIdx % len(option.ymax)] != -1:
+    if option.ymax[figIdx % len(option.ymax)] != None:
         ymax = option.ymax[figIdx % len(option.ymax)]
     print 'setting y limits: %f, %f' % (ymin, ymax)
 #                ylim([ymin,ymax])
@@ -2677,7 +2679,7 @@ def makeMayaViPlot(dataList):
     #            hold(True)
 
     if option.noAxes == False:
-        if option.xmin[0] != -1 and option.xmax[0] != -1 and option.ymin[0] != -1 and option.ymax[0] != -1 and option.zmin != -1 and option.zmax != -1:
+        if option.xmin[0] != None or option.xmax[0] != None or option.ymin[0] != None or option.ymax[0] != None or option.zmin != None or option.zmax != None:
             extentxyz = [option.xmin[0], option.xmax[0], option.ymin[0], option.ymax[0], option.zmin, option.zmax]
             mlab.axes(extent=extentxyz, xlabel=option.xlabel[i % len(option.xlabel)], ylabel=option.ylabel[i % len(option.ylabel)], zlabel=option.zlabel)
         else:
@@ -3010,7 +3012,8 @@ def makeFunctionPlot(inFile):
                 else:
                     colx = option.colx[i % len(option.colx)]
                     coly = option.coly[i % len(option.coly)]
-                    colColor = option.colColor
+#                     colColor = option.colColor
+                    colColor = option.colColor[i % len(option.colColor)]
 
 
                 if option.logX:
@@ -3380,7 +3383,8 @@ def makeFunctionPlot(inFile):
                 
                 lons = -datax
                 lats = datay
-                map = data[:, option.colColor]
+#                 map = data[:, option.colColor]
+                map = data[:, option.colColor[i % len(option.colColor)]]
     
                 if projectMap == None:
                     if option.proj == 'moll' or option.proj == 'ortho':
@@ -3421,7 +3425,8 @@ def makeFunctionPlot(inFile):
                 levels = arange(minv, maxv, delta)
                 print 'levels: ', levels
                  
-                if option.colColor == -1:
+#                 if option.colColor == -1:
+                if option.colColor[i % len(option.colColor)] == -1:
     #                global scatterGlobalData
     #                scatterGlobalData=option.pc[i % len(option.pc) ]
                     print 'will use points color: ', option.pc[i % len(option.pc) ]
@@ -3743,9 +3748,9 @@ def makeFunctionPlot(inFile):
 #                fig.autofmt_xdate()
 
                 ymin, ymax = ax.get_ylim()
-                if option.ymin[figIdx % len(option.ymin)] != -1:
+                if option.ymin[figIdx % len(option.ymin)] != None:
                     ymin = option.ymin[figIdx % len(option.ymin)]
-                if option.ymax[figIdx % len(option.ymax)] != -1:
+                if option.ymax[figIdx % len(option.ymax)] != None:
                     ymax = option.ymax[figIdx % len(option.ymax)]
                 print 'setting y limits: %f, %f' % (ymin, ymax)
 #                ylim([ymin,ymax])
@@ -3777,7 +3782,8 @@ def makeFunctionPlot(inFile):
 
                 if option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont':  # or option.plotType[plotTypeIdx]=='scatcirc':
                     global scatterGlobalData
-                    if option.colColor == -1:
+#                     if option.colColor == -1:
+                    if option.colColor[i % len(option.colColor)] == -1:
                         data = arange(len(data))
                         scatterGlobalData = data
                     else:
@@ -3792,6 +3798,7 @@ def makeFunctionPlot(inFile):
                         datax, datay, scatterGlobalData = removeNans3(datax, datay, scatterGlobalData)
                     palette = getPalette()
                     palette = cm.get_cmap(option.CM, int(option.cbLabelsNum))
+#                     palette = cm.get_cmap(option.CM, int(option.levels))
 
 #                    scatter(datax,datay, c=scatterGlobalData, s=sizeData, lw=1, marker=option.pt[i % len(option.pt)], label=plotLegendLabel, cmap=palette,  zorder=option.zorder[i % len(option.zorder)], picker=True)
 #                    print option.pt[i % len(option.pt)]
@@ -3804,7 +3811,7 @@ def makeFunctionPlot(inFile):
 #                        cpedsPythCommon.waitEnter()
 
                     if option.plotType[plotTypeIdx] == 'scat':
-                        if option.colColor == -1:
+                        if option.colColor[i % len(option.colColor)] == -1:
                             scatter(datax, datay, c=option.pc[i % len(option.pc) ], s=sizeData, lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], marker=option.pt[i % len(option.pt)], label=plotLegendLabel, cmap=palette, zorder=option.zorder[i % len(option.zorder)], picker=True)
                         else:
                             cmax = max(scatterGlobalData)
@@ -3899,7 +3906,7 @@ def makeFunctionPlot(inFile):
 
                 elif option.plotType[plotTypeIdx] == 'vect':
                     global scatterGlobalData
-                    if option.colColor == -1:
+                    if option.colColor[i % len(option.colColor)] == -1:
                         data = arange(len(data))
                         scatterGlobalData = data
                     else:
@@ -3932,7 +3939,7 @@ def makeFunctionPlot(inFile):
                     dataxerr = dataxerr * 100
                     print dataxerr
                     datayerr = datayerr * 100
-                    if option.colColor == -1:
+                    if option.colColor[i % len(option.colColor)] == -1:
                         Q = quiver(datax, datay, dataxerr, datayerr, scale=option.Qscale, lw=option.width[i % len(option.width)], linestyle=option.ls[i % len(option.ls)], color=option.lc[i % len(option.lc)])
                     else:
                         Q = quiver(datax, datay, dataxerr, datayerr, scatterGlobalData, scale=option.Qscale, lw=option.width[i % len(option.width)], linestyle=option.ls[i % len(option.ls)], cmap=palette)
@@ -4259,14 +4266,14 @@ def makeFunctionPlot(inFile):
 #                    if ymin <= 0 and option.logY:
 #                        xmin=0;
                     
-                    if option.xmin[figIdx % len(option.xmin)] != -1:
+                    if option.xmin[figIdx % len(option.xmin)] != None:
                         xmin = option.xmin[figIdx % len(option.xmin)]
-                    if option.xmax[figIdx % len(option.xmax)] != -1:
+                    if option.xmax[figIdx % len(option.xmax)] != None:
                         xmax = option.xmax[figIdx % len(option.xmax)]
                 
-                    if option.ymin[figIdx % len(option.ymin)] != -1:
+                    if option.ymin[figIdx % len(option.ymin)] != None:
                         ymin = option.ymin[figIdx % len(option.ymin)]
-                    if option.ymax[figIdx % len(option.ymax)] != -1:
+                    if option.ymax[figIdx % len(option.ymax)] != None:
                         ymax = option.ymax[figIdx % len(option.ymax)]
 
                     xmin = xmin - option.marginX
@@ -4290,9 +4297,9 @@ def makeFunctionPlot(inFile):
 #                     if option.xmax[figIdx % len(option.xmax)]!=-1:
 #                         xmax=option.xmax[figIdx % len(option.xmax)]
                 
-                    if option.ymin[figIdx % len(option.ymin)] != -1:
+                    if option.ymin[figIdx % len(option.ymin)] != None:
                         ymin = option.ymin[figIdx % len(option.ymin)]
-                    if option.ymax[figIdx % len(option.ymax)] != -1:
+                    if option.ymax[figIdx % len(option.ymax)] != None:
                         ymax = option.ymax[figIdx % len(option.ymax)]
 
 #                     xmin=xmin-option.marginX
@@ -4390,11 +4397,11 @@ def makeFunctionPlot(inFile):
                 if option.plotType[plotTypeIdx] != 'ts':
                     if option.xticks[figIdx % len(option.xticks)] != 0:
                         tcs = ax.get_xticks()
-                        if option.xmin[figIdx % len(option.xmin)] != -1:
+                        if option.xmin[figIdx % len(option.xmin)] != None:
                             x1 = option.xmin[figIdx % len(option.xmin)]
                         else:
                             x1 = tcs[0]
-                        if option.xmax[figIdx % len(option.xmax)] != -1:
+                        if option.xmax[figIdx % len(option.xmax)] != None:
                             x2 = option.xmax[figIdx % len(option.xmax)]
                         else:
                             x2 = tcs[-1]

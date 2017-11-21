@@ -541,7 +541,8 @@ class DirectionAh : public cpedsDirection {
     @return cpedsDirection object that stores the Ra and Dec of the stored A,h in the current object for the indicated location and JD [rad]
 
     The conversion takes into account the precession and nutation.\n
-    It does not account for the atmospheric refraction nor aberration etc.
+    It does not account for the atmospheric refraction 
+    libnova implementation
     
     \date 2009/12/10 14:48:12 
     \author Bartosz Lew
@@ -557,16 +558,19 @@ class DirectionAh : public cpedsDirection {
     @param localTime - specifies whether the supplied JD time is local (true) or UT (false)
 	@param polar_x - polar motion - currently not used
 	@param polar_y - polar motion - currently not used
-    @param P - pressure [mbar]
-    @param T - temperature [degC]
+    @param P - pressure [mbar] - currently not used
+    @param T - temperature [degC] - currently not used
     @param refract - if true then the direction should be first unrefracted usisng the P,T data but this is not 
     implemented now. So the default option is refract false and it is assumed that the A,h direction is in-space
-	@return
+    @param LSTtype - 0 - mean, 1 - true
+	@return radec coordinates of the date (mean if LSTtype=0 and true if LSTtype=1)
+	
+	This routine is compatible with toAh of the DirectionRaDec class when LSTtype=1
 
 	\date Jan 10, 2013, 1:55:06 PM
 	\author Bartosz Lew
    */
-  DirectionRaDec toRaDec(const cpedsDirection& observer, double JD, double ut1_utc=0, double DeltaAT=37, bool localTime=false, double polar_x=0, double polar_y=0, double P=1012, double T=0, bool refract=false) const;
+  DirectionRaDec toRaDec(const cpedsDirection& observer, double JD, double ut1_utc=0, double DeltaAT=37, bool localTime=false, double polar_x=0, double polar_y=0, double P=1012, double T=0, bool refract=false, int LSTtype=0) const;
 
   
   //! pressure is given in millibars=100 Pa=100N/m^2 and temperature in Celsius degrees

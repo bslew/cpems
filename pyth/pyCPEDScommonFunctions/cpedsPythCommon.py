@@ -403,7 +403,7 @@ def cal2u(date_time_str):
     return t.value
 
 '''
-date_time_str in format %Y-%m-%s %H:%M:%S 
+date_time_str in format %Y-%m-%d %H:%M:%S 
 '''
 def cal2jd(date_time_str):
     t=Time(date_time_str, format='iso',scale='utc')
@@ -413,6 +413,7 @@ def cal2jd(date_time_str):
     t.format='jd'
     
 #     print date_time_str,t.jd1,t.jd2,t.jd
+#     print t.jd
 #     print t.value
     return t.jd
 
