@@ -108,7 +108,7 @@ add_dependencies(external Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
 # Find required packages
 #
 find_package(Qt4 4.8 REQUIRED)
-FIND_PACKAGE(GSL 2 REQUIRED)
+#FIND_PACKAGE(GSL 2 REQUIRED)
 #find_package(libnova REQUIRED)
 #find_package(m REQUIRED)
 #find_package(proj REQUIRED)
@@ -362,11 +362,17 @@ set (MSCSWMAPLIB_SOURCES
 ################################################################
 # Add library targets
 #
-add_library(CPEDS STATIC ${CPEDSLIB_SOURCES} )
-add_library(Mscsfn STATIC ${MSCSFNLIB_SOURCES} )
-add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
-add_library(Mscsplot STATIC ${MSCSPLOTLIB_SOURCES} )
-add_library(MscsWMAP STATIC ${MSCSWMAPLIB_SOURCES} )
+#add_library(CPEDS STATIC ${CPEDSLIB_SOURCES} )
+#add_library(Mscsfn STATIC ${MSCSFNLIB_SOURCES} )
+#add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
+#add_library(Mscsplot STATIC ${MSCSPLOTLIB_SOURCES} )
+#add_library(MscsWMAP STATIC ${MSCSWMAPLIB_SOURCES} )
+
+add_library(CPEDS  ${CPEDSLIB_SOURCES} )
+add_library(Mscsfn  ${MSCSFNLIB_SOURCES} )
+add_library(Mscscore  ${MSCSCORELIB_SOURCES} )
+add_library(Mscsplot  ${MSCSPLOTLIB_SOURCES} )
+add_library(MscsWMAP  ${MSCSWMAPLIB_SOURCES} )
 
 #add_library(${PROJECT_BINARY_DIR}/external_packages/
 #add_dependencies(CPEDS slaRefr novas ccSHT3 velKB)
@@ -699,6 +705,7 @@ add_definitions(
 	-DDEBUG_USING_FFTW2AND3 
 	-DHAVE_OPENMP 
 	)
+#    -DDEBUG_MCMC_PDF
 
 ################################################################
 ################################################################

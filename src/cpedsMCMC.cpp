@@ -1154,7 +1154,9 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints) {
 	states/=states.getMaxValue();
 	states.removeSmaller(1e-10);
 	states.checkRanges();
-
+#ifdef DEBUG_MCMC_PDF
+	cout << "Number of states after cutting off at L<1e-10: "<< states.pointsCount() <<"\n";
+#endif
 	states.sortFunctionArgAscending();
 	
 	MscsPDF1D pdf;
@@ -1170,14 +1172,26 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints) {
 	bins.clear();
 	pdf=states.binFunction(dx,bins,"bin_center","max");
 	pdf.checkRanges();
-//	pdf.save("rusty.pdf");
+#ifdef DEBUG_MCMC_PDF
+	pdf.save("rusty.pdf");
+#endif
+
 	pdf.interpolate(pdf.getMinArg(),pdf.getMaxArg(),pdfPoints,true,"cspline");
 	pdf/=pdf.getMaxValue();
 
-	cpedsList<double> CR=pdf.getCR(0.9973).sort(12);
-	double margin=CR[CR.size()-1]-CR[0];
-	pdf=pdf.cut(CR[0]-margin/2,CR[CR.size()-1]+margin/2);
+#ifdef DEBUG_MCMC_PDF
+	pdf.save("rusty-interpolated.pdf");
+#endif
 
+	cpedsList<double> CR=pdf.getCR(0.9973).sort(12);
+#ifdef DEBUG_MCMC_PDF
+	CR.save("CR.tmp");
+#endif
+	if (CR.size()!=2) { cout << "WARNING 0.9973 confidence interval suspecious. Will return the rusty pdf.\n"; }
+	else {
+		double margin=CR[CR.size()-1]-CR[0];
+		pdf=pdf.cut(CR[0]-margin/2,CR[CR.size()-1]+margin/2);
+	}
 	return pdf;	
 
 	

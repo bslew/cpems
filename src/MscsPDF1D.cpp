@@ -31,10 +31,14 @@ cpedsList<double> MscsPDF1D::getCR(double CL, double* LVL) {
 	mscsFunction c;
 	mscsFunction cdf=getCDF();
 	mscsFunction cdfi=cdf;
-//	cdf.save("rusty.cdf");
+#ifdef DEBUG_MCMC_PDF
+	cdf.save("rusty.cdf");
+#endif
 	cdfi.invert();
 	cdfi.sortFunctionArgAscending();
-//	cdfi.save("rusty.icdf");
+#ifdef DEBUG_MCMC_PDF
+	cdfi.save("rusty.icdf");
+#endif
 	cdfi.average_sameArgs();
 	double lvl=cdfi.finter(CL);
 	
