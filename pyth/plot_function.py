@@ -2626,10 +2626,17 @@ def makeMayaViPlot(dataList):
         if option.plotType[i] == 'mayaScat':
             print data
     #        mlab.pipeline.volume(mlab.pipeline.scalar_scatter(data))
+            colx = option.colx[i % len(option.colx)]
+            coly = option.coly[i % len(option.coly)]
+            colz = option.colColor[i % len(option.colColor)]
             if size(data[0]) >= 4:
-                mlab.points3d(data[:, 0], data[:, 1], data[:, 2], data[:, 3] / np.amax(data[:, 3]), scale_factor=option.mayaPS)
+                colSize = option.colSize # [i % len(option.colSize)]
+
+#                 mlab.points3d(data[:, 0], data[:, 1], data[:, 2], data[:, 3] / np.amax(data[:, 3]), scale_factor=option.mayaPS)
+                mlab.points3d(data[:, colx], data[:, coly], data[:, colz], data[:, colSize] / np.amax(data[:, colSize]), scale_factor=option.mayaPS)
             else:
-                mlab.points3d(data[:, 0], data[:, 1], data[:, 2], np.ones((len(data[:, 0]))), scale_factor=option.mayaPS)
+#                 mlab.points3d(data[:, 0], data[:, 1], data[:, 2], np.ones((len(data[:, 0]))), scale_factor=option.mayaPS)
+                mlab.points3d(data[:, colx], data[:, coly], data[:, colz], np.ones((len(data[:, 0]))), scale_factor=option.mayaPS)
     #        mlab.scalar_scatter(data)
             if option.colorbar:
                 mlab.colorbar()

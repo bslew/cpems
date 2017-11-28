@@ -382,8 +382,9 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
 #         if CM[plotNo % len(CM)]=='none':
 #             cmap=None
 
-    cmap=CM[plotNo % len(CM)]
+#     cmap=CM[plotNo % len(CM)]
 
+    cmap = plt.get_cmap(CM[plotNo % len(CM)])
     #
     # mask business
     #     

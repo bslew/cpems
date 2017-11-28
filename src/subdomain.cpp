@@ -135,6 +135,21 @@ subDomain::subDomain(subDomain* parent, const subDomain_region_t& newSubDomain) 
 	findPointsInDomain(parent);
 	if (_def.maxDepth>0) {
 		if (_def.curDepth<_def.maxDepth) tree();
+		else {
+			/*
+			 * Comment: this is a fix for tree initialization
+			 * It always should have subdomains initialized even if all are empty.
+			 * This can be re-witten a different way someday but for the moment
+			 * in many places the code iterates over the subdomains checking if 
+			 * they are NULL. So if this structure should be initialized
+			 * 
+			 * author: blew
+			 * date: Nov 27, 2017 4:02:20 PM
+			 *
+			 */
+			_def.sub = new subDomain*[_def.subDomainsCount];
+			for (long i = 0; i < _def.subDomainsCount; i++) { _def.sub[i]=NULL; }			
+		}
 	}
 	else {
 		tree();
@@ -201,7 +216,6 @@ void subDomain::tree() {
 					// create a new sub-domain
 					_def.sub[l] = new subDomain(this,r);
 					if (_def.sub[l]->_def.idx->size()==0) { delete _def.sub[l]; _def.sub[l]=NULL; 
-					//_def.subDomainsCount=0; 
 //						delete _def.idx; _def.idx=NULL; 
 #ifdef DEBUG_SUBDOMAIN
 					printf("deleting subdomain which does not contain any points in it\n");
@@ -509,7 +523,17 @@ vector<long>* subDomain::getContainingDomainPointIdx(const subDomain_region_t& r
 	//	printf("ptr BEGIN: %li\n",ptr);
 	treeLevel++;
 	
-		
+
+	long NnonNULLsub=0, NNULLsub=0;
+	for (int i=0;i< _def.subDomainsCount;i++) {
+		if (_def.sub!=NULL) {
+			if (_def.sub[i]!=NULL) NnonNULLsub++;
+			else NNULLsub++;
+		}
+	}
+	if (NnonNULLsub==0 and NNULLsub==0) { printf("NnonNULLsub=0 and NNULLsub=0. This should not happen. "
+			"This is most likely because _def.sub==NULL i.e. is not initialized at the bottom of the tree. FIX IT !\n"); exit(1); }
+
 		//	print_domain_range(_def.region); 
 #ifdef DEBUG_SUBDOMAIN
 		printf("\n\n\ngetContainingDomainPointIdx, region is\n");
@@ -518,6 +542,8 @@ vector<long>* subDomain::getContainingDomainPointIdx(const subDomain_region_t& r
 		printf("lev: %i, CDL: %i\n",treeLevel,containingDomainLevel);
 		printf("checking new domain\n");
 		print_domain_range();
+		printf("this domain has %li non-NULL subdomains and %li NULL subdomains\n-----\n\n",NnonNULLsub, NNULLsub);
+//		if (treeLevel>_def.maxDepth) return ptr;
 #endif
 		
 		if (inDomain(r)) { 
@@ -545,7 +571,7 @@ vector<long>* subDomain::getContainingDomainPointIdx(const subDomain_region_t& r
 
 		for (long i = 0; i < _def.subDomainsCount; i++) { // TODO: this can be improved if after one pass a domain is found then there is no point in further search at the same level because the domains are non-overlapping
 #ifdef DEBUG_SUBDOMAIN
-			printf("checking subdomain: %i\n",i);
+			printf("checking subdomain: %i/%i\n",i+1,_def.subDomainsCount);
 #endif
 			if (treeLevel>=containingDomainLevel) {
 				if (_def.sub[i]!=NULL) {
@@ -586,7 +612,20 @@ vector<long>* subDomain::getContainingDomainPointIdx(const subDomain_region_t& r
 /***************************************************************************************/
 cpedsList<long> subDomain::getPointsIdx(const subDomain_region_t& r) {
 	cpedsList<long> id;
-	vector<long>* rdomainPoints=getContainingDomainPointIdx(r);
+
+//#ifdef DEBUG_SUBDOMAIN2
+	/*
+	 * Comment: this is a possible fix when searching tree that was decomposed down to a fixed depth and not
+	 * down to a fixed maximal number of particles per cell.
+	 * 
+	 * author: blew
+	 * date: Nov 27, 2017 4:00:19 PM
+	 *
+	 */
+	
+	subDomain* sD;
+	vector<long>* rdomainPoints=getContainingDomainPointIdx(r,&sD,true);
+//#endif	
 
 	if (rdomainPoints!=NULL) {
 		for (unsigned long i = 0; i < rdomainPoints->size(); i++) {
