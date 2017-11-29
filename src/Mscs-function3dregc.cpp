@@ -539,10 +539,17 @@ cpedsStatusCodes mscsFunction3dregc::saveAllSlices(string dirPref, string filena
 /***************************************************************************************/
 cpedsStatusCodes mscsFunction3dregc::saveSlice(int plane, int coord, string filename, int part) {
 	if (getN()==0) { return cpedsError; }
-	cpeds_matrix_save(getSlice(plane,coord,part),filename);
+	cpeds_matrix_save(getSlice(plane,coord,part),filename,"",_param.savePrecision);
 	return cpedsSuccess;
 }
-
+/* ******************************************************************************************** */
+void mscsFunction3dregc::setSavePrecision(int precision) {
+	_param.savePrecision=precision;
+}
+/* ******************************************************************************************** */
+int mscsFunction3dregc::getSavePrecision() const {
+	return _param.savePrecision;
+}
 /***************************************************************************************/
 mscsFunction3dregc& mscsFunction3dregc::generateRandomGaussianField(double m, double s, bool re, bool im, long seed, long seedOffset) {
 	//	cpedsRNG *rns = new cpedsRNG("gaussian_circle");

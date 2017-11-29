@@ -98,6 +98,7 @@ class mscsFunction3dregc : public mscsObject {
 			double xMax,yMax,zMax; //!< coordinate of the 3D box corner with largest coordinates; this is provided explicitly to help avoid numerical round-off errors in some cases;
 			
 			bool derivativeXperiodic,derivativeYperiodic;
+			int savePrecision;
 		} function_parameters_t;
 		
 		/* ------------- */
@@ -1299,6 +1300,10 @@ class mscsFunction3dregc : public mscsObject {
 		*/
 		cpedsStatusCodes saveDF3(string filename, int part=0);
 		cpedsStatusCodes saveAllSlices(string dirPref, string filenamePref, int plane=0, int part=0);
+		
+		void setSavePrecision(int precision);
+		int getSavePrecision() const;
+		
 		/*!
 			\brief  save chosen slice as matrix
 			\details 
@@ -1528,7 +1533,7 @@ class mscsFunction3dregc : public mscsObject {
 		
 		function_parameters_t _param;
 		cpedsList<double> _X,_Y,_Z; // this is not needed in the "reg" class as the points spacing is assumed to be regular, however using this allows for non-regular grids to be stored as well.
-		
+
 		/* ---------------------------------------------------------------------------------------------------- */
 		/* CLASS PRIVATE MEMBERS */
 		/* ---------------------------------------------------------------------------------------------------- */

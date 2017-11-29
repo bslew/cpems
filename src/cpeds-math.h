@@ -1976,7 +1976,7 @@ const matrix<double> cpeds_matrix_load(string fileName, string how="", long * re
   \date 2009/11/06 16:54:06
   \author Bartosz Lew
 */
-long cpeds_matrix_save(const matrix<double>& M, string fileName, string how="");
+long cpeds_matrix_save(const matrix<double>& M, string fileName, string how="",int precision=20);
 
 double cpeds_get_memory_usage();
 

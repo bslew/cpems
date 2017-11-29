@@ -3884,11 +3884,11 @@ const matrix<double> cpeds_matrix_load(string fileName, string how, long * resul
 
 
 /************************************************************************************************/
-long cpeds_matrix_save(const matrix<long>& M, string fileName, string how) {
+long cpeds_matrix_save(const matrix<long>& M, string fileName, string how, int precision) {
 	matrix<double> md=matrix<double>(M);
 	return cpeds_matrix_save(md, fileName,how);
 }
-long cpeds_matrix_save(const matrix<double>& M, string fileName, string how) {
+long cpeds_matrix_save(const matrix<double>& M, string fileName, string how, int precision) {
 	unsigned long i,j;
 	FILE * f=NULL;
 	double tmpd;
@@ -3932,8 +3932,10 @@ long cpeds_matrix_save(const matrix<double>& M, string fileName, string how) {
 	else {
 		f = fopen(fileName.c_str(),"a");
 		if (f == NULL) { printf("ERROR: couldn't save matrix to: %s\n",fileName.c_str());  return -1; }
+		stringstream fmt;
+		fmt << "%." << precision << "lE ";
 		for (i=0;i<M.RowNo();i++) {
-			for (j=0;j<M.ColNo();j++)  { tmpd = M(i,j); fprintf(f,"%.20lE ",tmpd); }   fprintf(f,"\n");
+			for (j=0;j<M.ColNo();j++)  { tmpd = M(i,j); fprintf(f,fmt.str().c_str(),tmpd); }   fprintf(f,"\n");
 		}
 	}
 	
