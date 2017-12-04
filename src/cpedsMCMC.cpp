@@ -533,7 +533,7 @@ double* cpedsMCMC::getNextPoint(const MClink& current) {
 			else {
 				sign=getSign();
 				_walk.currentDirection[i]=sign;
-				if (_walk.uphillClimbing and _walk.keepDirectionNow) msgs->say("Reached maximal rejections count in walk along parameter: "+msgs->toStr(i)+". Will walk in any direction from now on.",Medium);
+				if (_walk.uphillClimbing and _walk.keepDirectionNow) msgs->say("Reached maximal rejections count in walk along parameter: "+msgs->toStr(i)+". Will walk in any direction from now on.",Low);
 			}
 			
 			//			msgs->say("generating new step for dimension: "+msgs->toStr(i)+",delta is: "+msgs->toStr(delta), Low);
