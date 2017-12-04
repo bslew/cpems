@@ -274,6 +274,9 @@ class cpedsMCMC {
 		double getCov(int i, int j) { return _chisqData.covarianceMatrix(i,j); }
 		cpedsList<double>& covDiag() { return _chisqData.covarianceMatrixDiag; }
 		mscsFunction3dregc& cov() { return _chisqData.covarianceMatrix; }
+		double getConvergenceThres() const {	return _convergence.relChisqChangeThres;	}
+		void setConvergenceThres(double relChisqChangeThres) { this->_convergence.relChisqChangeThres = relChisqChangeThres; }
+
 		
 		/*!
 			\brief add a new parameter to the parameter space
