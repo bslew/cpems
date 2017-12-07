@@ -87,6 +87,7 @@ parser.add_option("-o", "--outputFile", dest="outputFile", default='', type="str
 # parser.add_option("", "--coly", dest="coly", default="1", type="string", help='comma separated string of columns to be plotted at y axis for each of the input files ', metavar="STRING", action="append")
 parser.add_option("-x", "--colx", dest="colx", type="int", help='number of the column to be plotted at x axis for each of the input files', action="append")
 parser.add_option("-y", "--coly", dest="coly", type="int", help='number of the column to be plotted at y axis for each of the input files', action="append")
+parser.add_option("-z", "--colz", dest="colz", type="int", help='number of the column to be plotted at z axis for each of the input files', action="append")
 parser.add_option("", "--zorder", dest="zorder", type="int", help='z-order for the plot. By default it is generated according to the plotting order', action="append")
 parser.add_option("", "--x2", dest="x2", type="int", help='number of the column with data to be used with fillbtw type plots (eg -x 0 --x2 1 -y 2) ', action="append")
 parser.add_option("", "--y2", dest="y2", type="int", help='number of the column with data to be used with fillbtw type plots (eg -x 0 -y 1 --y2 2)', action="append")
@@ -270,6 +271,7 @@ parser.add_option("", "--transparent", action="store_true", dest="transparent", 
 parser.add_option("", "--nolog", action="store_true", dest="nolog", default=False, help="blocks logging the run to a log file: .plot_function.log")
 parser.add_option("", "--mkLabels", action="store_true", dest="mkLabels", default=False, help='make labels for each of the input files based on the file names')
 parser.add_option("", "--polar", action="store_true", dest="polar", default=False, help="triggers plotting x data as phi and y data as R on polar plot")
+parser.add_option("", "--proj3d", action="store_true", dest="proj3d", default=False, help="triggers plotting on 3d projection (scat3d plot only)")
 parser.add_option("", "--chColorsLTypes", action="store_true", dest="chColorsLTypes", default=False, help="this will trigger changing both colors and line types for each dataset - useful for publications in gray scale to distinguish the datasets even if the colors are not displayed correctly")
 
 parser.add_option("", "--histCuml", action="store_true", dest="histCuml", default=False, help='make histogram cumulative')
@@ -346,6 +348,7 @@ from datetime import datetime, date, time
 import ast
 
 from pylab import *
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab
@@ -432,6 +435,7 @@ if type(option.x2) != type(list()):    option.x2 = list()
 if type(option.y2) != type(list()):    option.y2 = list()
 if type(option.colx) != type(list()):    option.colx = list([0])
 if type(option.coly) != type(list()):    option.coly = list([1])
+if type(option.colz) != type(list()):    option.colz = list([2])
 if type(option.colColor) != type(list()):    option.colColor = list([-1])
 if type(option.zorder) != type(list()):    option.zorder = list()
 if type(option.xlabel) != type(list()):   option.xlabel = list(['x'])
@@ -2871,6 +2875,8 @@ def makeFunctionPlot(inFile):
         if option.polar:
             ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], polar=True)
             print "Making polar axes"
+        elif option.proj3d:
+            ax = fig.add_subplot(111, projection='3d')
         else:
             ax = subplot(111)
     #        fig.subplots_adjust(left=option.border_left, right=1-option.border_right, top=1-option.border_top, bottom=option.border_bottom)
@@ -2967,6 +2973,8 @@ def makeFunctionPlot(inFile):
         if option.polar:
             ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], polar=True)
             print "Making polar axes"
+        elif option.proj3d:
+            ax = fig.add_subplot(111, projection='3d')
         else:
             if type(option.figCols) == type(list()) and type(option.figRows) == type(list()):
                 if newSubplot:
@@ -3019,6 +3027,7 @@ def makeFunctionPlot(inFile):
                 else:
                     colx = option.colx[i % len(option.colx)]
                     coly = option.coly[i % len(option.coly)]
+                    colz = option.colz[i % len(option.colz)]
 #                     colColor = option.colColor
                     colColor = option.colColor[i % len(option.colColor)]
 
@@ -3777,7 +3786,7 @@ def makeFunctionPlot(inFile):
             # function type plot
             ###############################################################################################
     
-            if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX' or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'barchartH':
+            if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX' or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'barchartH':
     #            if option.colColor!=-1 or option.colSize!=-1:
                 if len(option.label) > 0:
                     if option.label[i % len(option.label)] != "None":
@@ -3787,7 +3796,7 @@ def makeFunctionPlot(inFile):
                 else:
                     plotLegendLabel = None
 
-                if option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont':  # or option.plotType[plotTypeIdx]=='scatcirc':
+                if option.plotType[plotTypeIdx] == 'scat'  or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont':  # or option.plotType[plotTypeIdx]=='scatcirc':
                     global scatterGlobalData
 #                     if option.colColor == -1:
                     if option.colColor[i % len(option.colColor)] == -1:
@@ -3828,6 +3837,10 @@ def makeFunctionPlot(inFile):
                                 cmax = option.vmax
 
                             scatter(datax, datay, c=scatterGlobalData, s=sizeData, vmin=cmin, vmax=cmax, lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], marker=option.pt[i % len(option.pt)], label=plotLegendLabel, cmap=palette, zorder=option.zorder[i % len(option.zorder)], picker=True)
+                    elif option.plotType[plotTypeIdx] == 'scat3d':
+                            dataz = inFile[i][:,colz]
+                            scatter(datax, datay, dataz, c=scatterGlobalData, marker=option.pt[i % len(option.pt)], zorder=option.zorder[i % len(option.zorder)])
+                        
                     elif option.plotType[plotTypeIdx] == 'scatContFillD':
                         triang = Triangulation(datax, datay)
                         
@@ -4293,6 +4306,16 @@ def makeFunctionPlot(inFile):
                     xlim([xmin, xmax])
                     print 'setting y limits: %f, %f' % (ymin, ymax)
                     ylim([ymin, ymax])
+                    
+                    
+                if option.plotType[plotTypeIdx] == 'scat3d':
+#                     if option.zmin!= -1:
+                    zmin = option.zmin
+#                     if option.zmax!= -1:
+                    zmax = option.zmax
+                    ax.set_xlim3d(xmin,xmax)
+                    ax.set_ylim3d(ymin,ymax)
+                    ax.set_zlim3d(zmin,zmax)
 
                 if option.dateFmt != '':
                     formatXaxisDates(figIdx)
@@ -5059,7 +5082,7 @@ while 1:
                         if option.plotType[plotTypeIdx] == 'barchartH':
                             inFile.append(np.loadtxt(args[i], dtype="string"))
                             
-                        if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX'  or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'sphere' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'mayaScat':
+                        if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX'  or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'sphere' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'mayaScat':
                             if option.big:  # or len(option.rows)>0:
                                 if args[i] == "stdin":
                                     print "warning: option big cannot read from stdin yet. The result might not be what you wanted."

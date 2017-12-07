@@ -1033,6 +1033,21 @@ void cpedsMCMC::saveBestFit() {
 	_chisqData.bestFitData.model.save(_IOcontrol.partialFilesDir+"/bestFit-model"); 			
 	//		_temperatureHistory.save(_partialFilesDir+"/temperature-history"); 			
 	_bestFit.save(_IOcontrol.partialFilesDir+"/bestFit-link");
+	//
+	// check if the best fit is close to the imposed prior boundary and if so, issue a warrning
+	//
+	for (long i = 0; i < _bestFit.dims(); i++) {
+		mscsFunction p=getParameterSpace()[i];
+		double min=p.getX(0);
+		double max=p.getX(1);
+		double delta=max-min;
+		double thres=0.05;
+		if ((_bestFit[i] - min)/delta < thres or (max-_bestFit[i])/delta > 1.0-thres) {
+			msgs->say("WARNING: the best-fit solution is very close to the boundary of the parameter space for parameter %li. Consider enlarging the parameter space volume,", i,High);
+		}
+	}
+	
+	
 	saveChain(_MCbestFitChain,getOutputDir()+"/bestFitChain");
 	if (_chisqData.covarianceMatrixDiag.size()>0 and _chisqData.covDiagonal) {
 		_chisqData.bestFitData.covDiag.save(_IOcontrol.partialFilesDir+"/bestFit-covarianceMatrixDiagonal",false,"double");
@@ -1187,7 +1202,7 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints) {
 #ifdef DEBUG_MCMC_PDF
 	CR.save("CR.tmp");
 #endif
-	if (CR.size()!=2) { cout << "WARNING 0.9973 confidence interval suspecious. Will return the rusty pdf.\n"; }
+	if (CR.size()!=2) { cout << "WARNING 0.9973 confidence interval suspicious. Will return a rusty pdf.\n"; }
 	else {
 		double margin=CR[CR.size()-1]-CR[0];
 		pdf=pdf.cut(CR[0]-margin/2,CR[CR.size()-1]+margin/2);

@@ -221,6 +221,7 @@ set (CPEDSLIB_HEADERS
 	src/Mscs-object.h
 	src/cpeds-list.h
 	src/MClink.h
+    src/cpeds-templates.h
 	)
 
 set (CPEDSLIB_SOURCES 
@@ -247,6 +248,7 @@ set (CPEDSLIB_SOURCES
 	src/cpedsMCMCset.cpp
 	src/Nbody_io.cpp 
 	src/cpeds-fits.cpp 
+#    src/cpeds-templates.cpp
 	)
 #	${CPEDS_INCLUDE_DIR}/cpeds-msgs.h
 
