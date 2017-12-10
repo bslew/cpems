@@ -103,7 +103,7 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_cooling.temperature=getInitialTemperature();
 	_cooling.forcedCoolingTemperatureDecrement=-1;
 	//	_temperatureHistory.append(_temperature);
-	_cooling.finalTemperature=10;
+	_cooling.finalTemperature=1e-10;
 	_cooling.initialMaximalEnergy=10; // i.e. 10 kT
 	
 	//
@@ -321,8 +321,8 @@ void cpedsMCMC::startChain(bool followPriors) {
 				 */
 				if (getTemperature() > getFinalTemperature()) {
 					//						deltaX=deltaChisq(length()-1); // commented out on Mar 17, 2011, 3:50:41 PM since we have accepted and rejected on separate lists.
-					deltaX=current().chisq()-next.chisq();
-					//						msgs->say("Delta chisq is: "+msgs->toStr(deltaX),Medium);
+					deltaX=(current().chisq()-next.chisq())/current().chisq();
+											msgs->say("Delta chisq is: "+msgs->toStr(deltaX),Medium);
 					//
 					// here is the cooling scheme
 					//
@@ -1519,8 +1519,11 @@ void cpedsMCMC::setID(long id) {
 }
 /***************************************************************************************/
 void cpedsMCMC::coolForcibly() {
-	if (_cooling.forcedCoolingTemperatureDecrement==-1) _cooling.forcedCoolingTemperatureDecrement=(getTemperature()-getFinalTemperature())/_cooling.maximalNumberOfForcedCoolings; 
-	if (_cooling.forcedCoolingTemperatureDecrement< 0.01*(_cooling.initialTemperature-_cooling.finalTemperature)) _cooling.forcedCoolingTemperatureDecrement=0.01*(_cooling.initialTemperature-_cooling.finalTemperature);
+	if (_cooling.forcedCoolingTemperatureDecrement==-1) 
+		_cooling.forcedCoolingTemperatureDecrement=(getTemperature()-getFinalTemperature())/_cooling.maximalNumberOfForcedCoolings; 
+//	if (_cooling.forcedCoolingTemperatureDecrement< 0.01*(_cooling.initialTemperature-_cooling.finalTemperature)) 
+//		_cooling.forcedCoolingTemperatureDecrement=0.01*(_cooling.initialTemperature-_cooling.finalTemperature);
+
 	_cooling.temperature-=_cooling.forcedCoolingTemperatureDecrement;
 	msgs->say("Forcibly cooling by %f K",_cooling.forcedCoolingTemperatureDecrement,Medium);
 	if (getTemperature()<getFinalTemperature()) _cooling.temperature=getFinalTemperature();
