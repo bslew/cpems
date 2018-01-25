@@ -34,9 +34,11 @@
 #include "Mscs-function.h"
 #include "Mscs-function3dregc.h"
 #include "MClink.h"
+#include "cpedsMC.h"
 #include "cpeds-msgs.h"
 #include "matrix.h"
 #include "MscsPDF1D.h"
+#include "MCparameterSpace.h"
 
 /* INTERDEPENDENT HEADERS */
 
@@ -88,10 +90,10 @@ class cpedsMCMC {
 	/***************************************************************************************/		
 	public:
 		typedef	enum { awSchemeUniform, awSchemeBoltzmann } acceptWorseScheme;
+		typedef	enum { coolingScheme_none, coolingScheme_chisqPropLinLog, coolingScheme_chisqPerDoFprop, coolingScheme_geometric } coolingSchemeTraits;
 		
 		typedef struct {
 				long stepGeneratingPDFPoints; //!< number of points that probe the cooling distributions
-				long convergenceTestMinimalLength; //!< the minimal length of the chain for testing the convergence; the cooling is not done for chains shorter than this value
 				long maximalRejectionsCount; //!< the maximal number of rejections of step proposals in the row after which the system will be forced to cool or the chain will be broken
 				long maximalNumberOfForcedCoolings; //! the number of times when the system will be forced to cool down each time when _maximalRejectionsCount has been reached and _temperature > _finalTemperature
 				
@@ -100,6 +102,8 @@ class cpedsMCMC {
 				double initialTemperature; //! temperature to start the walk with
 				double finalTemperature; //!< temperature at which we stop the parameter space walk
 				double coolingRate; //!< temperature decrease multiplier for one Monte-Carlo step
+				coolingSchemeTraits coolingScheme; //!< defines show the system cools upon chisq improvements
+				 
 				double forcedCoolingTemperatureDecrement;
 				double initialMaximalEnergy; //!< energy in _initialTemperature * k_B units that define the initial range of PDF covered for step size calculations
 				
@@ -127,19 +131,25 @@ class cpedsMCMC {
 				QList<cpedsRNG> rns; //!< RNGs - one for each dimension: these are used to start the chain from random location
 
 				cpedsRNG rnSgn; //!< This generator only generates the sign + or -
-				MClink current; //!< defines a set of parameter values; This is a building block of the 		
+				MClink current; //!< The last accepted MClink
+				MClink next; //!< currently not used
+				double likelihoodRejectionThreshold; //!< likelihood threshold below which links are rejected for posterior calculation
 				long maximalChainLength; //!< the maximal length of the chain after which the chain will be broken
 				long statesTot; //!< total number of states (accepted and rejected) considered during the walk
 				double initialPDFstepCRfraction; //!< fraction of the parameter domain used for generation of initial step size PDFs
 				double initialPDFstepCRfractionAfterBurnIn; //!< fraction of the parameter domain used for generation of initial step size PDFs after burn in period is finished (by default: 0 - ie. not used)
 				long runRNGseed;
+				bool poorX2improvement; //!< this flag becomes true whenever poor X2 improvement is detected; this may influence cooling
 				bool uphillClimbing; //!< this defines whether to keep the direction of motion if the previous state was accepted and deltaX2>0 (true) or otherwise whether the next step direction should be random (false: defalut)
 				bool keepDirectionNow; //!< defines whether to keep the current direction when _uphillClimbing is on
 				cpedsList<double> currentDirection; //!< holds the current climb direction
+				vector< cpedsList<double> > steps; //!< holds history of MC steps in each direction
 				long keepDirectionStepGenerationFailuresNumber; //!< maximal number of failures to generate the next step in given direction before dropping that direction (this prevents chain from trying to keep direction when staying on wall)
-				long rejectedLinkNumber; //!< number of links that were prepended before the beginning of the chain to store the location of the true first link in the chain.
+				long rejectedLinkNumber; //!< number of links that were prepended before the beginning of the chain to store the location of the true first link in the chain. -- not sure if this is accurate anymore...
 				long rejectionsCount; //!< current number of rejected states
 				long userOutputFrequency; //!< output info about MCMC walk every this number of MCMC states
+				long convergenceTestMinimalLength; //!< the minimal length of the chain for testing the convergence; the cooling is not done for chains shorter than this value
+				long burnOutLength; //!< number of steps to perform after convergence is reached.
 		} walk_t;
 		
 		typedef struct {
@@ -149,6 +159,8 @@ class cpedsMCMC {
 				double relChisqChangeThres; //!< fraction by which the variance must change at the least to continue the walk
 				double convLastVariance; // not used
 				double last_chisq; //!< chisq ast last convergence check
+				cpedsList<double> chisq; //!< chisq values (both rejected and accepted) used to estimate the convergence
+				 
 		} convergence_t;
 		
 		typedef struct {
@@ -242,6 +254,9 @@ class cpedsMCMC {
 		virtual double chisq(const mscsFunction& data, const MClink &th, matrix<double>& cov);
 		virtual double chisq(const MClink &th);
 
+		double getRelX2Improvement();
+		double getX2Convergence();
+		
 		/*!
 			\brief set the data for chisq calculation to be used throughout the chain walk
 			\details 
@@ -283,13 +298,16 @@ class cpedsMCMC {
 			\details 
 			@param p - function defining the parameter prior. The viable parameter ranges are defined by the arguments of the function.
 			This function also defines the grid spacing in case of grid calculations
+			@param parameter_full_name - a string defining a latex stype parameter name and units in which this parameter likelihood will be stored.
+			It is useful to provide this string here because the string will be stored in the output likelihood hdf5 file
+			and used latter for plotting with the provided plot_likelihood.py python script. (e.g. '$v_x$ [km/h]')
 			
 			The name of the parameter will be the same as the function name.
 		
 			\date Nov 19, 2010, 10:02:43 PM
 			\author Bartosz Lew
 		*/
-		void addParameter(const mscsFunction& p);
+		void addParameter(const mscsFunction& p, string parameter_full_name="");
 		
 		/*!
 			\brief convenience function. Adds flat parameter prior defined on [from,to] and resolved with Npts
@@ -298,7 +316,7 @@ class cpedsMCMC {
 		
 			\date May 29, 2017, 10:02:09 PM
 		*/
-		void addParameter(string param_name, double from, double to, long Npts=1000);
+		void addParameter(string param_name, double from, double to, long Npts=1000, string param_full_name="");
 		
 		/*!
 			\brief get parameter data by name
@@ -318,12 +336,15 @@ class cpedsMCMC {
 		const int getParameterByName(string Pname) const;
 
 		int dims() const { return _walk.Nparam; }
+		long sizeRejected() { return _MCrej.size(); }
+		long sizeAccepted() { return _MCaccepted.size(); }
+		long size() { return sizeAccepted()+sizeRejected(); }
 		long length() { return _MCaccepted.size()+_MCrej.size(); }
-		QList<MClink>& chain() { return _MCaccepted; }
-		QList<MClink>& BFchain() { return _MCbestFitChain; }
+		cpedsMC& chain() { return _MCaccepted; }
+		cpedsMC& BFchain() { return _MCbestFitChain; }
 		MClink& chain(long i) { return _MCaccepted[i]; }
-		QList<MClink>& rejectedStates() { return _MCrej; }
-		QList<MClink>& acceptedStates() { return _MCaccepted; }
+		cpedsMC& rejectedStates() { return _MCrej; }
+		cpedsMC& acceptedStates() { return _MCaccepted; }
 		MClink getBestFitLink() { return _bestFit; }
 		MClink getStartingLink() { return _startingLink; }
 		mscsFunction getBestFitModel() { return _chisqData.bestFitData.model; }
@@ -339,9 +360,20 @@ class cpedsMCMC {
 			\author Bartosz Lew
 		*/
 		void startChain(bool followPriors=true);
+		void walkNstates(long Nstates);
 		void setMaximalChainLength(long l) { _walk.maximalChainLength=l; }
+		/*!
+			\brief set the maximal number of rejected states required for forced cooling
+			\details 
+			@param n - a reasonable practise is about 30*sqrt(number_parameters)
+		
+			\date Jan 9, 2018, 1:20:33 PM
+		*/
 		void setMaximalRejectionsCount(long n) { _cooling.maximalRejectionsCount=n; }
 		void setBurnInLength(long l);
+		long getBurnInLength() const { return _walk.convergenceTestMinimalLength; }
+		void setBurnOutLength(long l);
+		long getBurnOutLength() const { return _walk.burnOutLength; }
 		/*!
 			\brief deinfes the number that starts the indexing of the output directories for mcmc data
 			\details 
@@ -377,7 +409,8 @@ class cpedsMCMC {
 		void setSaveParameters(long saveCoolingPDFEvery, long saveStepPDFsEvery, long saveModelEvery);
 		
 		void saveAcceptedChisq(string fname);
-
+		cpedsMC loadMC(string fnameName);
+		void loadMCrun(string dirName);
 		void saveParams(string fname);
 		void saveData(string fname);
 		void savePriors();
@@ -394,12 +427,19 @@ class cpedsMCMC {
 		
 			\date May 31, 2017, 10:28:34 AM
 		*/
+		
+		void recalculateLikelihoods();
+		long statesAboveRejectionThreshold();
 		void save2DCR(double CL);
 		mscsFunction get2DCR(int paramID1, int paramID2, double CL, double* LVL=NULL);
 	
 		void saveTemperature(string fname);
 		void saveBestFitStepPDFs(string fname);
+		void loadBestFitStepPDFs(string dirName);
 		void saveStepPDFs(string fname);
+		cpedsList<double> getMCsteps(long param);
+		cpedsList<double>& MCsteps(long param);
+		void saveMCsteps(string fname);
 		void saveParameterNames(string fname="");
 		/*!
 			\brief sets a flag indicating whether or not the covariance matrix of the model in the problem is to be considered as diagonal
@@ -413,8 +453,13 @@ class cpedsMCMC {
 		*/
 		void setCovarianceMatrixDiagonal(bool tf) { _chisqData.covDiagonal=tf; }
 		
+		string getPartialFilesDirFull() const { return _IOcontrol.partialFilesDir; }
+		string getPartialFilesDir() const { return "partial"; }
+		
 		void setCoolingRNGseedOffset(long seed) { _cooling.coolingRNGseedOffset=seed; }
 		void setCoolingRate(double coolingRate) { _cooling.coolingRate=coolingRate; }
+		void setCoolingScheme(coolingSchemeTraits coolingScheme) { _cooling.coolingScheme=coolingScheme; }
+		coolingSchemeTraits getCoolingScheme() { return _cooling.coolingScheme; }
 		void setDumpEveryMCMCstate(bool tf) { _IOcontrol.dumpEveryMCMCstate=tf; }
 		void setOutputDir(string dirName);		
 		void setUpHillClimbing(bool tf) { _walk.uphillClimbing=tf; }
@@ -473,6 +518,15 @@ class cpedsMCMC {
 				addImplementationNote(s);
 			}
 		}
+		/*!
+			\brief set initial and final system temperatures
+			\details 
+			@param initial - typical value 1000
+			@param final - typical value 10; A value of 0 indicates that thae final temperature is not to be used
+			but rather other criteria will decide whether the system has cooled enough to stop the chain.
+
+			\date Jan 9, 2018, 12:34:52 PM
+		*/
 		void setTemperatures(double initial, double final) { _cooling.initialTemperature=initial; _cooling.finalTemperature=final; updateCoolingPDF();  }
 		void setInitialWalkStepSize(double size) { _walk.initialPDFstepCRfractionAfterBurnIn=size; }
 		
@@ -596,6 +650,9 @@ class cpedsMCMC {
 		*/
 		void append(MClink& link);
 
+		
+		void appendLinkForConvergenceTest(MClink& link);
+		
 		/*!
 			\brief append the whole chain to this chain
 			\details 
@@ -640,7 +697,11 @@ class cpedsMCMC {
 			return _MCbestFitChain;
 		}
 		
-		const QList<mscsFunction>& getParameterSpace() const {
+		const MCparameterSpace& getParameterSpace() const {
+			return _parameterSpace;
+		}
+		
+		MCparameterSpace& parameterSpace() {
 			return _parameterSpace;
 		}
 		
@@ -706,6 +767,7 @@ class cpedsMCMC {
 		
 		int paramij2idx(int i,int j);
 		MClink& current() { return _walk.current; }
+		MClink& nextCandidate() { return _walk.next; }
 
 		void dumpAll();
 
@@ -727,6 +789,18 @@ class cpedsMCMC {
 			\author Bartosz Lew
 		*/
 		void coolDownLogLin(double deltaX);
+		/*!
+			\brief cool the system in a geometric sequence
+			\details 
+			
+			The current temperature is divided by 2^coolingRage
+			For the typical coolingRate=1 this will cool system by 2.
+			
+			@return returns the temperature decrement by which the system cooled down.
+		
+			\date Jan 9, 2018, 12:57:49 PM
+		*/
+		double coolDownGeometric();
 		void coolForcibly();
 		void coolDownProp(double deltaX);
 
@@ -804,10 +878,10 @@ class cpedsMCMC {
 		// Markov Chain structures
 		//
 		
-		QList<MClink> _MCaccepted; //!< chain of all accepted links (including those that yield a higher chisq)
-		QList<MClink> _MCrej; //!< list of rejected states
+		cpedsMC _MCaccepted; //!< chain of all accepted links (including those that yield a higher chisq)
+		cpedsMC _MCrej; //!< list of rejected states
 		MClink _bestFit; //!< stores the current best fit state
-		QList<MClink> _MCbestFitChain; //!< chain to hold the history of best fit links 
+		cpedsMC _MCbestFitChain; //!< chain to hold the history of best fit links 
 		MClink _startingLink; //!< the initial link
 		
 		//
@@ -820,7 +894,7 @@ class cpedsMCMC {
 		//
 		
 		
-		QList<mscsFunction> _parameterSpace; //!< stores information on parameter space - ranges, and or grid, and parameter priors
+		MCparameterSpace _parameterSpace; //!< stores information on parameter space - ranges, and or grid, and parameter priors
 		walk_t _walk;
 		
 		//

@@ -6,6 +6,7 @@
  */
 
 #include "MClink.h"
+#include "cpeds-templates.h"
 
 /***************************************************************************************/
 MClink::MClink() {
@@ -52,10 +53,10 @@ void MClink::set(int n, ...) {
 	}
 }
 /***************************************************************************************/
-void MClink::set(int n, double *t) {
+void MClink::set(int n, double *t, bool deleteInside) {
 	setNpar(n);
 	for (long i = 0; i < n; i++) {		_theta[i]=t[i];	}
-	delete [] t;
+	if (deleteInside) delete [] t;
 }
 
 /***************************************************************************************/
@@ -123,6 +124,47 @@ void MClink::save(string fname) {
 	fprintf(f,"%li ", acc);
 	fprintf(f,"\n");
 	fclose(f);
+}
+/* ******************************************************************************************** */
+MClink& MClink::load(ifstream& ifs, long Nparam) {
+	double data[Nparam];
+	double X2,L,idx,accepted;
+	
+	for (long i = 0; i < Nparam; i++) {
+		ifs >> data[i];
+//		cout << data[i] << " ";
+	}	
+	
+	ifs >> X2;
+	ifs >> L;
+	ifs >> idx;
+	ifs >> accepted;
+	
+//	cout << X2 << " " << L << " " << idx << " " << accepted << "\n";
+	
+	set(dims(),data,false);
+	setChisq(X2);
+	setL(L);
+	setAccepted(accepted);
+	return *this;
+}
+/* ******************************************************************************************** */
+MClink& MClink::load(string fname) {
+	cpeds_queue<long>* q;
+	q=cpeds_get_txt_file_cols_rows(fname.c_str());
+	if (q==0) { return *this; }	
+
+	long Nrows=q->get_size();
+	long Ncols=q->getq(0);
+	long Nparam=Ncols-4;
+		
+	ifstream ifs;
+	ifs.open(fname.c_str());
+	
+	setNpar(Nparam);
+	load(ifs,Nparam);
+	ifs.close();
+	return *this;
 }
 /***************************************************************************************/
 cpedsList<double> MClink::getParameters() const {

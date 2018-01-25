@@ -65,6 +65,7 @@ class cpedsMsgs {
 		string say(string fmt, double val0, double val1, double val2, cpeds_messageImportance importance);
 		string say(string fmt, double val0, double val1, double val2, double val3, cpeds_messageImportance importance);
 		string say(string fmt, double val0, double val1, double val2, double val3, double val4, cpeds_messageImportance importance);
+		string say(string fmt, double val0, double val1, double val2, double val3, double val4, double val5, cpeds_messageImportance importance);
 		string say(string fmt, long val0, long val1, long val2, long val3, cpeds_messageImportance importance);
 		string say(string fmt, long val0, long val1, long val2, cpeds_messageImportance importance);
 		string say(string fmt, long val0, long val1, cpeds_messageImportance importance);

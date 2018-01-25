@@ -1265,6 +1265,7 @@ long cpeds_sum(long * tab,long int size, bool deleteTab=false);
 
 //! Returns the sum of the values in the array tab of double values of size size
 double cpeds_sum(double * tab,long int size, bool deleteTab=false);
+long double cpeds_sum(long double * tab,long int size, bool deleteTab=false);
 complex<double> cpeds_sum(complex<double> * tab,long int size, bool deleteTab=false);
 
 

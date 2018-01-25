@@ -212,6 +212,7 @@ set (CPEDSLIB_HEADERS
 	src/cpedsMoonDirection.h
 	src/cpedsPlanetDirection.h
 	src/cpeds-function-cosmo.h
+	src/cpedsMC.h
 	src/cpedsMCMC.h
 	src/cpedsMCMCset.h
 	src/Nbody_io.h
@@ -221,6 +222,7 @@ set (CPEDSLIB_HEADERS
 	src/Mscs-object.h
 	src/cpeds-list.h
 	src/MClink.h
+	src/MCparameterSpace.h
     src/cpeds-templates.h
 	)
 
@@ -244,7 +246,9 @@ set (CPEDSLIB_SOURCES
 	src/cpedsPlanetDirection.cpp
 	src/cpeds-function-cosmo.cpp
 	src/cpedsMCMC.cpp 
+	src/cpedsMC.cpp
 	src/MClink.cpp
+	src/MCparameterSpace.cpp
 	src/cpedsMCMCset.cpp
 	src/Nbody_io.cpp 
 	src/cpeds-fits.cpp 
@@ -423,6 +427,7 @@ add_executable(test-domain-decomposition tests/test-domain-decomposition.cpp )
 add_executable(test-function-fft tests/test-function-fft.cpp )
 add_executable(test-function-derivative tests/test-function-derivative.cpp )
 add_executable(test-fits-read tests/test-fits-read.cpp )
+add_executable(test-cpedsMCMC-parabola_2param tests/test-cpedsMCMC-parabola_2param.cpp )
 
 
 add_executable(test-hdf-openMP2 tests/test-hdf-openMP2.cpp)
@@ -706,8 +711,9 @@ add_definitions(
 	-DGENERATE_CVS_VERSION_STRING 
 	-DDEBUG_USING_FFTW2AND3 
 	-DHAVE_OPENMP 
+    -DDEBUG_MCMC_PDF
 	)
-#    -DDEBUG_MCMC_PDF
+# add -DCMAKE_CXX_FLAGS=-pg when calling cmake to generate gprof-ready binaries
 #	-DDEBUG_SUBDOMAIN
 #	-DDEBUG_SUBDOMAIN2
 
@@ -797,6 +803,7 @@ target_link_libraries(test-domain-decomposition ${LIBRARIES})
 target_link_libraries(test-function-fft ${LIBRARIES})
 target_link_libraries(test-function-derivative ${LIBRARIES})
 target_link_libraries(test-fits-read ${LIBRARIES})
+target_link_libraries(test-cpedsMCMC-parabola_2param ${LIBRARIES})
 
 
 ################################################################
@@ -834,6 +841,7 @@ install(TARGETS
     test-function-fft
     test-function-derivative
     test-fits-read
+    test-cpedsMCMC-parabola_2param
     DESTINATION cpems/tests)
     
 
@@ -854,6 +862,7 @@ install (FILES
 	DESTINATION include/cpems)
 
 install (FILES 
+    ${PROJECT_SOURCE_DIR}/pyth/plot_likelihood.py
     ${PROJECT_SOURCE_DIR}/pyth/plot_function.py
     ${PROJECT_SOURCE_DIR}/pyth/plot_matrix.py
     ${PROJECT_SOURCE_DIR}/pyth/mat_oper.py

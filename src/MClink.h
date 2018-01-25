@@ -50,7 +50,7 @@ class MClink {
 		void set(int n, ...);
 //		void set(long p, double v) { _theta[p]=v; }
 		//! set the parameter values from array; The t array will be deleted here.
-		void set(int n, double *t);
+		void set(int n, double *t, bool deleteInside=true);
 		//! set the likelihood value
 		void setL(double v) {	_likelihood=v; }
 		void setChisq(double v) {	_chisq=v; _likelihood=(exp(-_chisq/2)); }
@@ -78,7 +78,8 @@ class MClink {
 		
 		void printParams() const;
 		void save(string fname);
-		
+		MClink& load(string fname);
+		MClink& load(ifstream& ifs, long Nparam);
 		
 		const MClink& operator=(const MClink& rhs);
 		const double& operator[](const long i) const;

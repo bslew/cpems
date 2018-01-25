@@ -1445,8 +1445,9 @@ const mscsFunction mscsFunction::interpolate(double from, double to, long N, boo
 		if (pointsCount()>5) tmpfn=interpolate(Xint,N,"cspline", inPlace);
 		else tmpfn=interpolate(Xint,N,"linear", inPlace);
 	}
-	if (type=="linear") { tmpfn=interpolate(Xint,N,"linear", inPlace); }
-	if (type=="cspline") { tmpfn=interpolate(Xint,N,"cspline", inPlace); }
+	else {
+		tmpfn=interpolate(Xint,N,type, inPlace); 
+	}
 	
 	
 	

@@ -145,6 +145,8 @@ void mscsFunction3dregc::initiate(bool alloc) {
 	plan_c2c_forward=NULL;
 	plan_c2c_backward=NULL;
 	
+	setSavePrecision(5);
+	
 	if (alloc) allocFunctionSpace();
 }
 /***************************************************************************************/

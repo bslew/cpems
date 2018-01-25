@@ -247,6 +247,13 @@ string cpedsMsgs::say(string fmt, double val0, double val1, double val2, double 
 	return say(_singleMessage,importance);	
 }
 /***************************************************************************************/
+string cpedsMsgs::say(string fmt, double val0, double val1, double val2, double val3, double val4, double val5, cpeds_messageImportance importance) {
+	bzero(_tmpMessage,_maxialMessageLength);
+	sprintf(_tmpMessage,fmt.c_str(),val0,val1,val2,val3,val4,val5);
+	_singleMessage=_tmpMessage;
+	return say(_singleMessage,importance);	
+}
+/***************************************************************************************/
 string cpedsMsgs::say(string fmt, long val0, long val1, long val2, long val3, cpeds_messageImportance importance) {
 	bzero(_tmpMessage,_maxialMessageLength);
 	sprintf(_tmpMessage,fmt.c_str(),val0,val1,val2,val3);

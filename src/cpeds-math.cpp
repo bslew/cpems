@@ -1748,6 +1748,14 @@ double cpeds_sum(double * tab,long int size, bool deleteTab) {
 	if (deleteTab) delete [] tab;
 	return tmp;	
 }
+/* ******************************************************************************************** */
+long double cpeds_sum(long double * tab,long int size, bool deleteTab) {
+	long int i;
+	long double tmp=0;
+	for (i=0;i<size;i++) { tmp=tmp+tab[i]; }
+	if (deleteTab) delete [] tab;
+	return tmp;		
+}
 
 /****************************************************************************************************************/
 complex<double> cpeds_sum(complex<double> * tab,long int size, bool deleteTab) {
@@ -4421,6 +4429,7 @@ double * cpeds_interpolate(double *X,double *Y, long N, double *Xint, long Nint,
 	//  if (type == "linear_periodic")  { spline = gsl_spline_alloc(gsl_interp_linear_periodic, N+2); }
 	if (type == "akima")  { spline = gsl_spline_alloc(gsl_interp_akima, N); }
 	if (type == "akima_periodic")  { spline = gsl_spline_alloc(gsl_interp_akima_periodic, N); }
+	if (type == "steffen")  { spline = gsl_spline_alloc(gsl_interp_steffen, N); }
 	
 	Yint = new double[Nint];
 	

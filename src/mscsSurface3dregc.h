@@ -96,7 +96,9 @@ class mscsSurface3dregc : public mscsFunction3dregc {
 		*/
 		void mkHyperboloid(double fromX, double toX, double fromY, double toY, long Nx, long Ny, double A=1, double B=1, double C=1, double vx=0, double vy=0, double vz=0);
 
-		
+
+		void mkPlane(double fromX, double toX, double fromY, double toY, long Nx, long Ny, double A=1, double B=1, double C=1, double vx=0, double vy=0, double vz=0);
+
 		
 		mscsSurface3dregc& operator=(const mscsSurface3dregc& rhs);
 		mscsSurface3dregc& operator=(const mscsFunction3dregc& rhs);

@@ -14,7 +14,31 @@ mscsSurface3dregc::mscsSurface3dregc() : mscsFunction3dregc() {
 
 mscsSurface3dregc::~mscsSurface3dregc() {
 }
+/* ******************************************************************************************** */
+void mscsSurface3dregc::mkPlane(double fromX, double toX, double fromY, double toY, long Nx, long Ny, double A, double B, double C, double vx, double vy, double vz) {
+	double dx=fabs(toX-fromX)/Nx;
+	double dy=fabs(toY-fromY)/Ny;
+	
+	setSize(Nx,Ny,1,dx,dy,1,fromX,fromY,0);
+	allocFunctionSpace();
+	
+	double z,x,y;
+	double tx,ty;
 
+	for (long i = 0; i < Nx; i++) {
+//			x=i*dx+fromX;
+		x=getX(i);
+		tx=(x-vx);
+		for (long j = 0; j < Ny; j++) {
+//				y=j*dy+fromY;
+			y=getY(j);
+
+			ty=(y-vy);
+			z= -A*tx/C - B*ty/C - vz/C;
+			setf(i,j,0,z,0);
+		}
+	}		
+}
 /***************************************************************************************/
 void mscsSurface3dregc::mkParaboloid(double fromX, double toX, double fromY, double toY, long Nx, long Ny, double A, double B, double vx, double vy, double vz, bool hyper) {
 	double dx=fabs(toX-fromX)/Nx;

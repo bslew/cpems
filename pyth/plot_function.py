@@ -53,9 +53,11 @@ parser.add_option("", "--fontSizeTitle", dest="fontSizeTitle", type="int", help=
 parser.add_option("", "--titleAlignH", dest="titleAlignH", default='center', type="string", help='title alignment (center, left, right)', metavar="STRING")
 parser.add_option("", "--titleAlignV", dest="titleAlignV", default='center', type="string", help='title alignment (center, top, baseline)', metavar="STRING")
 parser.add_option("", "--xlabel", dest="xlabel", type="string", help='plot x label', metavar="STRING", action="append")
+parser.add_option("", "--x2label", dest="x2label", type="string", help='plot x2 label', metavar="STRING", action="append")
 parser.add_option("", "--ylabel", dest="ylabel", type="string", help='plot y label', metavar="STRING", action="append")
-parser.add_option("", "--fontSize", dest="fontSize", default='18', type="string", help='coma separated list of font size used for labels per each plot', metavar="VALUE")
+parser.add_option("", "--fontSize", dest="fontSize", default='18', type="string", help='coma separated list of font size used for ticks per each plot', metavar="VALUE")
 parser.add_option("", "--fontSizeLegend", dest="fontSizeLegend", default='18', type="string", help='coma separated list of font size used for legends per each plot', metavar="VALUE")
+parser.add_option("", "--fontSizeLabels", dest="fontSizeLabels", default='18', type="string", help='coma separated list of font size used for labels per each plot', metavar="VALUE")
 # parser.add_option("", "--fontSizeXtickLabels", dest="fontSizeXtickLabels", default='18', type="string", help='coma separated list of font size used for XtickLabels per each plot', metavar="VALUE")
 # parser.add_option("", "--fontSizeYtickLabels", dest="fontSizeYtickLabels", default='18', type="string", help='coma separated list of font size used for XtickLabels per each plot', metavar="VALUE")
 parser.add_option("", "--logYaxes", dest="logYaxes", default='', type="string", help='coma separated list of log,lin combination each for eahc of the subplots to defined log/lin Y axes ', metavar="VALUE")
@@ -439,9 +441,11 @@ if type(option.colz) != type(list()):    option.colz = list([2])
 if type(option.colColor) != type(list()):    option.colColor = list([-1])
 if type(option.zorder) != type(list()):    option.zorder = list()
 if type(option.xlabel) != type(list()):   option.xlabel = list(['x'])
+if type(option.x2label) != type(list()):   option.x2label = list([None])
 if type(option.ylabel) != type(list()):   option.ylabel = list(['y'])
 option.fontSize = cpedsPythCommon.getFloatList(option.fontSize)
 option.fontSizeLegend = cpedsPythCommon.getFloatList(option.fontSizeLegend)
+option.fontSizeLabels = cpedsPythCommon.getFloatList(option.fontSizeLabels)
 # option.fontSizeXtickLabels=cpedsPythCommon.getFloatList(option.fontSizeXtickLabels)
 # option.fontSizeYtickLabels=cpedsPythCommon.getFloatList(option.fontSizeYtickLabels)
 option.logYaxes = option.logYaxes.split(',')
@@ -2063,8 +2067,8 @@ def getPalette():
     return palette
 
 def filterRows(dataset, i):
-    if len(option.every) > 0:
-        dataset = dataset[::option.every[i % len(option.every)]]
+#     if len(option.every) > 0:
+#         dataset = dataset[::option.every[i % len(option.every)]]
     return dataset
     
 
@@ -3562,9 +3566,9 @@ def makeFunctionPlot(inFile):
 
                 axes(ax)
                 if option.xlabel[i % len(option.xlabel)] != "None":
-                    xlabel(option.xlabel[i % len(option.xlabel)], fontsize=option.fontSize[i % len(option.fontSize)])
+                    xlabel(option.xlabel[i % len(option.xlabel)], fontsize=option.fontSizeLabels[i % len(option.fontSizeLabels)])
                 if option.ylabel[i % len(option.ylabel)] != "None":
-                    ylabel(option.ylabel[i % len(option.ylabel)], fontsize=option.fontSize[i % len(option.fontSize)])
+                    ylabel(option.ylabel[i % len(option.ylabel)], fontsize=option.fontSizeLabels[i % len(option.fontSizeLabels)])
 #                if option.fontSize[i % len(option.fontSize)]>0:
 #                 if option.fontSizeXtickLabels[i % len(option.fontSizeXtickLabels)]>0.0:
 #                     setp( ax.get_yticklabels(), fontsize=option.fontSizeXtickLabels[i % len(option.fontSizeXtickLabels)])
@@ -3918,8 +3922,11 @@ def makeFunctionPlot(inFile):
                     print
                     if option.dateFmt == '':
                         datax, datay = removeNans2(datax, datay)
+
                     
                     plotLine = plot(datax, datay, lw=option.width[i % len(option.width)], marker=option.pt[i % len(option.pt)], linestyle=option.ls[i % len(option.ls)], c=option.lc[i % len(option.lc)], markersize=option.ps[i % len(option.ps)], mew=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], mec=option.ec[i % len(option.ec)], mfc=option.pc[i % len(option.pc)], label=plotLegendLabel, zorder=option.zorder[i % len(option.zorder)], picker=True)
+
+
                     if option.ls[i % len(option.ls)] == '--' or option.ls[i % len(option.ls)] == '-.' or option.ls[i % len(option.ls)] == ':':
                         if type(option.lsdash) == type(list()):
                             plotLine[-1].set_dashes(option.lsdash[i % len(option.lsdash)])
@@ -4394,7 +4401,7 @@ def makeFunctionPlot(inFile):
                     print 'option.fontSize[(2*labidx) % len(option.fontSize)]: ', option.fontSize[(2 * labidx) % len(option.fontSize)]
                     print 'option.fontSize[(2*labidx+1) % len(option.fontSize)]: ', option.fontSize[(2 * labidx + 1) % len(option.fontSize)]
                     if option.xlabel[labidx % len(option.xlabel)] != "None":
-                        xlabel(option.xlabel[labidx % len(option.xlabel)], fontsize=option.fontSize[(2 * labidx) % len(option.fontSize)])
+                        xlabel(option.xlabel[labidx % len(option.xlabel)], fontsize=option.fontSizeLabels[(2 * labidx) % len(option.fontSizeLabels)])
 #                    if option.plotType[plotTypeIdx]!='ts':
                     if option.fontSize[(2 * labidx) % len(option.fontSize)] > 0:
                         setp(ax.get_xticklabels(), fontsize=option.fontSize[(2 * labidx) % len(option.fontSize)])
@@ -4405,7 +4412,7 @@ def makeFunctionPlot(inFile):
     #                        ax.set_xticks([])
                         
                     if option.ylabel[labidx % len(option.ylabel)] != "None":
-                        ylabel(option.ylabel[labidx % len(option.ylabel)], fontsize=option.fontSize[(2 * labidx + 1) % len(option.fontSize)])
+                        ylabel(option.ylabel[labidx % len(option.ylabel)], fontsize=option.fontSizeLabels[(2 * labidx + 1) % len(option.fontSizeLabels)])
                     if option.fontSize[(2 * labidx + 1) % len(option.fontSize)] > 0:
                         setp(ax.get_yticklabels(), fontsize=option.fontSize[(2 * labidx + 1) % len(option.fontSize)])
                     else:
@@ -4441,6 +4448,10 @@ def makeFunctionPlot(inFile):
                     if option.yticks[figIdx % len(option.yticks)] != 0:
                         tcs = ax.get_yticks()
                         yticks(arange(min(tcs[0], option.ymin[figIdx % len(option.ymin)]), max(tcs[-1], option.ymax[figIdx % len(option.ymax)]), option.yticks[figIdx % len(option.yticks)]))
+
+
+                    
+                    
                     
 #                 setp( ax.get_xticklabels(), fontsize=option.fontSizeXtickLabels[i % len(option.fontSizeXtickLabels)])
 #                 setp( ax.get_yticklabels(), fontsize=option.fontSizeYtickLabels[i % len(option.fontSizeYtickLabels)])
@@ -4570,7 +4581,7 @@ def makeFunctionPlot(inFile):
                         print cbyticks
                         cb = colorbar(ticks=cbyticks)
                         cb.ax.tick_params(labelsize=option.fontSize[i % len(option.fontSize)])
-                        cb.set_label(option.zlabel, size=option.fontSize[i % len(option.fontSize)])
+                        cb.set_label(option.zlabel, size=option.fontSizeLabels[i % len(option.fontSizeLabels)])
                         
     #                    if option.colorbar:
                         if option.linZtickLabels:
@@ -4594,6 +4605,13 @@ def makeFunctionPlot(inFile):
     #                        for lab in cbyticksLabels:
     #                            cbyticksLabelsNew.append('%.2f' % np.power(10,float(lab)))
                             cax.set_yticklabels(cbyticksLabelsNew)
+                        else:
+                            cax = cb.ax
+                            cbyticksLabelsNew = list()
+                            for lab in cbyticks:
+                                cbyticksLabelsNew.append(option.ZticksFmt % float(lab))
+                            cax.set_yticklabels(cbyticksLabelsNew)
+
 
                 #
                 # circles            
@@ -4628,6 +4646,48 @@ def makeFunctionPlot(inFile):
                     print 'Reseting limits'
                     xlim([xmin, xmax])
                     ylim([ymin, ymax])
+
+
+                if isLastDsInSubplot:
+                    if len(option.x2)>0:
+                        x2 = data[:, option.x2[figIdx % len(option.x2)]]
+                        ax2=ax.twiny()
+    
+                        ax1_ticks = ax.get_xticks()
+                        ax2.set_xticks(ax1_ticks)
+                        print 'ax1_ticks: ',ax1_ticks
+                        print 'ax2_ticks: ',ax2.get_xticks()
+                        ax2.set_xticklabels(ax.get_xticklabels()) # this is a placeholder because the ticklabes are not defined until show()
+                        print 'ax2_xticklabels: ',ax2.get_xticklabels()
+                        ax2_tickLabels=list()
+                        idx=range(len(datax))
+                        for t,tick_idx in zip(ax1_ticks,range(len(ax1_ticks))):
+                            # hide labels that have interpolated values from outside the defined range
+                            # we use constant extrapolation which would give the labels wrong values, so we hide them
+                            if (t<min(datax)):
+                                print 'setting %i invisible (t: %f, min: %f, len: %i)' % (tick_idx,t,min(datax),len(ax2.get_xticklabels()))
+                                setp(ax2.get_xticklabels()[tick_idx], visible=False)
+                            elif (t>max(datax)):
+                                print 'setting %i invisible (t: %f, max: %f, len: %i)' % (tick_idx,t,max(datax), len(ax2.get_xticklabels()))
+                                setp(ax2.get_xticklabels()[tick_idx], visible=False)
+                            ti=np.interp(t, datax,idx)
+    # 
+                            ax2_tickLabels.append('%.1f' % np.interp(ti,idx,x2))
+    #                         ax2_tickLabels.append('%.1f' % x2[int(round(ti))])
+    #                         ax2_tickLabels.append(x2[int(ti)])
+                            print t,ti,np.interp(ti,idx,x2)
+    #  
+                        print 'ax ticks: ',ax.get_xticks()
+                        print ax2_tickLabels
+    #                    ax2.set_xticks(ax1_ticks) # set the locations of the xticks at the same places as in the initial x axis
+                        ax2.set_xticks(ax1_ticks)
+                        ax2.set_xlim(ax.get_xlim())
+                        ax2.set_xticklabels(ax2_tickLabels)
+                        setp( ax2.get_xticklabels(), fontsize=option.fontSize[figIdx % len(option.fontSize)])
+                        
+                        axes(ax)
+                        if option.x2label[i % len(option.x2label)]!=None:
+                            ax2.set_xlabel(option.x2label[figIdx % len(option.x2label)],fontsize=option.fontSizeLabels[figIdx % len(option.fontSizeLabels)])
 
             if option.plotSpecial != -1:
                 import specialBlock

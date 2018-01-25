@@ -26,6 +26,8 @@ mscsFunction MscsPDF2D::getContour(double CL, double* LVL) {
 	mscsFunction cdfi=cdf;
 	cdfi.invert();
 	cdfi.sortFunctionArgAscending();
+	cdfi.average_sameArgs(0);
+//	cdfi.save("cdfi");
 	double lvl=cdfi.finter(CL);
 //	printf("min: %lE, max: %lE\n",getMinValue(),getMaxValue());
 //	printf("I(lvl=%lf) = %lE\n",0.0,getIntegral(0.0));

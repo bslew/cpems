@@ -72,14 +72,20 @@ int main(int argc, char** argv) {
     //
     // print out the information
     //
-    printf("MOD: %lE\n",pdf->get_MODE());
-    printf("EX: %lE\n",pdf->get_EX());
+    double pdfMode=pdf->get_MODE();
+    double pdfEX=pdf->get_EX();
+    printf("MOD: %lE\n",pdfMode);
+    printf("EX: %lE\n",pdfEX);
 
     for (i=0;i<_CL.get_size();i++) {
       printf("CLr( %lE ): %lE %lE ",_CL(i),pdf->get_CL_range(true,i,&gaps),pdf->get_CL_range(false,i,NULL));
-    if (gaps) printf(" possible gaps\n"); else printf("\n");
+      if (gaps) printf(" possible gaps\n"); else printf("\n");
     }
 
+    for (i=0;i<_CL.get_size();i++) {
+      printf("errors w.r.t MOD( %lE ): %lE %lE ",_CL(i),pdfMode-pdf->get_CL_range(true,i,&gaps),pdf->get_CL_range(false,i,NULL)-pdfMode);
+      if (gaps) printf(" possible gaps\n"); else printf("\n");
+    }
 
     if (_save_PDF_info) {
       f=fopen(_save_PDF_info_file.c_str(),"a"); 

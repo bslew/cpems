@@ -50,8 +50,10 @@ void calculateFisher(mscsFunction& data, double yerr, string outdir, mscsFunctio
 	matrix<double> C=F.Inv();
 	cout << "Parameters correlation matrix\n";
 	cpeds_print_matrix(C);
-	
 	cpeds_matrix_save(C,outdir+"Correlation.mat");
+	
+	printf("Fisher parameter1 sigma: %lE\n",sqrt(C(0,0)));
+	printf("Fisher parameter2 sigma: %lE\n",sqrt(C(1,1)));
 	
 	//calculate PDF
 	mscsFunction3dregc pdf=estimated; // set size and ranges as in the reconstructed PDF
@@ -63,6 +65,34 @@ void calculateFisher(mscsFunction& data, double yerr, string outdir, mscsFunctio
 	pdf.saveHDF5(outdir+"Fisher2d.hdf5","L");
 	
 }
+
+double getPDF_fwhm(MscsPDF1D pdf) {
+	double fwhm;
+	
+	pdf-=0.5;
+	mscsVector<double> r=pdf.findRoot();
+	
+	cpedsList<double> l(r);
+	l.sort(12);
+	if (l.size()<2) {
+		printf("cannot calculate PDF FWHM\n"); exit(-1);
+	}
+	fwhm=l.last()-l[0];
+	
+	return fwhm;
+}
+
+void calculate_sigma_1Dposterior(MscsPDF1D p1, MscsPDF1D p2) {
+
+	// calculate sigma 
+	double s1,s2;
+	s1=cpeds_fwhm2sigma(getPDF_fwhm(p1));
+	s2=cpeds_fwhm2sigma(getPDF_fwhm(p2));
+	
+	printf("parameter1 sigma: %lE\n",s1);
+	printf("parameter2 sigma: %lE\n",s2);
+}
+
 /***************************************************************************************/
 /***************************************************************************************/
 /***************************************************************************************/
@@ -77,7 +107,7 @@ int main() {
 	double xmax=10;
 	double a=1, b=1;
 	mscsFunction data, model;
-	double yerr=1;
+	double yerr=10;
 	
 	data.mkPowerLaw(xmin,xmax,0.1,a,1,2); // generate y=a*x^2+b with 
 	data+=b;
@@ -105,12 +135,13 @@ int main() {
 	// set MC parameters
 	//
 	parab_conf.setOutputDir(outdir);
-	parab_conf.setCoolingRate(0.1);
+	parab_conf.setCoolingRate(1);
 //	parab_conf.setInitialStepSize(0.5);
 //	parab_conf.setInitialWalkStepSize(0.05);
 	parab_conf.setBurnInLength(1000);
 	parab_conf.setChisqSignature("parabola fit");
-	parab_conf.setMaximalRejectionsCount(500);
+	parab_conf.setMaximalRejectionsCount(50);
+	parab_conf.setWalkInfoOutputFrequency(500);
 	
 	
 	// define the parameter space
@@ -123,7 +154,7 @@ int main() {
 	parab_conf.setData(data);
 	parab_conf.setDiagonalCovarianceMatrix(yerr*yerr);
 	parab_conf.printInfo();
-	parab_conf.setCalculate2Dposteriors(true);
+	parab_conf.setCalculate2Dposteriors(false);
 	parabMC=parab_conf;
 	
 	//
@@ -133,7 +164,7 @@ int main() {
 #pragma omp parallel for private(id)
 	for (id = 0; id < 20; ++id) {
 		parabolaMCMC mc(parab_conf);
-		mc.setVerbocity(Low);
+		mc.setVerbocity(Medium);
 		mc.setID(id);
 		mc.msgs->setSender("parabolaMCMC."+mc.msgs->toStr(id));
 		mc.startChain();
@@ -144,13 +175,17 @@ int main() {
 	}
 	parabMC.saveResults();
 	
-	
+//	cpeds_fwhm2sigma()
 	
 	//
 	// calculate Fisher information matrix
 	//
 	calculateFisher(data,yerr, outdir, parabMC.get2Dposterior("a","b"), parabMC.getBestFitLink().getParam(0),parabMC.getBestFitLink().getParam(1));
 	
+	//
+	// calculate comparizon between 1D calculated posterior and the theoretical predictions
+	//
+	calculate_sigma_1Dposterior(parabMC.get1Dposterior(0), parabMC.get1Dposterior(1));
 	
 	
 	return 0;
