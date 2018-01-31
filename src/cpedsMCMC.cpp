@@ -13,6 +13,7 @@
 #include "subdomain.h"
 #include "MscsPDF2D.h"
 #include <iostream>
+#include <assert.h>
 
 /***************************************************************************************/
 //cpedsMCMC::cpedsMCMC(int runIdx) {
@@ -79,7 +80,8 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_walk.rnSgn.seed(_walk.runRNGseed); 
 	_walk.rnSgn.setRNsType(_walk.rnSgn.uniform);
 	_walk.rnSgn.setMinMax(-1,1);
-	_walk.rnSgn.seedOffset(100+_IOcontrol.runOffset);
+//	_walk.rnSgn.seedOffset(100+_IOcontrol.runOffset);
+	_walk.rnSgn.seedOffset(cpeds_get_devrandom_seed());
 	_walk.Nparam=Npar;
 	_walk.maximalChainLength=200000;
 	_walk.statesTot=0;
@@ -130,6 +132,7 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	//
 	// cooling variables
 	//
+	_cooling.acceptWorseStateFromUniformDistr=true; // this means we don't use boltzmann distribution
 	mscsFunction f("coolingPDF",Zero);
 	f.mkBoltzmann(0,_cooling.initialMaximalEnergy*CPEDS_kB*_cooling.initialTemperature,_cooling.initialMaximalEnergy*CPEDS_kB*_cooling.initialTemperature/_cooling.stepGeneratingPDFPoints,_cooling.initialTemperature);
 	if (_cooling.acceptWorseStateFromUniformDistr==false) { // i.e. actually use the boltzmann distribution
@@ -145,17 +148,18 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_cooling.coolingDistrInvCDF.invert();
 	_cooling.coolingRNG.setRNsType(_cooling.coolingRNG.from_array_invCDF);
 	_cooling.coolingRNG.setPDF(_cooling.coolingDistr.pointsCount(),_cooling.coolingDistr.extractArguments(),_cooling.coolingDistr.extractValues());
-	_cooling.coolingRNGseedOffset=101+_IOcontrol.runOffset;
+//	_cooling.coolingRNGseedOffset=101+_IOcontrol.runOffset;
+	_cooling.coolingRNGseedOffset=cpeds_get_devrandom_seed();
 	_cooling.coolingRNG.seedOffset(_cooling.coolingRNGseedOffset);
 	_cooling.coolingRNG.seed(_walk.runRNGseed);
-	_cooling.acceptWorseStateFromUniformDistr=true;
 	setAcceptWorsePvalues(0.3,0.05);
 	setAcceptWorseBoltzmannSchemeFactors(1,1);
 	_cooling.coolingRate=0.5;
 	
 	_chisqData.bestFitNcovSimNum=5000;
 	_chisqData.rnCov.setRNsType("gaussian_circle");
-	_chisqData.rnCov.seedOffset(102+_IOcontrol.runOffset);
+//	_chisqData.rnCov.seedOffset(102+_IOcontrol.runOffset);
+	_chisqData.rnCov.seedOffset(cpeds_get_devrandom_seed());
 	_chisqData.rnCov.seed(_walk.runRNGseed);
 	
 	
@@ -195,7 +199,8 @@ void cpedsMCMC::addParameter(const mscsFunction& p, string parameter_full_name) 
 	_walk.rns.append(cpedsRNG());
 	_walk.rns.last().setRNsType(_walk.rns.last().from_array_invCDF);
 	_walk.rns.last().setPDF(p.pointsCount(),p.extractArguments(),p.extractValues());
-	_walk.rns.last().seedOffset(_walk.rns.size()+1+_IOcontrol.runOffset);
+//	_walk.rns.last().seedOffset(_walk.rns.size()+1+_IOcontrol.runOffset);
+	_walk.rns.last().seedOffset(cpeds_get_devrandom_seed());
 	_walk.rns.last().seed(_walk.runRNGseed);
 	
 	// define the grid size
@@ -216,7 +221,8 @@ void cpedsMCMC::addParameter(const mscsFunction& p, string parameter_full_name) 
 	_walk.stepGeneratingRNG.append(cpedsRNG());
 	_walk.stepGeneratingRNG.last().setRNsType(_walk.stepGeneratingRNG.last().from_array_invCDF);
 	_walk.stepGeneratingRNG.last().setPDF(f.pointsCount(),f.extractArguments(),f.extractValues());
-	_walk.stepGeneratingRNG.last().seedOffset(-_walk.stepGeneratingRNG.size()-1+_IOcontrol.runOffset);
+//	_walk.stepGeneratingRNG.last().seedOffset(-_walk.stepGeneratingRNG.size()-1+_IOcontrol.runOffset);
+	_walk.stepGeneratingRNG.last().seedOffset(cpeds_get_devrandom_seed());
 	_walk.stepGeneratingRNG.last().seed(_walk.runRNGseed);
 	
 	
@@ -231,16 +237,63 @@ void cpedsMCMC::addParameter(string param_name, double from, double to, long Npt
 }
 
 /***************************************************************************************/
-void cpedsMCMC::walkNstates(long Nstates) {
-	for (unsigned long i = 0; i < Nstates; i++) {
+void cpedsMCMC::walkNstates(long Nstates, MClink startingLink, int how) {
+	bool walk=true;
+	long burnOutStates=0;
+	
+	current()=startingLink;
+	
+	while (walk) {
 		_walk.statesTot++;
 
 		
-		nextCandidate().set(dims(),getNextPoint(current()));
+		nextCandidate()=getNextPoint(current());
 		nextCandidate().setIdx(_walk.statesTot);
 		nextCandidate().setChisq(chisq(nextCandidate()));
 
-		current()=nextCandidate();
+		nextCandidate().setAccepted(true);
+		_MCaccepted.append(nextCandidate());
+		
+		if (nextCandidate().chisq()<_bestFit.chisq()) {
+			addNewBestFitLink(nextCandidate());
+		}
+
+		switch (how) {
+			case 0:
+				current()=nextCandidate(); 				
+				break;
+			case 1:
+				current()=bestFitLink();
+				break;
+			default:
+//				current()=startingLink();
+				break;
+		}
+		//
+		// saving section
+		//
+//		dumpAll();
+
+		// control burn-out length
+		burnOutStates++;
+		if (burnOutStates>=getBurnOutLength()) walk=false;
+		
+		//
+		// control the maximal chain length
+		//		
+		if (length()==_walk.maximalChainLength) walk=false;
+
+		
+		//
+		// output
+		//
+		if (length() % getWalkInfoOutputFrequency() == 0 or walk==false or msgs->getVerbosity()>=High)
+			msgs->say("B-out: MC len.: %.0f, next.X2: %lE, bf.X2: %lE, left: %.0f ",
+					double(length()),
+					nextCandidate().chisq(),
+					_bestFit.chisq(),
+					double(getBurnOutLength()-burnOutStates),
+					Medium);
 
 	}
 }
@@ -309,7 +362,8 @@ void cpedsMCMC::startChain(bool followPriors) {
 			//			}
 		}
 		else {
-			nextCandidate().set(dims(),getNextPoint(current()));
+//			printf("%li\n", _walk.statesTot);
+			nextCandidate()=getNextPoint(current());
 			nextCandidate().setIdx(_walk.statesTot);
 			msgs->say("Current temperature is: "+msgs->toStr(getTemperature())+", final temperature is:"+msgs->toStr(getFinalTemperature()),Zero);
 			nextCandidate().setChisq(chisq(nextCandidate()));
@@ -335,11 +389,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 			_MCaccepted.append(nextCandidate());
 			appendLinkForConvergenceTest(nextCandidate());
 			if (nextCandidate().chisq()<_bestFit.chisq()) {
-				_bestFit=nextCandidate(); 
-				_MCbestFitChain.append(_bestFit); 
-				_IOcontrol.storeBestFitNow=true; 
-				storeBestFit();
-				if (_walk.uphillClimbing) _walk.keepDirectionNow=true; 
+				addNewBestFitLink(nextCandidate());
 			}
 
 			_walk.poorX2improvement=(current().chisq()-nextCandidate().chisq())/_bestFit.chisq()<_convergence.relChisqChangeThres;
@@ -451,7 +501,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 		dumpAll();
 		
 		//
-		// test convergence section NOT IMPLEMENTED YET
+		// test convergence section 
 		//
 		if (length()==getBurnInLength()) { 
 			msgs->say("Starting testing convergence at level: "+msgs->toStr(_convergence.relChisqChangeThres),Medium);
@@ -502,10 +552,12 @@ void cpedsMCMC::startChain(bool followPriors) {
 		
 
 		
-		//
-		// burn-out
-		//
 		if (walkDone) {
+			walk=false;
+/*
+			//
+			// burn-out
+			//
 			if (statesTotBeforeBurnOut==0) {
 				msgs->say("Starting burn-out states",Medium);
 				statesTotBeforeBurnOut=length();
@@ -516,9 +568,13 @@ void cpedsMCMC::startChain(bool followPriors) {
 
 
 			if (burnOutStates==getBurnOutLength()) walk=false;
+*/
 		}
 
 		
+		//
+		// control the maximal chain length
+		//		
 		if (length()==_walk.maximalChainLength) walk=false;
 
 		
@@ -534,6 +590,22 @@ void cpedsMCMC::startChain(bool followPriors) {
 	}
 	if (_walk.rejectionsCount>=_cooling.maximalRejectionsCount) { msgs->say("Breaking the chain. _maximalRejectionsCount reached: "+msgs->toStr(_walk.rejectionsCount),Medium); }
 	if (length()==_walk.maximalChainLength) { msgs->say("Breaking the chain. The chain length reached: "+msgs->toStr(_walk.maximalChainLength),Medium); }
+	
+	//
+	// save step PDF after walk finishes
+	//
+	saveStepPDFs(getPartialFilesDirFull()+"/stepPDF-walkEnd");				
+	saveTemperature(getPartialFilesDirFull()+"/temperature-walkEnd");
+
+	
+	//
+	// burn-out
+	//
+	statesTotBeforeBurnOut=length();
+	_walk.statesTotBeforeBurnOut=length();
+	
+	burnOut();
+	
 	
 	msgs->say("Best fit link is:", Medium);
 	printLink(_bestFit);
@@ -629,7 +701,7 @@ double* cpedsMCMC::getStartingPoint() {
 	return p;
 }
 /***************************************************************************************/
-double* cpedsMCMC::getNextPoint(const MClink& current) {
+MClink cpedsMCMC::getNextPoint(const MClink& current) {
 	msgs->say("generating the next point", Zero);
 #ifdef DEBUGMCMC
 	msgs->say("current state is:", Low);
@@ -638,7 +710,7 @@ double* cpedsMCMC::getNextPoint(const MClink& current) {
 	msgs->say("Best fit link is:", Low);
 	printLink(_bestFit);	
 #endif
-	double* p=new double[dims()];
+	MClink newLink(dims());
 	//	double f; // step shrink factor
 	double delta;
 	double sign;
@@ -650,7 +722,7 @@ double* cpedsMCMC::getNextPoint(const MClink& current) {
 //		do {
 			failures++;
 			delta=_walk.stepGeneratingRNG[i].getRN();
-//			printf("step size along %li: %lE\n",i,delta);
+			printf("step size along %li: %lE\n",i,delta);
 //			getWalk().steps.append(delta);
 			
 			if (_walk.uphillClimbing and _walk.keepDirectionNow and failures<_walk.keepDirectionStepGenerationFailuresNumber) {
@@ -683,12 +755,13 @@ double* cpedsMCMC::getNextPoint(const MClink& current) {
 			 */
 			
 //		} while (tmp < _parameterSpace[i].getX(0) || tmp > _parameterSpace[i].getX(_parameterSpace[i].pointsCount()-1));
-		p[i]=tmp;
+//		newLink.setParam(i,tmp);
+		newLink[i]=tmp;
 		//		msgs->say("accepted", Low);
 	}
 	_walk.keepDirectionNow=false;
 	
-	return p;	
+	return newLink;	
 }
 
 
@@ -894,16 +967,34 @@ void cpedsMCMC::savePriors() {
 	}
 }
 
+/* ******************************************************************************************** */
+string cpedsMCMC::getRunDependentFileName(string fname) {
+	string outfile=fname+".mc";
+	
+	if (getRunIdx()!=-1) outfile+=msgs->toStr(getRunIdx()); 
+	return outfile;
+}
+/* ******************************************************************************************** */
+string cpedsMCMC::getParameterDependentFileName(string fname, long paramID) {
+	return fname+"-param_"+msgs->toStr(paramID);
+}
 /***************************************************************************************/
 void cpedsMCMC::saveTemperature(string fname) {
-	_cooling.temperatureHistory.save(fname);
+	_cooling.temperatureHistory.save(getRunDependentFileName(fname));
 }
 
 /***************************************************************************************/
 void cpedsMCMC::saveStepPDFs(string fname) {
+	string outfile;
 	for (long j = 0; j < dims(); j++) {
-		_walk.stepGeneratingDistr[j].save(fname+"-param_"+msgs->toStr(j)+".mc");
+		outfile=getParameterDependentFileName(fname,j);
+		outfile=getRunDependentFileName(outfile);
+		
+		msgs->say("Saving step PDF to file: "+outfile,Medium);
+		_walk.stepGeneratingDistr[j].save(outfile);
 	}
+	_IOcontrol.saveStepPDFs_lastSavedNumber++;
+
 }
 /* ******************************************************************************************** */
 cpedsList<double> cpedsMCMC::getMCsteps(long param) {
@@ -974,6 +1065,32 @@ const int cpedsMCMC::getParameterByName(string Pname) const {
 	}	
 	return -1;
 }
+/* ******************************************************************************************** */
+void cpedsMCMC::saveCooling() {
+	string tmps;
+
+	cpedsList<double> tmpl;
+	tmps=msgs->toStr(_IOcontrol.saveCoolingPDF_lastSavedNumber,"%05li");
+	_cooling.coolingDistr.save(getPartialFilesDirFull()+"/"+tmps+"-coolingPDF.step_"+msgs->toStr(_MCaccepted.size())); 
+	_cooling.coolingDistrInvCDF.save(getPartialFilesDirFull()+"/"+tmps+"-coolingInvCDF.step_"+msgs->toStr(_MCaccepted.size())); 
+	_acceptWorseRNs.save(getPartialFilesDirFull()+"/"+tmps+"-acceptWorseRNs.step_"+msgs->toStr(_MCaccepted.size())); 
+	tmpl.append(_cooling.acceptWorseThreshold);
+	tmpl.append(_cooling.acceptWorseThresholdAfterBurnIn);
+	tmpl.save(getPartialFilesDirFull()+"/"+tmps+"-acceptWorseThresholds.step_"+msgs->toStr(_MCaccepted.size())); 
+	
+	_IOcontrol.saveCoolingPDF_lastSavedNumber++;	
+}
+/* ******************************************************************************************** */
+void cpedsMCMC::saveModel() {
+	string tmps;
+
+	tmps=msgs->toStr(_IOcontrol.saveModel_lastSavedNumber,"%05li");
+	_chisqData.model.save(getPartialFilesDirFull()+"/"+tmps+"-model.step_"+msgs->toStr(_MCaccepted.size())); 
+	_chisqData.chisqPerDOF.save(getPartialFilesDirFull()+"/"+tmps+"-chisqPerDOF.step_"+msgs->toStr(_MCaccepted.size()));
+	_IOcontrol.saveModel_lastSavedNumber++;				
+
+	
+}
 
 /***************************************************************************************/
 /* NOTE: The indexing of partial files will be smaller by 1 wrt states number (statesTotal variable)
@@ -984,32 +1101,25 @@ const int cpedsMCMC::getParameterByName(string Pname) const {
 void cpedsMCMC::dumpAll() {
 	char tmpch[10];
 	string tmps;
-	if (_IOcontrol.saveCoolingPDFEveryNthState!=0)
-		if (_MCaccepted.size() % _IOcontrol.saveCoolingPDFEveryNthState == 0) {
-			cpedsList<double> tmpl;
-			sprintf(tmpch,"%05li",_IOcontrol.saveCoolingPDF_lastSavedNumber); tmps=tmpch;
-			_cooling.coolingDistr.save(getPartialFilesDirFull()+"/"+tmps+"-coolingPDF.step_"+msgs->toStr(_MCaccepted.size())); 
-			_cooling.coolingDistrInvCDF.save(getPartialFilesDirFull()+"/"+tmps+"-coolingInvCDF.step_"+msgs->toStr(_MCaccepted.size())); 
-			_acceptWorseRNs.save(getPartialFilesDirFull()+"/"+tmps+"-acceptWorseRNs.step_"+msgs->toStr(_MCaccepted.size())); 
-			tmpl.append(_cooling.acceptWorseThreshold);
-			tmpl.append(_cooling.acceptWorseThresholdAfterBurnIn);
-			tmpl.save(getPartialFilesDirFull()+"/"+tmps+"-acceptWorseThresholds.step_"+msgs->toStr(_MCaccepted.size())); 
-			
-			_IOcontrol.saveCoolingPDF_lastSavedNumber++;
+	if (_cooling.acceptWorseStateFromUniformDistr==false) {
+		if (_IOcontrol.saveCoolingPDFEveryNthState!=0) {
+			if (_MCaccepted.size() % _IOcontrol.saveCoolingPDFEveryNthState == 0) {
+				saveCooling();
+			}					
 		}
+	}
+
 	if (_IOcontrol.saveStepPDFsEveryNthState!=0)
 		if (_MCaccepted.size() % _IOcontrol.saveStepPDFsEveryNthState== 0) { 
-			sprintf(tmpch,"%05li",_IOcontrol.saveStepPDFs_lastSavedNumber); tmps=tmpch;
+			tmps=msgs->toStr(_IOcontrol.saveStepPDFs_lastSavedNumber,"%05li");
 			saveStepPDFs(getPartialFilesDirFull()+"/"+tmps+"-stepPDFs.step_"+msgs->toStr(_MCaccepted.size())); 
-			_IOcontrol.saveStepPDFs_lastSavedNumber++;
 		}
+	
 	if (_IOcontrol.saveModelEveryNthState!=0)
 		if (_MCaccepted.size() % _IOcontrol.saveModelEveryNthState== 0) { 
-			sprintf(tmpch,"%05li",_IOcontrol.saveModel_lastSavedNumber); tmps=tmpch;
-			_chisqData.model.save(getPartialFilesDirFull()+"/"+tmps+"-model.step_"+msgs->toStr(_MCaccepted.size())); 
-			_chisqData.chisqPerDOF.save(getPartialFilesDirFull()+"/"+tmps+"-chisqPerDOF.step_"+msgs->toStr(_MCaccepted.size()));
-			_IOcontrol.saveModel_lastSavedNumber++;				
+			saveModel();
 		}
+
 	if (_IOcontrol.dumpEveryMCMCstate) {
 		saveAcceptedChisq(getOutputDir()+"/chisq.mc"); 
 		saveParams(getOutputDir()+"/params.mc");
@@ -1018,9 +1128,11 @@ void cpedsMCMC::dumpAll() {
 		QList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
 		saveChain(tmp,getOutputDir()+"/all.mc"); 
 		saveTemperature(getOutputDir()+"/temperature.mc");
-		saveStepPDFs(getOutputDir()+"/stepPDFend");				
+		saveStepPDFs(getPartialFilesDirFull()+"/stepPDFend");				
 		saveMCsteps(getOutputDir()+"/steps-");
-		_cooling.coolingDistr.save(getOutputDir()+"/coolingPDFend.mc");
+		if (_cooling.acceptWorseStateFromUniformDistr==false)
+			_cooling.coolingDistr.save(getOutputDir()+"/coolingPDFend.mc");
+		
 		if (_chisqData.covarianceMatrixDiag.size()>0 and _chisqData.covDiagonal) {
 			_chisqData.covarianceMatrixDiag.save(getOutputDir()+"/current-covarianceMatrixDiagonal");
 //			cpeds_save_matrix(_covDiag,_data.pointsCount(),1,getOutputDir()+"/current-covarianceMatrixDiagonal",false);
@@ -1137,7 +1249,8 @@ void cpedsMCMC::saveSetup() {
 	_startingLink.save(getOutputDir()+"/startingLink");
 	saveData(getOutputDir()+"/inputData.txt");
 	savePriors();
-	_cooling.coolingDistr.save(getOutputDir()+"/coolingPDFini.mc");
+	if (_cooling.acceptWorseStateFromUniformDistr==false)	
+		_cooling.coolingDistr.save(getOutputDir()+"/coolingPDFini.mc");
 
 }
 /***************************************************************************************/
@@ -1281,12 +1394,16 @@ void cpedsMCMC::saveBestFitCovSimulations() {
 }
 /***************************************************************************************/
 void cpedsMCMC::saveBestFit() {
-	_chisqData.bestFitData.coolingDistr.save(getPartialFilesDirFull()+"/bestFit-coolingPDF"); 
+	if (_cooling.acceptWorseStateFromUniformDistr==false) {
+		_chisqData.bestFitData.coolingDistr.save(getPartialFilesDirFull()+"/bestFit-coolingPDF"); 
+	}
 	saveBestFitStepPDFs(getPartialFilesDirFull()+"/bestFit-stepPDFs"); 
 
 	_chisqData.bestFitData.model.save(getPartialFilesDirFull()+"/bestFit-model"); 			
 	//		_temperatureHistory.save(_partialFilesDir+"/temperature-history"); 			
 	_bestFit.save(getPartialFilesDirFull()+"/bestFit-link");
+	
+	
 	//
 	// check if the best fit is close to the imposed prior boundary and if so, issue a warrning
 	//
@@ -1297,14 +1414,15 @@ void cpedsMCMC::saveBestFit() {
 		double delta=max-min;
 		double thres=0.05;
 		if ((_bestFit[i] - min)/delta < thres or (max-_bestFit[i])/delta > 1.0-thres) {
-			msgs->say("WARNING: the best-fit solution is very close to the boundary of the parameter space for parameter %li. Consider enlarging the parameter space volume,", i,High);
+			msgs->say("WARNING: the best-fit solution is very close to the boundary of the parameter space for parameter %li. "
+					"Consider enlarging the parameter space volume.", i,High);
 		}
 	}
 	
 	
-	saveChain(_MCbestFitChain,getOutputDir()+"/bestFitChain");
+	saveChain(_MCbestFitChain,getOutputDir()+"/bestFitChain.mc");
 	if (_chisqData.covarianceMatrixDiag.size()>0 and _chisqData.covDiagonal) {
-		_chisqData.bestFitData.covDiag.save(getPartialFilesDirFull()+"/bestFit-covarianceMatrixDiagonal",false,"double");
+		_chisqData.bestFitData.covDiag.save(getPartialFilesDirFull()+"/bestFit-covarianceMatrixDiagonal.mc",false,"double");
 	}
 	// save length
 	cpedsList<long> l;
@@ -1372,7 +1490,7 @@ void cpedsMCMC::save2Dposteriors() {
 	for (long i = 0; i < getNparam(); i++) {
 		for (long j = i+1; j < getNparam(); j++) {
 			
-			printf("i: %li j:%li, names_latex_size: %li\n",i,j,parameterSpace().names_latex().size());
+			printf("i: %li j:%li, names_latex_size: %i\n",i,j,parameterSpace().names_latex().size());
 			_chisqData.bestFitData.posteriors2D[paramij2idx(i,j)].saveHDF5(
 					getOutputDir()+"/parameterPosterior.params"+msgs->toStr(i)+"_"+msgs->toStr(j)+".hdf5","L");
 			
@@ -1885,12 +2003,15 @@ cpedsMCMC& cpedsMCMC::operator=(cpedsMCMC& rhs) {
 /***************************************************************************************/
 void cpedsMCMC::setID(long id) {
 //	msgs->setSender(msgs->getSender()+"."+msgs->toStr(id));
-	id+=_cooling.coolingRNG.seed();
+//	id+=_cooling.coolingRNG.seed();
+	
 	_cooling.coolingRNG.seed(id);
 	for (long i = 0; i < _walk.stepGeneratingRNG.size(); i++) { _walk.stepGeneratingRNG[i].seed(id); }
 	for (long i = 0; i < _walk.rns.size(); i++) { _walk.rns[i].seed(id); }
 	_walk.rnSgn.seed(id); 
 	_chisqData.rnCov.seed(id);
+	
+	setRunIdx(id);
 }
 /***************************************************************************************/
 void cpedsMCMC::coolForcibly() {
@@ -1913,4 +2034,94 @@ void cpedsMCMC::appendLinkForConvergenceTest(MClink& link) {
 	_convergence.chisq.append(link.chisq());
 //	printf("appending link for convergence test: %lE\n",link.chisq());
 	if (_convergence.chisq.size()>_convergence.statesToConvergenceCheck) _convergence.chisq.removeFirst();
+}
+/* ******************************************************************************************** */
+void cpedsMCMC::addNewBestFitLink(MClink& l) {
+	_bestFit=l; 
+	_MCbestFitChain.append(_bestFit); 
+	_IOcontrol.storeBestFitNow=true; 
+	storeBestFit();
+	if (_walk.uphillClimbing) _walk.keepDirectionNow=true; 
+
+}
+/* ******************************************************************************************** */
+void cpedsMCMC::burnOut() {
+	msgs->say("Starting burn-out states",Medium);
+	setUpHillClimbing(false); // we move randomly from now on around the best-fit solution
+	
+	// update walk PDFs with expected step sizes fixed to well cover the high-likelihood region about the best fit solution
+	calculate1Dposteriors();
+
+	setInitialWalkStepSize(1); // we're not using this during burn-out, but I keep it here to remember of its existence
+
+	for (long i = 0; i < dims(); i++) {
+		double oneSigma=0;
+		MscsPDF1D pdf=get1Dposterior(i);
+		pdf.save("burnout-pdf-param."+msgs->toStr(i));
+		cpedsList<double> ran=pdf.getCR(0.68);
+		printf("ran param: %li\n",i);
+		ran.print();
+		if (ran.size()>=2) {
+			oneSigma=ran.last()-ran[0]; // 68% CR
+		}
+		else { 
+			if (ran.size()==1) {
+				long maxi=pdf.getMaxValueIdx();
+				long st=maxi;
+				oneSigma=fabs(pdf.getX(st)-ran[0]); // 68% CR				
+			}
+			else {
+				// pdf is poorly probed after the walk, we will take guesses now.
+				msgs->say("PDF for parameter %li is poorly probed after the walk, this is bad",i,Medium);
+				
+				long maxi=pdf.getMaxValueIdx();
+				long st=maxi-1;
+				long en=maxi+1;
+				if (st<0) maxi=0;
+				if (en>pdf.pointsCount()-1) en=pdf.pointsCount()-1;
+				assert(en-st>0);
+				oneSigma=pdf.getX(en)-pdf.getX(st); // 68% CR
+			}
+		}
+		
+		// expected stepPDF size
+		double EXstep=oneSigma;
+		msgs->say("Setting step PDF for parameter %.0lf to %lE",double(i),EXstep,Medium);
+		
+		updateStepGeneratingPDF(i,EXstep);
+		
+	}
+	
+	saveStepPDFs(getPartialFilesDirFull()+"/stepPDFburnOut");
+	walkNstates(getBurnOutLength(),bestFitLink(),1);
+
+}
+/* ******************************************************************************************** */
+void cpedsMCMC::updateStepGeneratingPDF(long param, double expectedStepSize) {
+	msgs->say("Making step generating PDF for parameter: %li", param,Low);
+	mscsFunction f("step generating PDF",Zero);
+	double frac=1;
+
+/*
+	frac=_walk.initialPDFstepCRfraction;
+	if (length()>=getBurnInLength()) {
+		if (_walk.initialPDFstepCRfractionAfterBurnIn>0) frac=_walk.initialPDFstepCRfractionAfterBurnIn;
+	}
+*/
+
+//	long i=param;
+	
+	f.setName(_parameterSpace[param].getName()+"PDF");
+	f.mkBoltzmann(0,_cooling.initialMaximalEnergy*expectedStepSize,
+			_cooling.initialMaximalEnergy*expectedStepSize/_cooling.stepGeneratingPDFPoints,
+			expectedStepSize/CPEDS_kB); // we must provide temperature parameter in k_B units
+
+	
+	f.normalize(); // normalize
+	_walk.stepGeneratingDistr[param]=f;
+	
+	
+	// define step generating RNG
+	_walk.stepGeneratingRNG[param].setPDF(f.pointsCount(),f.extractArguments(),f.extractValues());	
+
 }

@@ -7,6 +7,7 @@
 
 #include "MClink.h"
 #include "cpeds-templates.h"
+#include <assert.h>
 
 /***************************************************************************************/
 MClink::MClink() {
@@ -30,6 +31,7 @@ MClink::MClink(long Nparams) {
 /***************************************************************************************/
 MClink::MClink(const MClink& parent) {
 //	*this=parent;
+	
 	_Nparam=parent.dims();
 	_likelihood=parent.L();
 	_chisq=parent.chisq();
@@ -73,10 +75,11 @@ void MClink::setNpar(long n) {
 
 /***************************************************************************************/
 const MClink& MClink::operator=(const MClink& rhs) {
+//	printf("MClink::operator= in>>> _theta: %li, rhs.theta: %li, dims: %li, rhs.dims: %li\n",_theta,rhs._theta,dims(), rhs.dims());
 	if (this!=&rhs) {
-		if (_Nparam!=rhs.dims()) {
+		if (dims()!=rhs.dims()) {
 			clear();
-			_theta=rhs.getParams();
+			if (rhs.dims()>0) _theta=rhs.getParams();
 			_Nparam=rhs.dims();
 		}
 		else {
@@ -87,10 +90,16 @@ const MClink& MClink::operator=(const MClink& rhs) {
 		setIdx(rhs.getIdx());
 		setAccepted(rhs.isAccepted());
 	}
+//	printf("MClink::operator= out>>> _theta: %li, rhs.theta: %li, dims: %li, rhs.dims: %li\n",_theta,rhs._theta,dims(), rhs.dims());
 	return *this;
 }
 /***************************************************************************************/
 const double& MClink::operator[](const long i) const {
+//	printf("operator[]:: theta: %li, i: %li, dims: %li\n",_theta,i,dims());
+	return _theta[i];
+}
+/***************************************************************************************/
+double& MClink::operator[](const long i) {
 	return _theta[i];
 }
 /***************************************************************************************/
@@ -171,4 +180,14 @@ cpedsList<double> MClink::getParameters() const {
 	cpedsList<double> p;
 	p.fromCarray(_theta,dims());
 	return p;
+}
+/* ******************************************************************************************** */
+void MClink::setParam(int n, double t) {
+	assert(n<dims());
+	_theta[n]=t;
+}
+/* ******************************************************************************************** */
+void MClink::printLink() const {
+	cout << "dims: " << dims() << "\n";
+	printParams();
 }

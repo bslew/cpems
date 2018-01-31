@@ -136,6 +136,7 @@ class cpedsMCMC {
 				double likelihoodRejectionThreshold; //!< likelihood threshold below which links are rejected for posterior calculation
 				long maximalChainLength; //!< the maximal length of the chain after which the chain will be broken
 				long statesTot; //!< total number of states (accepted and rejected) considered during the walk
+				long statesTotBeforeBurnOut; //!< chain length after the walk is done and before burning-out
 				double initialPDFstepCRfraction; //!< fraction of the parameter domain used for generation of initial step size PDFs
 				double initialPDFstepCRfractionAfterBurnIn; //!< fraction of the parameter domain used for generation of initial step size PDFs after burn in period is finished (by default: 0 - ie. not used)
 				long runRNGseed;
@@ -196,7 +197,7 @@ class cpedsMCMC {
 		
 		typedef struct {
 				int mcmcRunIdx; //!< identifier of the run used for uniquely naming the run directory
-				long runOffset; //!< the global MCMC run offset used to initiate the RNGs with different seeds across differene MCMC runs
+				long runOffset; //!< the global MCMC run offset used to initiate the RNGs with different seeds across different MCMC runs
 				string partialFilesDir;
 				string runFilesDir;
 				string chisqSignature;
@@ -236,6 +237,10 @@ class cpedsMCMC {
 		//! initialize the basic parameters
 		void initialize(int runIdx, long runOffset=0,long Npar=1, long runSeed=0);
 
+		void setRunIdx(int idx) { _IOcontrol.mcmcRunIdx=idx; }
+		int getRunIdx() { return _IOcontrol.mcmcRunIdx; }
+		string getRunDependentFileName(string fname);
+		string getParameterDependentFileName(string fname, long paramID);
 		void setVerbocity(cpeds_VerbosityLevel verb);
 		
 		/*!
@@ -349,6 +354,7 @@ class cpedsMCMC {
 		MClink getStartingLink() { return _startingLink; }
 		mscsFunction getBestFitModel() { return _chisqData.bestFitData.model; }
 		MClink& bestFitLink() { return _bestFit; }
+		void addNewBestFitLink(MClink& l);
 
 		/*!
 			\brief starts a chain walk from a random place in the parameter space
@@ -360,7 +366,16 @@ class cpedsMCMC {
 			\author Bartosz Lew
 		*/
 		void startChain(bool followPriors=true);
-		void walkNstates(long Nstates);
+		/*!
+			\brief run MCMC for Nstates another states around the starting link
+			\details 
+			@param how - 0 - walk freely; 1 - take always one step from the best fit link;
+			2 -  take always one step from the best startingLink;
+			@return
+		
+			\date Jan 25, 2018, 6:56:54 PM
+		*/
+		void walkNstates(long Nstates, MClink startingLink, int how=1);
 		void setMaximalChainLength(long l) { _walk.maximalChainLength=l; }
 		/*!
 			\brief set the maximal number of rejected states required for forced cooling
@@ -374,6 +389,7 @@ class cpedsMCMC {
 		long getBurnInLength() const { return _walk.convergenceTestMinimalLength; }
 		void setBurnOutLength(long l);
 		long getBurnOutLength() const { return _walk.burnOutLength; }
+		void burnOut();
 		/*!
 			\brief deinfes the number that starts the indexing of the output directories for mcmc data
 			\details 
@@ -384,6 +400,7 @@ class cpedsMCMC {
 		*/
 		void setDirStIdx(long idx) { _IOcontrol.dirStartIndex=idx; }
 		void updateStepGeneratingPDFs();
+		void updateStepGeneratingPDF(long param, double expectedStepSize);
 		void updateCoolingPDF();
 		
 		
@@ -769,6 +786,8 @@ class cpedsMCMC {
 		MClink& current() { return _walk.current; }
 		MClink& nextCandidate() { return _walk.next; }
 
+		void saveCooling();
+		void saveModel();
 		void dumpAll();
 
 		/*!
@@ -937,7 +956,7 @@ class cpedsMCMC {
 		*/
 		double* getStartingPoint();
 		
-		double* getNextPoint(const MClink& current);
+		MClink getNextPoint(const MClink& current);
 		
 		double getSign();
 		void generateInitialStepSizePDFsAfterBurnIn();

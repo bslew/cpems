@@ -47,7 +47,11 @@ class MscsPDF1D :public mscsFunction {
 			\brief calculate and return confidence region for given confidence level
 			\details 
 			@param CL - confidence level [0,1). E.g 0.68 for 1-sigma confidence region.
-			@return
+			@param LVL - PDF value that corresponds to the requested CL - or more specifically
+			the value of the inverse CDF (calculated sideways from the mode of the PDF) which 
+			corresponds (the value) to the requested CL.
+			@return returns a list of abscissa values that yield PDF==LVL equation.
+			There should be two values for a well behaved unimodal distributions.
 		
 			\date Jun 6, 2017, 5:44:11 PM
 		*/

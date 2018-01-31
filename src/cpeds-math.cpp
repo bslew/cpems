@@ -1081,6 +1081,31 @@ double* cpeds_random_uniform_numbers(double min, double max, long pix_num) {
 	for (i=0;i<pix_num;i++) { uvec[i] = cpeds_random_uniform_number(min,max); }
 	return uvec;
 }
+/* ******************************************************************************************** */
+unsigned int cpeds_get_devrandom_seed() {
+    unsigned long random_seed, random_seed_a, random_seed_b; 
+    std::ifstream file ("/dev/urandom", std::ios::binary);
+    if (file.is_open())
+    {
+        char * memblock;
+        int size = sizeof(int);
+        memblock = new char [size];
+        file.read (memblock, size);
+        file.close();
+        random_seed_a = *reinterpret_cast<unsigned long*>(memblock);
+        delete[] memblock;
+    }
+    else
+    {
+    	struct timeval tv;
+    	gettimeofday(&tv,NULL);
+    	random_seed_a =tv.tv_sec*(uint64_t)1000000+tv.tv_usec;
+    }
+    random_seed_b = time(0);
+    random_seed = random_seed_a xor random_seed_b;
+    return random_seed;
+} 
+
 /****************************************************************************************************************/
 // remember to initialize the srand(time(0)) for this function
 double cpeds_random_uniform_number(double min, double max) {

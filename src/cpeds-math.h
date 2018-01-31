@@ -153,6 +153,9 @@ void cpeds_swap(long& d1, long& d2);
 // *********************************************************************************************
 // *******************   RANDOM NUMBERS STUFF ************************************************
 // *********************************************************************************************
+
+unsigned int cpeds_get_devrandom_seed();
+
 //! returns a random number taken from uniform distribution from range <min,max>
 /*! For this to return different results for each run the srand(0) function should be previously invoked */
 /*! The RNG is the generic linux system C libraries generator */
