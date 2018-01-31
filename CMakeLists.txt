@@ -711,7 +711,7 @@ add_definitions(
 	-DGENERATE_CVS_VERSION_STRING 
 	-DDEBUG_USING_FFTW2AND3 
 	-DHAVE_OPENMP 
-    -DDEBUG_MCMC_PDF
+#    -DDEBUG_MCMC_PDF
 #    -Wall
 	)
 # add -DCMAKE_CXX_FLAGS=-pg when calling cmake to generate gprof-ready binaries
