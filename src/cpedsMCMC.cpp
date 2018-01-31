@@ -2057,10 +2057,10 @@ void cpedsMCMC::burnOut() {
 	for (long i = 0; i < dims(); i++) {
 		double oneSigma=0;
 		MscsPDF1D pdf=get1Dposterior(i);
-		pdf.save("burnout-pdf-param."+msgs->toStr(i));
+//		pdf.save("burnout-pdf-param."+msgs->toStr(i));
 		cpedsList<double> ran=pdf.getCR(0.68);
-		printf("ran param: %li\n",i);
-		ran.print();
+//		printf("ran param: %li\n",i);
+//		ran.print();
 		if (ran.size()>=2) {
 			oneSigma=ran.last()-ran[0]; // 68% CR
 		}
