@@ -523,6 +523,8 @@ class mscsFunction : public mscsObject {
 		vector<string> getHDF5dataSets(string filename);
 		void setHDF5_scalarStringAttribute(string fname, string dsetName, string attributeName, string attributeValue);
 		void setHDF5_scalarDoubleAttribute(string fname, string dsetName, string attributeName, double value, string attributeComment="");
+		string getHDF5_stringAttribute(string fname, string dsetName, string attributeName, int* errCode);
+
 		
 		void initiatie_hdf5_params();
 		static const int HDF5_stringAttributeMaxLength=500;
@@ -1644,6 +1646,7 @@ class mscsFunction : public mscsObject {
 		long getHDF5dsetCount(hid_t& file);
 		void setHDF5_scalarStringAttribute(hid_t& dset, string attributeName, string attributeValue);
 		void setHDF5_scalarDoubleAttribute(hid_t& dset, string attributeName, double value, string attributeComment="");
+		string getHDF5_stringAttribute(hid_t& file, string dsetName, string attributeName, int* errCode);
 		bool hdf5createGroup(hid_t& file,string linkName);
 #endif		
 

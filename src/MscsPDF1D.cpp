@@ -47,9 +47,32 @@ cpedsList<double> MscsPDF1D::getCR(double CL, double* LVL) {
 	mscsFunction tmp(*this);
 	tmp-=lvl;
 	vector<double> CR=tmp.findRoot();
-	cpedsList<double> L(CR);
-//	L.sort(12);
-	return L;
+	cpedsList<double> CRl(CR);
+	checkRanges();
+	double modalX=getX(getMaxValueIdx());
+	
+	//
+	// sanity checks
+	//
+	if (CR.size()==1) {
+		/*
+		 * we probably have ill defined PDF that is not probed sufficiently for this CL.
+		 * We need to find out which tail of the PDF is missing and return the extremal argument
+		 * as CR boundary.
+		 *
+		 */
+		
+		if (CR[0]-modalX > 0) CRl.prepend(getMinArg());
+		else CRl.append(getMaxArg());
+	}
+//	else {
+//		if (f(getMinArg()>lvl) or f(getMaxArg()>lvl)) {
+//			if (CR[0]-modalX > 0) CRl.prepend(getMinArg());
+//			else CRl.append(getMaxArg());
+//		}		
+//	}
+	
+	return CRl;
 }
 /***************************************************************************************/
 mscsFunction MscsPDF1D::getCDF() {

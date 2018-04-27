@@ -2353,7 +2353,6 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 	pointsDensity dens(positions);
 	dens.setVerbosityLevel(getVerbosityLevel());
 #ifdef DEBUG_DENSITY
-	dens.setVerbosityLevel(getVerbosityLevel());
 	dens.printRanges("positions ranges");
 #endif
 	bool is2Dcase=false;
@@ -4069,8 +4068,65 @@ double mscsFunction3dregc::fxy(double x, double y, int k, int part, double* dfdx
 	if (dfdy!=NULL) *dfdy=fint2;
 	return fint;
 }
+/* ******************************************************************************************** */
+double mscsFunction3dregc::fxyLin(double x, double y, int k, int part, bool extrapolate) {
+	//
+	// derive the grid cells
+	//
+	long i=(x-_param.x0-_param.dxo2)/_param.dx;
+	long j=(y-_param.y0-_param.dyo2)/_param.dy;
+	//
+	// check the range
+	//
+	if (k<0) msgs->criticalError("fRe(double x, double y, k):: coordinate out of range (z)",High);
+	if (k>=_param.Nz) msgs->criticalError("fRe(double x, double y, k):: coordinate out of range (z)",High);
+	
+	if (i<0) i=0;
+	if (i>_param.Nx-1) i=_param.Nx-1;
+	if (j<0) j=0;
+	if (j>_param.Ny-1) j=_param.Ny-1;
 
+	
+	double fint;
+	double x1,x2,y1,y2;
+	int i1,i2,j1,j2;
+
+	if (x<getX(i))
+		i1=(i-1+_param.Nx) % _param.Nx;
+	else
+		i1=i;
+	i2=(i1+1) % _param.Nx;
+	
+	if (y<getY(j))
+		j1=(j-1+_param.Ny) % _param.Ny;
+	else
+		j1=j;
+	j2=(j1+1) % _param.Ny;
+	
+	x1=getX(i1);//-_param.dx;
+	x2=getX(i2);//+_param.dx;
+	y1=getY(j1);//-_param.dy;
+	y2=getY(j2);//+_param.dy;
+//	printf("x: %lf, y: %lf,    x1: %lf, x2: %lf, y1: %lf, y2: %lf\n",x,y,x1,x2,y1,y2);
+	if (x1>=x2) x1=getX(i1)-_param.dx;
+	if (y1>=y2) y1=getY(j1)-_param.dy;
+//	printf("i: %li, j: %li,    i1: %li, i2: %li, j1: %li, j2: %li\n",i,j,i1,i2,j1,j2);
+//	printf("x: %lf, y: %lf,    x1: %lf, x2: %lf, y1: %lf, y2: %lf\n",x,y,x1,x2,y1,y2);
+
+	
+	fint=cpeds_bilinear_interpolation(x1,x2,y1,y2,
+			fRe(i1,j1,k),
+			fRe(i1,j2,k),
+			fRe(i2,j1,k),
+			fRe(i2,j2,k),
+			x,y);
+	return fint;
+	
+}
+/* ******************************************************************************************** */
 double& mscsFunction3dregc::operator()(long i, long j) { return _data[ijk2idx(i,j,0)][0]; }
+/* ******************************************************************************************** */
+double mscsFunction3dregc::operator()(long i, long j) const { return _data[ijk2idx(i,j,0)][0]; }
 /***************************************************************************************/
 fftw_complex& mscsFunction3dregc::operator()(long i, long j, long k) { return _data[ijk2idx(i,j,k)]; }
 /***************************************************************************************/
@@ -5374,4 +5430,20 @@ mscsFunction3dregc& mscsFunction3dregc::insertList(cpedsList<double>& l, long i0
 		fRe(i0,j+j0,k0)=l[j];
 	}
 	return *this;	
+
+}
+/* ******************************************************************************************** */
+mscsFunction3dregc& mscsFunction3dregc::interpolateXYholes(int k) {
+//	mscsFunction3dregc
+	
+/*
+	for (long i = 0; i < Nx(); i++) {
+		for (long j = 0; j < Ny(); j++) {
+			if (fIm(i,j,k)!=1) {
+				
+			}
+		}
+	}
+*/
+	return *this;
 }

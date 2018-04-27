@@ -23,7 +23,7 @@
 #include "Mscs-map.h"
 #include "Mscs-global-defs.h"
 //#include "Mscs-power_spectrum.h"
-
+#include "cpeds_angular_correlation_fn.h"
 //#include "cpeds-consts.h"
 
 //#include "matpack.h"
@@ -2457,8 +2457,8 @@ double mscsMap::get_integralT() {
 }
 
 //************************************************************************
-// the resolution parameter defines how wide is the binning of theta range, thus defines the number of pointh that constitute C_th
-// angles are given in degrs.
+// the resolution parameter defines how wide is the binning of theta range, thus defines the number of points that constitute C_th
+// angles are given in degrees.
 // calculates the correlation function on a map with requested resolution
 mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 		double theta_max, double resolution) {
@@ -2482,19 +2482,29 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 	if (!coordLoaded()) set_map_coord();
 	/* for (i=0;i<point_num_C_th;i++) { C_th[i][0] = C_th[i][1] = 0; separation_number[i] = 0;} // zeroing tables */
 
+	if (maskLoaded()==false) {
+		makekill_space_manager("make","m");
+		m()=1;
+	}
+	
+	
+	
+/*
 	// corralation function calculation
 	long pix_num = pixNum();
 	for (i = 0; i < pix_num; i++) {
-		for (j = i; j < pix_num; j++) {
-			if (get_m(i) * get_m(j) != 0) {
-				
-				ang = get_C(i).angle(get_C(j)); //cpeds_ang_n1n2(map->n[i].b,map->n[i].l,map->n[j].b,map->n[j].l);
-
-				if ((ang >= theta_min) && (ang <= theta_max)) {
-					corr_i = (long) round((ang - theta_min) / resolution);
-					separation_number[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
-					Cth[corr_i].rx() += ang;
-					Cth[corr_i].ry() += get_T(i) * get_T(j); // the mask check is done in the condition above
+		if (get_m(i)!=0) {
+			for (j = i; j < pix_num; j++) {
+				if (get_m(j) != 0) {
+					
+					ang = get_C(i).angle(get_C(j)); //cpeds_ang_n1n2(map->n[i].b,map->n[i].l,map->n[j].b,map->n[j].l);
+					
+					if ((ang >= theta_min) && (ang <= theta_max)) {
+						corr_i = (long) round((ang - theta_min) / resolution);
+						separation_number[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
+						Cth[corr_i].rx() += ang;
+						Cth[corr_i].ry() += get_T(i) * get_T(j); // the mask check is done in the condition above
+					}
 				}
 			}
 		}
@@ -2508,6 +2518,19 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 		Cth[i].rx() /= separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
 		Cth[i].ry() /= separation_number[i]; // normalization of C(th)
 	}
+*/
+
+	
+	
+	cpedsDirectionSet ds;
+	long pix_num = pixNum();
+	for (i = 0; i < pix_num; i++) {
+		if (get_m(i)!=0) {
+			ds.append(get_C(i));
+			ds.last().setVal(get_T(i));
+		}
+	}
+	Cth=cpeds_calculate_angular_correlation_fn(ds,theta_min, theta_max, resolution);
 	
 	return Cth;
 }
@@ -3339,7 +3362,9 @@ void mscsMap::makeDipole(cpedsDirection m) {
 	
 }
 
-
+void mscsMap::setValue(double x, string what) {
+	msgs->criticalError("mscsMap::setValue: This method has not been implemented",Top); exit(-1);
+}
 /********************************************************************************/
 // definition of operators
 /********************************************************************************/

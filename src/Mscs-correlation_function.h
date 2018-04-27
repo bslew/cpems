@@ -39,6 +39,7 @@ class mscsCorrelationFunction : public mscsFunction {
 /* CONSTRUCTORS AND DESTRUCTORS */
 /* ---------------------------- */
  mscsCorrelationFunction() : mscsFunction("Cth") {}
+ mscsCorrelationFunction(mscsFunction fn) : mscsFunction(fn) {}
  mscsCorrelationFunction(string name) : mscsFunction(name) {}
  ~mscsCorrelationFunction() {}
 

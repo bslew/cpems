@@ -174,10 +174,30 @@ class cpedsMCMC {
 				QList<MscsPDF1D> posteriors1D; //!< one for each parameter
 				QList<mscsFunction3dregc> posteriors2D; //!< one for each combination of parameters
 //				map<int, int> params2idx;
+				cpedsList<double> confidenceLevels; //!< CLs for which CR are calculated and stored. By default 68, 95 and 99 %
+				QList<mscsFunction3dregc> confidenceRanges1D; /*!< 1D CRs, one per parameter. Each element is a 3xconfidenceLevels.size() matrix
+					Each row of the matrix contains data for each CL. 
+					1st column is the CL,\n
+					2nd column is CRlow, \n
+					3rd column is CRhigh.\n
+					4th column is the PDF value that corresponds to the [CRlow,CRhigh] range
+				*/
 		} bestFitData_t;
 		
 		
 		typedef struct {
+				mscsFunction3dregc data2d; /*!<	contains the full input data structure; the column data2dcol is 
+				 * used to evaluate chisq; the last 2 columns will contain best fit model and its residuals respectively
+				 * The data structure below is initialized with the column data2dCol from data2d but it 
+				 * may becore depreciated.
+				 * If data2d is not initialized, then residuals will not be calculated.
+				 * The residuals could be calculated using data below but often it is useful to combine the residuals
+				 * with some of the other columns from the input data file for plotting against other columns which
+				 * are missing in the data structure below. So it is convenient to provide the full input data and indicate
+				 * which column should be used for fitting, then store the full input data along with two extra columns
+				 * containing the best fit model and the resuduals.
+				 */
+				long data2dCol;
 				mscsFunction data; //!< contains data used to evaluate chisq for various parameters of the model
 				mscsFunction model; //!< contains the last derived model according to the _current set of parameters
 				cpedsRNG rnCov; //!< This generator is used to generate the simulated data to derive the covariance matrix at every state
@@ -241,6 +261,7 @@ class cpedsMCMC {
 		int getRunIdx() { return _IOcontrol.mcmcRunIdx; }
 		string getRunDependentFileName(string fname);
 		string getParameterDependentFileName(string fname, long paramID);
+		string get2ParameterDependentFileName(string fname, long paramID1, long paramID2);
 		void setVerbocity(cpeds_VerbosityLevel verb);
 		
 		/*!
@@ -266,13 +287,33 @@ class cpedsMCMC {
 			\brief set the data for chisq calculation to be used throughout the chain walk
 			\details 
 			@param data - mscsFunction defining the data vector 
+
+			NOTE: this method is depreciated in favour of setData(const mscsFunction3dregc& data);
 		
 			\date Dec 13, 2010, 7:23:59 PM
 			\author Bartosz Lew
 		*/
 		void setData(const mscsFunction& data);
+		/*!
+			\brief provide 2D data array
+			\details 
+			@param data - 2d data array that will be used during chisq calculations
+			@param colNo - column number in that array which holds the values that should be fitted
+
+			The reason for storing the full 2D array rather than just a 1D vector of the values
+			is that (i) sometimes the chisq depend on a number of other columns as well and (ii)
+			it is convenient to store the residuals for the best fit model along with the 
+			all other columns to ease plotting against other columns in the data. So this saves the need
+			of reprocessing the outputs after the fitting. However, the 2d data need not be set in which
+			case the residuals will not be calculated this way.
+		
+			\date Feb 14, 2018, 2:43:30 PM
+		*/
+		void setData2D(const mscsFunction3dregc& data, int colNo);
 		const mscsFunction& getData() const;
 		const mscsFunction& getModel() const;
+		const mscsFunction3dregc& getData2D() const;
+		const double getData2D(long i, long j) const;
 
 		void setDataMask(const cpedsList<double>& dataMask) { _chisqData.dataMask=dataMask; }
 		long dataSize() const { return _chisqData.data.pointsCount(); }
@@ -345,10 +386,10 @@ class cpedsMCMC {
 		long sizeAccepted() { return _MCaccepted.size(); }
 		long size() { return sizeAccepted()+sizeRejected(); }
 		long length() { return _MCaccepted.size()+_MCrej.size(); }
-		cpedsMC& chain() { return _MCaccepted; }
 		cpedsMC& BFchain() { return _MCbestFitChain; }
 		MClink& chain(long i) { return _MCaccepted[i]; }
 		cpedsMC& rejectedStates() { return _MCrej; }
+		cpedsMC& chain() { return _MCaccepted; }
 		cpedsMC& acceptedStates() { return _MCaccepted; }
 		MClink getBestFitLink() { return _bestFit; }
 		MClink getStartingLink() { return _startingLink; }
@@ -407,8 +448,8 @@ class cpedsMCMC {
 		void printInfo() const;
 
 		QList<MscsPDF1D>& posteriors() { return _chisqData.bestFitData.posteriors1D; }
-		MscsPDF1D get1Dposterior(string paramName, long pdfPoints=50);
-		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50);
+		MscsPDF1D get1Dposterior(string paramName, long pdfPoints=50, string interpolationType="steffen");
+		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50, string interpolationType="steffen");
 		mscsFunction3dregc get2Dposterior(string paramName1, string paramName2, long pdfPoints=50);
 		mscsFunction3dregc get2Dposterior(int paramID1, int paramID2, long pdfPoints=50);
 
@@ -430,12 +471,31 @@ class cpedsMCMC {
 		void loadMCrun(string dirName);
 		void saveParams(string fname);
 		void saveData(string fname);
+		/*!
+			\brief calculate and save residuals calculated wrt the provided input data column
+			\details  
+			@param inputDataColumn - column in the input data used to calculate residuals; 
+			by default - the one indicated through setData2d()
+
+			
+		
+			\date Feb 7, 2018, 3:31:44 PM
+		*/
+		void saveResiduals(int inputDataColumn=-1);
+
 		void savePriors();
 		void save1Dposteriors();
 		void save2Dposteriors();
 //		void setCalculate1Dposteriors(bool tf) {_IOcontrol.calculate1Dpdf=tf; }
 		void setCalculate2Dposteriors(bool tf) {_IOcontrol.calculate2Dpdf=tf; }
 		void calculate1Dposteriors();
+		/*!
+			\brief calculate 1D CRs
+			\details 
+		
+			\date Feb 24, 2018, 3:32:22 PM
+		*/
+		void calculate1DCRs();
 		void calculate2Dposteriors();
 		/*!
 			\brief save vertices of a patch enclosing requested confidence level (CL)
@@ -448,6 +508,8 @@ class cpedsMCMC {
 		void recalculateLikelihoods();
 		long statesAboveRejectionThreshold();
 		void save2DCR(double CL);
+//		void save1DCR(double CL, string fname, string dset);
+		cpedsList<double> get1DCR(int paramID1, double CL, double* LVL=NULL);
 		mscsFunction get2DCR(int paramID1, int paramID2, double CL, double* LVL=NULL);
 	
 		void saveTemperature(string fname);
@@ -742,8 +804,18 @@ class cpedsMCMC {
 			return _cooling.initialTemperature;
 		}
 		
+		/*!
+			\brief Return the number of parameters currently in the parameter space.
+			\details 
+			@return
+			
+			This is different from dims() which returns the number of dimensions with which the object has been
+			initialized
+		
+			\date Feb 1, 2018, 12:54:12 PM
+		*/
 		int getNparam() const {
-			return _walk.Nparam;
+			return _parameterSpace.size();
 		}
 		
 		string getOutputDir() const { return _IOcontrol.runFilesDir; }

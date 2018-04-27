@@ -580,6 +580,112 @@ void mscsFunction::setHDF5_scalarDoubleAttribute(string fname, string dsetName, 
 		status = H5Fclose (file);
 	}
 }
+/* ******************************************************************************************** */
+/***************************************************************************************/
+string mscsFunction::getHDF5_stringAttribute(hid_t& file, string dsetName, string attributeName, int* errCode) {
+	string strAttr="";
+	
+	//#pragma omp critical (mscsFunction3dregc_hdfAttr)
+	//	{
+	
+	
+	/*
+	 * Attach to the scalar attribute using attribute name, then read and
+	 * display its value.
+	 */
+	//	printf("attrib name: %s\n",attributeName.c_str());
+	hid_t attr = H5Aopen_by_name(file, dsetName.c_str(), attributeName.c_str(),	H5P_DEFAULT, H5P_DEFAULT);
+	hid_t filetype = H5Aget_type (attr);
+	size_t sdim = H5Tget_size (filetype);
+	sdim++;                         /* Make room for null terminator */
+	
+	
+	hsize_t     dims[1];
+	hid_t space = H5Aget_space (attr);
+	//    int ndims = H5Sget_simple_extent_ndims(space);
+	int ndims = H5Sget_simple_extent_dims (space, dims, NULL);
+	//    /*
+	//     * Allocate array of pointers to rows.
+	//     */
+	//    char* rdata = (char *) malloc (dims[0] * sizeof (char));
+	
+	//    /*
+	//     * Allocate space for integer data.
+	//     */
+	//    rdata[0] = (char *) malloc (dims[0] * sdim * sizeof (char));
+	
+	//    /*
+	//     * Set the rest of the pointers to rows to the correct addresses.
+	//     */
+	//    for (i=1; i<dims[0]; i++)
+	//        rdata[i] = rdata[0] + i * sdim;
+	
+	//    /*
+	//     * Create the memory datatype.
+	//     */
+	hid_t memtype = H5Tcopy (H5T_C_S1);
+	herr_t status = H5Tset_size (memtype, sdim);
+	
+	/*
+	 * Read the data.
+	 */
+	//    status = H5Aread (attr, memtype, rdata[0]);
+//	char attrch[HDF5_stringAttributeMaxLength];
+
+	hsize_t attSize=H5Aget_storage_size(attr);
+	char attrch[attSize];
+	herr_t errc = H5Aread(attr, memtype, attrch);
+	//	herr_t errc = H5Aread(attr, H5T_STR_NULLTERM, attrch);
+	
+	//    /*
+	//     * Output the data to the screen.
+	//     */
+	//    for (i=0; i<dims[0]; i++)
+	//        printf ("%s[%d]: %s\n", attributeName.c_str(), i, rdata[i]);
+	
+	strAttr=attrch;
+	/*
+	 * Close and release resources.
+	 */
+	//    free (rdata[0]);
+	//    free (rdata);
+	//    H5Aclose (attr);
+	H5Tclose (memtype);
+	H5Sclose (space);
+	//    H5Dclose (attr);
+	//    status = H5Tclose (filetype);
+	//    status = H5Fclose (file);
+	
+	
+	
+	
+	
+	H5Aclose(attr);
+	
+	if (errCode!=NULL) *errCode=errc;
+	//	}
+	return strAttr;
+}
+
+/***************************************************************************************/
+string mscsFunction::getHDF5_stringAttribute(string fname, string dsetName, string attributeName, int* errCode) {
+	hid_t dset,file;
+	hid_t status;
+	string attr;
+//	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+	
+	if (cpeds_fileExists(fname)) {
+		// if (omp_hdf_lock!=NULL) omp_set_lock(omp_hdf_lock);
+		file = H5Fopen(fname.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);        
+		attr=getHDF5_stringAttribute(file,dsetName,attributeName,errCode);
+		status = H5Fclose (file);
+		// if (omp_hdf_lock!=NULL) omp_unset_lock(omp_hdf_lock);
+	}
+	else {
+		if (errCode!=NULL) *errCode=-1;
+	}
+	return attr;	
+}
 
 
 

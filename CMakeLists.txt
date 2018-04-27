@@ -46,7 +46,7 @@ set (CPEMS_VERSION "0.1")
 #set (VELKB_LIB_DIR "external_packages/velKB") 
 
 add_custom_target(extdir
-    COMMAND /bin/bash -c 'if [ ! -d /home/blew/programy/cpems-build/external_packages ]\; then mkdir /home/blew/programy/cpems-build/external_packages\; fi'
+    COMMAND /bin/bash -c 'if [ ! -d ${PROJECT_BINARY_DIR}/external_packages ]\; then mkdir${PROJECT_BINARY_DIR}/external_packages\; fi'
     )
     
 add_custom_target(Lib_velKB
@@ -224,6 +224,9 @@ set (CPEDSLIB_HEADERS
 	src/MClink.h
 	src/MCparameterSpace.h
     src/cpeds-templates.h
+	src/MscsDateTimeData.h
+	src/RT32pointing_models.h
+	src/cpeds_angular_correlation_fn.h
 	)
 
 set (CPEDSLIB_SOURCES 
@@ -253,6 +256,9 @@ set (CPEDSLIB_SOURCES
 	src/Nbody_io.cpp 
 	src/cpeds-fits.cpp 
 #    src/cpeds-templates.cpp
+	src/MscsDateTimeData.cpp
+	src/RT32pointing_models.cpp
+	src/cpeds_angular_correlation_fn.cpp
 	)
 #	${CPEDS_INCLUDE_DIR}/cpeds-msgs.h
 
@@ -414,6 +420,7 @@ add_executable(function_fft src/function_fft.cpp)
 add_executable(mkFractal src/mkFractal.cpp)
 add_executable(mk_gauss_map src/mk_gauss_map.cpp)
 add_executable(map_oper src/map_oper.cpp)
+add_executable(calculate_Cth src/calculate_Cth.cpp)
 
 ################################################################
 ################################################################
@@ -709,9 +716,10 @@ add_definitions(
 	-D_LARGEFILE_SOURCE 
 	-D_FILE_OFFSET_BITS=64 
 	-DGENERATE_CVS_VERSION_STRING 
-	-DDEBUG_USING_FFTW2AND3 
+#	-DDEBUG_USING_FFTW2AND3 
 	-DHAVE_OPENMP 
 #    -DDEBUG_MCMC_PDF
+#    -DDEBUG_MCMC_PDF2
 #    -Wall
 	)
 # add -DCMAKE_CXX_FLAGS=-pg when calling cmake to generate gprof-ready binaries
@@ -791,6 +799,7 @@ target_link_libraries(function_fft ${LIBRARIES})
 target_link_libraries(mkFractal ${LIBRARIES})
 target_link_libraries(mk_gauss_map ${LIBRARIES})
 target_link_libraries(map_oper ${LIBRARIES} ${LIBRARIES})
+target_link_libraries(calculate_Cth ${LIBRARIES} ${LIBRARIES})
 
 # Link Mscs test targets
 #
@@ -830,6 +839,7 @@ install (TARGETS
 	mkFractal
 	LMdataFit
 	smoothPoints
+	calculate_Cth
 	DESTINATION bin)
 
 install(TARGETS
@@ -873,6 +883,8 @@ install (FILES
                     GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 	DESTINATION bin)
 #    ${PROJECT_SOURCE_DIR}/pyth/pyCPEDScommonFunctions/cal2jd.py
+
+#install(DIRECTORY DESTINATION $ENV{HOME}/.cpems)
     
 #install (TARGETS 
 #	${CPEMS_LIBS}

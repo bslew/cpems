@@ -583,7 +583,7 @@ template <class T> long cpeds_queue<T>::find_closest(T val) {
 
 //! This routine checks the txt file given by fn, and returns the cpeds_queue object that contains the
 //! number of columns (space separated words) in each row of the file and much other useful info.
-cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn);
+cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn, long scanRowsMax=-1);
 
 
 

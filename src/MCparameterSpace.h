@@ -27,8 +27,8 @@ class MCparameterSpace : public QList<mscsFunction> {
 		/* CLASS TYPES */
 		/* ------------- */
 		typedef struct {
-			QList<string> names;
-			QList<string> names_latex;
+			QList<string> names; //!< parameter name
+			QList<string> names_full; //!< parameter name with units in latex typesetting used for automatic plot generation
 				
 		} MCparameterSpace_t;
 
@@ -43,7 +43,8 @@ class MCparameterSpace : public QList<mscsFunction> {
 		/* ---------------------------- */
 
 		void addParameter(const mscsFunction& p, string parameter_name="", string parameter_full_name="");
-		QList<string>& names_latex() { return _MCparameterSpace_data.names_latex; }
+		QList<string>& names_latex() { return _MCparameterSpace_data.names_full; }
+		QList<string>& names_full() { return _MCparameterSpace_data.names_full; }
 		QList<string>& names() { return _MCparameterSpace_data.names; }
 		
 		

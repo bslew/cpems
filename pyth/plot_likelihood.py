@@ -66,7 +66,7 @@ To use different contours for every plot separate sets of contours by a colon :.
 parser.add_option("", "--contours_w", dest="contours_w", default=1, type="float", help='contour line width', metavar="VALUE")
 parser.add_option("", "--contours_fontSize", dest="contours_fontSize", default=10, type="float", help='contour font size', metavar="VALUE")
 
-# parser.add_option("", "--hdf5dset", dest="hdf5dset", default='', type="string", help='''comma separated list of names of the datasets from the hdf5 file 
+parser.add_option("", "--dset", dest="hdf5dset", default='', type="string", help='''comma separated list of names of the datasets from the hdf5 file 
 # The hdf5 dataset if it is 3d dataset saved by mscsFunction3dregc then the x-coordinate increases rightwards in the plot, and y coordinate increases downwards.
 # (default: "") ''', metavar="STRING")
 
@@ -201,9 +201,9 @@ def getFileExtension(fname):
 #    sys.exit()
     return ext[-1]
 
-def loadData(fname):
+def loadData(fname,dset):
     sliceNo=0
-    dset='L'
+#     dset='L'
     print "* loading file: %s (slice: %li)" % (fname,sliceNo)
     
     f = h5py.File(fname,'r')
@@ -316,10 +316,10 @@ for (fname,matID) in zip(args,range(len(args))):
     
     if ext=='hdf5' or ext=='hdf':
 
-        mat,ran,CRcontours,plot_labels,bfparams=loadData(fname)
+        mat,ran,CRcontours,plot_labels,bfparams=loadData(fname, option.hdf5dset)
         plotData2D(mat,ran,CRcontours,plot_labels,bfparams,matID)
     
     else:
-        print 'I do not recognise this extension. Supported extensions are: hdf and hdf5'
+        print 'I do not recognize this extension. Supported extensions are: hdf and hdf5'
         sys.exit(1)
     

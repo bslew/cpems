@@ -234,6 +234,36 @@ class mscsFunction3dregc : public mscsObject {
 		*/
 		double fxy(double x, double y, int k=0, int part=0, double* dfdx=NULL, double* dfdy=NULL, bool extrapolate=false);
 
+		/*!
+			\brief returns an interpolated function value for the requested x,y coordinates in the slice through the function at grid cell k
+			\details 
+			@param x - x coordinate
+			@param y - y coordinate 
+			@param k - z coordinate index
+			@param extrapolate -- NOT USED 
+
+			IMPORTANT:
+			This function works periodically. 
+			Consider re-implementation to use
+			the internal variables to control how to go about the boundaries.
+			
+			@return interpolated function value is calculated using the bilinear interpolation 
+		
+			\date Feb 5, 2018, 4:22:07 PM
+		*/
+		double fxyLin(double x, double y, int k=0, int part=0, bool extrapolate=false);
+
+		/*!
+			\brief fill the holes in the real part in the slice through the function at grid cell k using imaginary part as a mask
+			\details 
+			@param k - z coordinate index
+			@return returns *this
+		
+			NOT IMPLEMENTED YET
+		
+			\date Feb 5, 2018, 4:39:07 PM
+		*/
+		mscsFunction3dregc& interpolateXYholes(int k=0);
 		
 		mscsFunction3dregc& multiply(const mscsFunction3dregc& g);
 		mscsFunction3dregc& multiply(const double v);
@@ -265,6 +295,7 @@ class mscsFunction3dregc : public mscsObject {
 		
 		
 		double& operator()(long i, long j);
+		double operator()(long i, long j) const;
 		fftw_complex& operator()(long i, long j, long k);
 		fftw_complex& operator[](long i);
 		const fftw_complex& operator[](long i) const;

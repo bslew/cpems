@@ -55,7 +55,11 @@ void subDomain::initiate(const vector<cpedsPoint3D>* points) {
 		// find all particles in this domain and put their indexes on the idx vector
 		_def.idx=new vector<long>;
 		for (unsigned long i = 0; i < points->size(); i++) { if (inDomain(points->at(i))) _def.idx->push_back(i); } // find points in the domain, not all of them might be in this domain
-		if (_def.idx->size()==0) { printf("created subDomain contains no points in it. This is probably not what you wanted. please check the ranges.\n"); exit(0); }
+		if (_def.idx->size()==0) { 
+			printf("created subDomain contains no points in it. "
+					"This is probably not what you wanted. please check the ranges.\n"); 
+			exit(0); 
+		}
 	}
 }
 /***************************************************************************************/

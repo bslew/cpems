@@ -19,6 +19,7 @@
 #include "mscsVector.h"
 #include "MscsPDF2D.h"
 #include "MscsPDF1D.h"
+#include "MscsDateTimeData.h"
 
 #ifdef HAVE_OPENMP
 #include <omp.h>
@@ -105,6 +106,11 @@ int main(int argc, char** argv) {
 		printf("52 - test mscsPDF2D contours\n");
 		printf("53 - test mscsPDF1D CR\n");
 		printf("54 - test mscsFunction derivative\n");
+		printf("55 - test cpeds shift array\n");
+		printf("56 - test cpeds bilinear interpolation\n");
+		printf("57 - test mscsFunction3dregc hole filling by degrade/prograde\n");
+		printf("58 - test MscsDataTimeData\n");
+		printf("59 - mscsFunction3dregc: test hdf5 string attribute\n");
 		exit(0);
 	}
 	long testNo=strtol(argv[1],NULL,10);
@@ -1077,9 +1083,34 @@ int main(int argc, char** argv) {
 			f.mkGauss(-5,5,0.01,1,0,sigma);
 //			f3d+=1.0;
 			MscsPDF1D pdf=f;
-			pdf.save("gauss");
+			pdf.save("pdf_good");
+			cout << "TESTING WELL DEFINED PDF\n";
+			cout << "calcuating 1-sigma CR\n";
 			cpedsList<double> v=pdf.getCR(0.682689);
 			v.print();
+			cout << "\n\n";
+			cout << "calcuating 2-sigma CR\n";
+			v=pdf.getCR(0.9545);
+			v.print();
+			cout << "\n\n";
+			
+			cout << "TESTING ILL DEFINED PDF 1\n";
+			f.clearFunction();
+			f.mkGauss(-1,5,0.01,1,0,sigma);
+			pdf=f;
+			pdf.save("pdf_bad1");
+			v=pdf.getCR(0.9545);
+			v.print();
+			cout << "\n\n";
+
+			cout << "TESTING ILL DEFINED PDF 2\n";
+			f.clearFunction();
+			f.mkGauss(-5,1,0.01,1,0,sigma);
+			pdf=f;
+			pdf.save("pdf_bad2");
+			v=pdf.getCR(0.9545);
+			v.print();
+			cout << "\n\n";
 
 			break;
 		}
@@ -1106,6 +1137,141 @@ int main(int argc, char** argv) {
 			cpeds_save_matrix(d,n,1,"in1");
 			cpeds_shift_array(d,n,11,true);
 			cpeds_save_matrix(d,n,1,"in12");
+			break;
+		}
+		case 56:
+		{
+			double x1=1;
+			double x2=2;
+			double y1=1;
+			double y2=2;
+			double f11=1;
+			double f21=2;
+			double f12=3;
+			double f22=4;
+			cout << "(x,y)_1 = (" << x1 << ", " << y1 << "), f = "<< f11 << "\n";
+			cout << "(x,y)_2 = (" << x2 << ", " << y1 << "), f = "<< f21 << "\n";
+			cout << "(x,y)_3 = (" << x1 << ", " << y2 << "), f = "<< f12 << "\n";
+			cout << "(x,y)_4 = (" << x2 << ", " << y2 << "), f = "<< f22 << "\n";
+			double dx=x2-x1;
+			double dy=y2-y1;
+			double x=1.5;
+			double y=1.5;
+			cout << "interpolating at: (x,y) = (" << x <<", " << y << ")\n";				
+			cout << "f(x,y) = " << cpeds_bilinear_interpolation(x1,x2,y1,y2,f11,f12,f21,f22,x,y) <<"\n";
+			
+			x=1;
+			y=1;
+			cout << "interpolating at: (x,y) = (" << x <<", " << y << ")\n";				
+			cout << "f(x,y) = " << cpeds_bilinear_interpolation(x1,x2,y1,y2,f11,f12,f21,f22,x,y) <<"\n";
+
+			x=2;
+			y=2;
+			cout << "interpolating at: (x,y) = (" << x <<", " << y << ")\n";				
+			cout << "f(x,y) = " << cpeds_bilinear_interpolation(x1,x2,y1,y2,f11,f12,f21,f22,x,y) <<"\n";
+
+			cout << "\n\n";
+			
+			mscsFunction3dregc F;
+			mscsFunction3dregc Fint;
+			long N=10;
+			long Nint=200;
+			F.setSizeRange(N,N,1,-5,-5,0,5,5,0);
+			Fint.setSizeRange(Nint,Nint,1,-5,-5,0,5,5,0);
+			F.allocFunctionSpace();
+			Fint.allocFunctionSpace();
+			
+			F.mkGauss2D(0,0,1,1,0,1,2,0);
+//			F.shift(N/2,N/2,0);
+			
+//			long i=5;
+//			long j=5;
+//			x=Fint.getX(i);
+//			y=Fint.getY(j);
+//			printf("x: %lE, y: %lE\n",x,y);
+//			printf("i: %li j:%li  F: %lE,  Fint: %lE\n",i,j,F.fRe(i,j,0),F.fxyLin(x,y,0,0));
+//			printf("\n\n");
+//			exit(0);
+			
+			for (long i = 0; i < Nint; i++) {
+				x=Fint.getX(i);
+				for (long j = 0; j < Nint; j++) {
+					y=Fint.getY(j);
+					printf("x: %lE, y: %lE\n",x,y);
+					Fint.setf(i,j,0,F.fxyLin(x,y,0,0),0.0);
+					printf("\n\n");
+				}
+			}
+			
+	
+			F.saveSlice(2,0,"F");
+			Fint.saveSlice(2,0,"Fint");
+			
+			
+			
+			break;
+		}
+		case 57:
+		{
+			
+			mscsFunction3dregc F;
+			mscsFunction3dregc Fint;
+			long N=20;
+			long Nint=100;
+			F.setSizeRange(N,N,1,-5,-5,0,5,5,0);
+			Fint.setSizeRange(Nint,Nint,1,-5,-5,0,5,5,0);
+			F.allocFunctionSpace();
+			Fint.allocFunctionSpace();
+
+			// make signal
+			F.mkGauss2D(0,0,1,1,0,1,2,0);
+			// make hole (this is not needed really because the mask does the thing)
+			F.fRe(4,4,0)=0.0;
+			
+			// make mask
+			F.setIm(1);
+			F.fIm(4,4,0)=0.0;
+			
+			
+			
+			
+			
+			F.saveSlice(2,0,"F");
+			Fint.saveSlice(2,0,"Fint");
+
+			break;
+		}			
+		case 58: {
+			cout << "line params count: " << argc << "\n";
+			cout << "param 0: " << argv[0] << "\n";
+			if (argc<3) { cout << "provide file name as argument\n"; return -1; }
+			cout << "param 2: " << argv[2] << "\n";
+			MscsDateTimeData dtd;
+//			dtd.load(argv[2],0,"%Y-%m-%d %H:%M:%S");
+			dtd.load(argv[2],0,"yyyy-MM-dd HH:mm:ss");
+			dtd.printData();
+			
+			long idx;
+			double val=dtd.getFirstValueAfter("2016-11-27 19:05:48",0,2,&idx);
+			cout << "found at idx: " << idx << " value: " << val << "\n";
+
+			val=dtd.getFirstValueAfter("2016-11-28 19:05:48",0,2,&idx);
+			cout << "found at idx: " << idx << " value: " << val << "\n";
+
+			double JD=cpeds_julian_time(2016,11,27,19.0+6.0/60+22.1/3600);
+			val=dtd.getFirstValueAfter(JD,0,2,&idx);
+			cout << "\ntesting from JD.\nFound at idx: " << idx << " value: " << val;
+			
+			break;
+		}
+		case 59: {
+			mscsFunction3dregc F;
+			F.setSize(10,10);
+			F.allocFunctionSpace();
+			F.saveHDF5("test.hdf5","test");
+			F.setHDF5_scalarStringAttribute("test.hdf5","test","param","$\\alpha$");
+			
+			break;
 		}
 		default:
 			break;

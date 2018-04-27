@@ -39,6 +39,7 @@ void parseOptions(int argc, char** argv);
 string getProgramVersionString();
 void add_files(vector<string> _infiles);
 void subtract_files(vector<string> _infiles);
+void multiply_files(vector<string> _infiles);
 void multiply_value(vector<string> _infiles, double val);
 
 /*!
@@ -74,6 +75,7 @@ int main(int argc, char **argv) {
 	if (_cmd.contains("smoothG"))  { smoothG(_infiles);	}
 	if (_cmd.contains("smoothB"))  { smoothB(_infiles);	}
 	if (_cmd=="sub")  { subtract_files(_infiles);	}
+	if (_cmd=="mul")  { subtract_files(_infiles);	}
 	if (_cmd=="mulV")  { multiply_value(_infiles,_const_value);	}
 	if (_cmd=="stat")  { print_map_stat(_infiles);	}
 	if (_cmd=="convPLANCKfits2Tnbin")  { convPLANCKfits2Tnbin(_infiles);	}
@@ -203,6 +205,20 @@ void subtract_files(vector<string> _infiles) {
 		m2.loadbinT(_infiles[i]);
 		printf("subtracting\n");
 		m1.T()-=m2.T();
+	}
+	printf("saving to file: %s\n",_outfile.c_str());
+	m1.savebinT(_outfile);
+}
+/***************************************************************************************/
+void multiply_files(vector<string> _infiles) {
+	mscsMap m1,m2;
+	printf("loading %s\n",_infiles[0].c_str());
+	m1.loadbinT(_infiles[0]);
+	for (unsigned long i = 1; i < _infiles.size(); i++) {
+		printf("loading %s\n",_infiles[i].c_str());
+		m2.loadbinT(_infiles[i]);
+		printf("multiplying\n");
+		m1.T()*=m2.T();
 	}
 	printf("saving to file: %s\n",_outfile.c_str());
 	m1.savebinT(_outfile);

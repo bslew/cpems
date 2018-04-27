@@ -177,7 +177,7 @@ void  Mscs_initiate_directories() {
 //  printf("********************** %s\n",cstr);
   cstr=getenv("MSCS_PROGRAM_DIR");
 //  printf("********************** %s\n",cstr);
-  if (cstr!=NULL)  MSCS_PROGRAM_DIR=cstr; else MSCS_PROGRAM_DIR=HOME_DIR+"programy/Mscs.devel"; MSCS_PROGRAM_DIR+="/";
+  if (cstr!=NULL)  MSCS_PROGRAM_DIR=cstr; else MSCS_PROGRAM_DIR=HOME_DIR+".cpems"; MSCS_PROGRAM_DIR+="/";
   MSCS_WMAP_DATA_DIR=HOME_DIR+"cosmo-data/wmap/";
   /* strcpy(tmpWMAPdata_dir,"programy/Mscs/"); */
   /* strcpy(program_dir,"/home/blew/programy/Mscs/"); */

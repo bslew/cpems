@@ -1004,72 +1004,6 @@ extern "C" {
 	\author Bartosz Lew
 */
 double cpeds_refractionKB(double h, int iObs);
-/*!
-	\brief implements Model4c as implemented in the fast_track control system and earlier versions
-	\details 
-	@param AZ [deg] - from South
-	@param ZD [deg]
-	@param dAZ [deg] - model position correction
-	@param dZD [deg] - model position correction
-
-	\date Nov 3, 2016, 9:58:35 AM
-	\author Bartosz Lew
-*/
-void cpeds_RT32_Model4(double AZ, double ZD, double *dAZ, double *dZD);
-
-/*!
-	\brief implements Model4e (see 2016/2 tech rep. for details)
-	\details 
-	@param AZ [deg] - from South
-	@param ZD [deg]
-	@param dAZ [deg] - model position correction
-	@param dZD [deg] - model position correction
-
-	\date Nov 3, 2016, 10:14:09 AM
-	\author Bartosz Lew
-*/
-void cpeds_RT32_Model4e(double AZ, double ZD, double *dAZ, double *dZD);
-
-/*!
-	\brief implements Model5 as implemented in the COCONUT version of the control system
-	\details 
-	@param AZ [deg] - from South
-	@param ZD [deg]
-	@param dAZ [deg] - model position correction
-	@param dZD [deg] - model position correction
-
-	(see 2016/2 tech rep. for details)
-	\date Nov 3, 2016, 10:14:09 AM
-	\author Bartosz Lew
-*/
-void cpeds_RT32_Model5(double AZ, double ZD, double *dAZ, double *dZD);
-
-/*!
-	\brief implements Model6 (same as Model4e see 2016/2 tech rep. for details) but different weather dependent refraction processing
-	\details 
-	@param AZ [deg] - from South
-	@param ZD [deg]
-	@param dAZ [deg] - model position correction
-	@param dZD [deg] - model position correction
-
-	see 2017/1 tech rep. for details
-	\date Jun 22, 2017, 1:38:25 PM
-	\author Bartosz Lew
-*/
-void cpeds_RT32_Model6(double AZ, double ZD, double *dAZ, double *dZD);
-/*!
-	\brief implements Model6r 
-	\details 
-	@param AZ [deg] - from South
-	@param ZD [deg]
-	@param dAZ [deg] - model position correction
-	@param dZD [deg] - model position correction
-
-	(see 2017/1 tech rep. for details)
-	\date Jun 22, 2017, 1:38:30 PM
-	\author Bartosz Lew
-*/
-void cpeds_RT32_Model6r(double AZ, double ZD, double *dAZ, double *dZD);
 
 
 double cpeds_RT4_arcsin(double x);
@@ -1804,6 +1738,7 @@ double cpeds_integrate_1d(long size, double *x, double *fx, long imin, long imax
 double * cpeds_interpolate(double *X,double *Y, long N, double *Xint, long Nint, string type, bool check_points);
 double * cpeds_interpolate(double *X,double *Y, long N, double *Xint, long Nint, string type);
 
+double cpeds_bilinear_interpolation(double x1, double x2, double y1, double y2, double f11, double f12, double f21, double f22, double x, double y);
 /*!
 	\brief routine to calculate c matrix coefficients for bicubic interpolation it is called by bicubic_interpolation function
 	\details 

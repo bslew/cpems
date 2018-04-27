@@ -71,7 +71,6 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_IOcontrol.PDF1d_pointsCount=250;
 	_IOcontrol.PDF2d_pointsCount=50;
 	_IOcontrol.calculate2Dpdf=false;
-	
 	//
 	// walk parameters for step PDFs and RNGs
 	// 
@@ -90,6 +89,7 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 //	current()Direction=new double[Npar];
 	_walk.currentDirection.makeLength(Npar);
 	cpedsList<double> init_step;
+	_walk.steps.clear();
 	for (unsigned long i = 0; i < Npar; i++) { _walk.steps.push_back(init_step); }
 	_walk.keepDirectionNow=false;
 	_walk.keepDirectionStepGenerationFailuresNumber=50;
@@ -156,11 +156,15 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	setAcceptWorseBoltzmannSchemeFactors(1,1);
 	_cooling.coolingRate=0.5;
 	
+	_chisqData.data2dCol=-1;
 	_chisqData.bestFitNcovSimNum=5000;
 	_chisqData.rnCov.setRNsType("gaussian_circle");
 //	_chisqData.rnCov.seedOffset(102+_IOcontrol.runOffset);
 	_chisqData.rnCov.seedOffset(cpeds_get_devrandom_seed());
 	_chisqData.rnCov.seed(_walk.runRNGseed);
+	_chisqData.bestFitData.confidenceLevels.append(0.68);
+	_chisqData.bestFitData.confidenceLevels.append(0.95);
+	_chisqData.bestFitData.confidenceLevels.append(0.99);
 	
 	
 	// messanger
@@ -299,7 +303,8 @@ void cpedsMCMC::walkNstates(long Nstates, MClink startingLink, int how) {
 }
 /* ******************************************************************************************** */
 void cpedsMCMC::startChain(bool followPriors) {
-	
+	mkOutputDir();
+
 //	MClink next(dims());
 	double deltaX,deltaX2perDOF;
 	_cooling.forcedCoolingTemperatureDecrement=-1;
@@ -338,6 +343,8 @@ void cpedsMCMC::startChain(bool followPriors) {
 	long burnOutStates=0;
 	long statesTotBeforeBurnOut=0;
 	
+	_startingLink.save(getRunDependentFileName(getPartialFilesDirFull()+"/startingLink")); 
+
 	msgs->say("STARTING THE MC CHAIN",High);
 	while (walk) {
 		//
@@ -381,6 +388,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 		else  { acceptWorseThreshold=_cooling.acceptWorseThresholdAfterBurnIn; acceptWorseBoltzmannFactor=_cooling.acceptWorseAfterBurnInBoltzmannFact; }
 		
 		
+//		if (nextCandidate().chisq()<bestFitLink().chisq()) {
 		if (nextCandidate().chisq()<current().chisq()) {
 //		if ((current().chisq()-next.chisq())/_bestFit.chisq()>_convergence.relChisqChangeThres) {
 			msgs->say("the new chisq is < than the current one: ACCEPTING the step",Zero);
@@ -480,6 +488,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 			if (_cooling.acceptWorseStateFromUniformDistr) {
 				if (acceptWorseRN > acceptWorseThreshold) { // take the step
 					acceptWorseState(true,nextCandidate(),_walk.rejectionsCount);
+					msgs->say("Accepting worse state (chisq: %lE)",nextCandidate().chisq(),Low);
 				}
 				else acceptWorseState(false,nextCandidate(),_walk.rejectionsCount);
 			}
@@ -487,6 +496,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 				deltaX2perDOF=(nextCandidate().chisq()-current().chisq())/dataSize();
 				if (acceptWorseBoltzmannFactor*acceptWorseRN > deltaX2perDOF) { // take the step
 					acceptWorseState(true,nextCandidate(),_walk.rejectionsCount);
+					msgs->say("Accepting worse state (chisq: %lE)",nextCandidate().chisq(),Low);
 				}
 				else acceptWorseState(false,nextCandidate(),_walk.rejectionsCount);
 			}
@@ -596,7 +606,6 @@ void cpedsMCMC::startChain(bool followPriors) {
 	//
 	saveStepPDFs(getPartialFilesDirFull()+"/stepPDF-walkEnd");				
 	saveTemperature(getPartialFilesDirFull()+"/temperature-walkEnd");
-
 	
 	//
 	// burn-out
@@ -606,9 +615,22 @@ void cpedsMCMC::startChain(bool followPriors) {
 	
 	burnOut();
 	
+	//
+	// save step sizes
+	//
+	saveMCsteps(getPartialFilesDirFull()+"/step-sizes");
+	saveBestFit();
+	
+	saveChain(_MCrej,getPartialFilesDirFull()+"/rejected.mc"); 
+	saveChain(_MCaccepted,getPartialFilesDirFull()+"/accepted.mc"); 
+//	QList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
+//	saveChain(tmp,getOutputDir()+"/all.mc"); 
+
+
 	
 	msgs->say("Best fit link is:", Medium);
 	printLink(_bestFit);
+	
 	// save everything we've got now
 }
 
@@ -722,7 +744,7 @@ MClink cpedsMCMC::getNextPoint(const MClink& current) {
 //		do {
 			failures++;
 			delta=_walk.stepGeneratingRNG[i].getRN();
-			printf("step size along %li: %lE\n",i,delta);
+//			printf("step size along %li: %lE\n",i,delta);
 //			getWalk().steps.append(delta);
 			
 			if (_walk.uphillClimbing and _walk.keepDirectionNow and failures<_walk.keepDirectionStepGenerationFailuresNumber) {
@@ -786,9 +808,30 @@ void cpedsMCMC::setData(const mscsFunction& data) {
 	_chisqData.data=data; 	
 	_chisqData.model=data; // this is to set the size and arguments
 }
+/* ******************************************************************************************** */
+void cpedsMCMC::setData2D(const mscsFunction3dregc& data, int colNo) {
+	_chisqData.data=data.getSlice1Dfn(1,0,colNo,0);	
+	_chisqData.data2dCol=colNo;
+	_chisqData.data2d.setSize(data.Nx()+2,data.Ny()); // two extra columns for best fit model and residuals
+	_chisqData.data2d.allocFunctionSpace();
+	for (long i = 0; i < data.Nx(); i++) {
+		for (long j = 0; j < data.Ny(); j++) {
+			_chisqData.data2d(i,j)=data(i,j);
+		}
+	}
+}
+
 /***************************************************************************************/
 const mscsFunction& cpedsMCMC::getData() const {
 	return _chisqData.data;
+}
+/***************************************************************************************/
+const mscsFunction3dregc& cpedsMCMC::getData2D() const {
+	return _chisqData.data2d;
+}
+/***************************************************************************************/
+const double cpedsMCMC::getData2D(long i, long j) const {
+	return _chisqData.data2d(i,j);
 }
 /***************************************************************************************/
 const mscsFunction& cpedsMCMC::getModel() const {
@@ -904,7 +947,11 @@ cpedsMC cpedsMCMC::loadMC(string fileName) {
 }
 /* ******************************************************************************************** */
 void cpedsMCMC::loadMCrun(string dirName) {
-	bestFitLink().load(dirName+"/partial/bestFit-link");
+	bestFitLink().load(dirName+"/"+getPartialFilesDir()+"/bestFit-link");
+#ifdef DEBUG_MCMC_PDF2
+	cout << "loading best fit link:\n";
+	bestFitLink().printLink();	
+#endif
 	_walk.Nparam=bestFitLink().dims();
 
 //	printf("dims: %i\n",dims());
@@ -913,21 +960,27 @@ void cpedsMCMC::loadMCrun(string dirName) {
 	_chisqData.data.load(dirName+"/inputData.txt");
 	_MCaccepted.load(dirName+"/accepted.mc");
 	_MCrej.load(dirName+"/rejected.mc");
-	_MCbestFitChain.load(dirName+"/bestFitChain");
+	_MCbestFitChain.load(dirName+"/bestFitChain.mc");
 
 	loadBestFitStepPDFs(dirName);
 	
 	
 	// load parameter space
 	for (long i = 0; i < dims(); i++) {
-		mscsFunction psapce;
-		psapce.load(dirName+"/parameterPrior.param."+msgs->toStr(i));
-		parameterSpace().addParameter(psapce,"param","$v_x$ [km/h]");
-		printf("adding parameter prior -- LOADING PARAMETER SPACE IS NOT FULLY IMPLEMENTED, THIS WILL NOT LOAD PARAMETER NAMES, FIX IT\n");
+		mscsFunction pspace;
+//		psapce.load(dirName+"/parameterPrior.param."+msgs->toStr(i));
+		pspace.loadHDF5(dirName+"/parameterPriors.hdf5",msgs->toStr(i));
+		int errCode=0;
+		string pname=pspace.getHDF5_stringAttribute(dirName+"/parameterPriors.hdf5",msgs->toStr(i),"paramName",&errCode);
+		if (errCode!=0) msgs->say("could not read parameter name from file: "+dirName+"/parameterPriors.hdf5 (param "+msgs->toStr(i)+")",High);
+		string pnameFull=pspace.getHDF5_stringAttribute(dirName+"/parameterPriors.hdf5",msgs->toStr(i),"paramNameFull",&errCode);
+		if (errCode!=0) msgs->say("could not read full parameter name from file: "+dirName+"/parameterPriors.hdf5 (param "+msgs->toStr(i)+")",High);
+		parameterSpace().addParameter(pspace,pname,pnameFull);
+//		printf("adding parameter prior -- LOADING PARAMETER SPACE IS NOT FULLY IMPLEMENTED, THIS WILL NOT LOAD PARAMETER NAMES, FIX IT\n");
 
 	
 		mscsFunction stepPDF;
-		stepPDF.load(dirName+"/stepPDFend-param_"+msgs->toStr(i)+".mc");
+		stepPDF.load(dirName+"/"+getPartialFilesDir()+"/stepPDFend-param_"+msgs->toStr(i)+".mc");
 		_walk.stepGeneratingDistr.append(stepPDF);
 
 	}
@@ -963,7 +1016,10 @@ void cpedsMCMC::saveData(string fname) {
 /***************************************************************************************/
 void cpedsMCMC::savePriors() {
 	for (long i = 0; i < dims(); i++) {
-		_parameterSpace[i].save(getOutputDir()+"/parameterPrior.param."+msgs->toStr(i));
+//		_parameterSpace[i].save(getOutputDir()+"/parameterPrior.param."+msgs->toStr(i));
+		_parameterSpace[i].saveHDF5(getOutputDir()+"/parameterPriors.hdf5",msgs->toStr(i));
+		_parameterSpace[i].setHDF5_scalarStringAttribute(getOutputDir()+"/parameterPriors.hdf5",msgs->toStr(i),"paramName",_parameterSpace.names()[i]);
+		_parameterSpace[i].setHDF5_scalarStringAttribute(getOutputDir()+"/parameterPriors.hdf5",msgs->toStr(i),"paramNameFull",_parameterSpace.names_full()[i]);		
 	}
 }
 
@@ -978,20 +1034,27 @@ string cpedsMCMC::getRunDependentFileName(string fname) {
 string cpedsMCMC::getParameterDependentFileName(string fname, long paramID) {
 	return fname+"-param_"+msgs->toStr(paramID);
 }
+/* ******************************************************************************************** */
+string cpedsMCMC::get2ParameterDependentFileName(string fname, long paramID1, long paramID2) {
+	return fname+"-params"+msgs->toStr(paramID1)+"_"+msgs->toStr(paramID2);
+}
 /***************************************************************************************/
 void cpedsMCMC::saveTemperature(string fname) {
-	_cooling.temperatureHistory.save(getRunDependentFileName(fname));
+	if (_cooling.temperatureHistory.size()>0) _cooling.temperatureHistory.save(getRunDependentFileName(fname));
 }
 
 /***************************************************************************************/
 void cpedsMCMC::saveStepPDFs(string fname) {
 	string outfile;
+	outfile=getRunDependentFileName(fname);
+	msgs->say("Saving step PDF to file: "+outfile,Medium);
 	for (long j = 0; j < dims(); j++) {
-		outfile=getParameterDependentFileName(fname,j);
-		outfile=getRunDependentFileName(outfile);
+//		outfile=getParameterDependentFileName(fname,j);
+//		outfile=getRunDependentFileName(outfile);
+//		_walk.stepGeneratingDistr[j].save(outfile);
+
 		
-		msgs->say("Saving step PDF to file: "+outfile,Medium);
-		_walk.stepGeneratingDistr[j].save(outfile);
+		_walk.stepGeneratingDistr[j].saveHDF5(outfile+".hdf5",msgs->toStr(j));
 	}
 	_IOcontrol.saveStepPDFs_lastSavedNumber++;
 
@@ -1009,22 +1072,50 @@ cpedsList<double>& cpedsMCMC::MCsteps(long param) {
 /* ******************************************************************************************** */
 void cpedsMCMC::saveMCsteps(string fname) {
 	long irej=0,iacc=0;
+	string outfile;
+
+	outfile=getRunDependentFileName(fname);
 	
 	for (long i = 0; i < getNparam(); i++) {
-		getMCsteps(i).save(fname+"param_"+msgs->toStr(i,"%li")+".mc");
+//		getMCsteps(i).save(fname+"param_"+msgs->toStr(i,"%li")+".mc");
+		
+		mscsFunction3dregc steps;
+		steps.setSize(1,getMCsteps(i).size());
+		steps.allocFunctionSpace();
+		
+		steps.saveHDF5(outfile+".hdf5",msgs->toStr(i));
 	}
 }
 /***************************************************************************************/
 void cpedsMCMC::saveBestFitStepPDFs(string fname) {
+	string outfile;
+	outfile=getRunDependentFileName(fname);
+	msgs->say("Saving step PDF to file: "+outfile,Medium);
 	for (long j = 0; j < dims(); j++) {
-		_chisqData.bestFitData.stepGeneratingDistr[j].save(fname+"-param_"+msgs->toStr(j)+".mc");
-	}	
+		
+//		outfile=getParameterDependentFileName(fname,j);
+//		outfile=getRunDependentFileName(outfile);
+		
+		//		_chisqData.bestFitData.stepGeneratingDistr[j].save(outfile);
+		_chisqData.bestFitData.stepGeneratingDistr[j].saveHDF5(outfile+".hdf5",msgs->toStr(j));
+	}
 }
 /***************************************************************************************/
 void cpedsMCMC::loadBestFitStepPDFs(string dirName) {
 	mscsFunction pdf;
+	string outfile;
 	for (long j = 0; j < dims(); j++) {
-		pdf.load(dirName+"/"+getPartialFilesDir()+"/bestFit-stepPDFs-param_"+msgs->toStr(j)+".mc");
+/*
+		outfile=getParameterDependentFileName(dirName+"/"+getPartialFilesDir()+"/bestFit-stepPDF",j);
+		outfile=getRunDependentFileName(outfile);
+		msgs->say("Loading step PDF from file: "+outfile,Medium);
+		pdf.load(outfile);
+*/
+		
+		outfile=getRunDependentFileName(dirName+"/"+getPartialFilesDir()+"/bestFit-stepPDF");
+		msgs->say("Loading step PDF from file: "+outfile,Medium);
+		pdf.loadHDF5(outfile,msgs->toStr(j));
+		
 		_chisqData.bestFitData.stepGeneratingDistr.append(pdf);
 	}
 }
@@ -1121,15 +1212,15 @@ void cpedsMCMC::dumpAll() {
 		}
 
 	if (_IOcontrol.dumpEveryMCMCstate) {
-		saveAcceptedChisq(getOutputDir()+"/chisq.mc"); 
-		saveParams(getOutputDir()+"/params.mc");
-		saveChain(_MCrej,getOutputDir()+"/rejected.mc"); 
-		saveChain(_MCaccepted,getOutputDir()+"/accepted.mc"); 
-		QList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
-		saveChain(tmp,getOutputDir()+"/all.mc"); 
-		saveTemperature(getOutputDir()+"/temperature.mc");
+//		saveAcceptedChisq(getOutputDir()+"/chisq.mc"); 
+//		saveParams(getOutputDir()+"/params.mc");
+//		saveChain(_MCrej,getOutputDir()+"/rejected.mc"); 
+//		saveChain(_MCaccepted,getOutputDir()+"/accepted.mc"); 
+//		QList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
+//		saveChain(tmp,getOutputDir()+"/all.mc"); 
+		saveTemperature(getPartialFilesDirFull()+"/temperature");
 		saveStepPDFs(getPartialFilesDirFull()+"/stepPDFend");				
-		saveMCsteps(getOutputDir()+"/steps-");
+		saveMCsteps(getPartialFilesDirFull()+"/step-sizes");
 		if (_cooling.acceptWorseStateFromUniformDistr==false)
 			_cooling.coolingDistr.save(getOutputDir()+"/coolingPDFend.mc");
 		
@@ -1201,7 +1292,7 @@ void cpedsMCMC::coolDownLogLin(double deltaX) {
 		dT= getCoolingRate() * deltaX; // the cooling is proportional to delta chisq							
 	}
 	
-	printf("Cooling loglin: deltaX: %lE, log(deltaX): %lE, cooling by: %lE, MClen: %li\n",deltaX, log(deltaX),dT,length());
+//	printf("Cooling loglin: deltaX: %lE, log(deltaX): %lE, cooling by: %lE, MClen: %li\n",deltaX, log(deltaX),dT,length());
 	_cooling.temperature-= dT;
 	
 	if (getTemperature()<getFinalTemperature()) _cooling.temperature=getFinalTemperature();
@@ -1246,16 +1337,17 @@ void cpedsMCMC::saveSetup() {
 	msgs->messagingOn();
 	msgs->loggingOff();
 	
-	_startingLink.save(getOutputDir()+"/startingLink");
-	saveData(getOutputDir()+"/inputData.txt");
+	_startingLink.save(getRunDependentFileName(getPartialFilesDirFull()+"/startingLink"));
+	saveData(getOutputDir()+"/inputData.txt"); 
 	savePriors();
 	if (_cooling.acceptWorseStateFromUniformDistr==false)	
 		_cooling.coolingDistr.save(getOutputDir()+"/coolingPDFini.mc");
 
 }
 /***************************************************************************************/
-void cpedsMCMC::saveChain(QList<MClink>& chain, string fname) {
+void cpedsMCMC::saveChain(QList<MClink>& chain, string fname) {	
 	if (chain.size()>0) {
+		string output=getRunDependentFileName(fname);
 		matrix<double> m(chain.size(),dims()+4);
 		
 		for (long i = 0; i < chain.size(); i++) {
@@ -1268,7 +1360,7 @@ void cpedsMCMC::saveChain(QList<MClink>& chain, string fname) {
 			m(i,dims()+3)=double((int)(chain[i].isAccepted()));
 		}
 		
-		cpeds_matrix_save(m,fname);
+		cpeds_matrix_save(m,output);
 	}
 }
 /***************************************************************************************/
@@ -1286,8 +1378,13 @@ void cpedsMCMC::printLink(const MClink& link) const {
 }
 /***************************************************************************************/
 void cpedsMCMC::mkOutputDir() {
+	
 	string cmd="if [ ! -d "+getPartialFilesDirFull()+" ]; then mkdir -p "+getPartialFilesDirFull()+"; fi";
 	system(cmd.c_str());
+/*
+	string dname=getPartialFilesDirFull();
+	mkdir(dname.c_str(),0755);
+*/
 }
 /***************************************************************************************/
 void cpedsMCMC::setOutputDir(string dirName) { 
@@ -1395,13 +1492,13 @@ void cpedsMCMC::saveBestFitCovSimulations() {
 /***************************************************************************************/
 void cpedsMCMC::saveBestFit() {
 	if (_cooling.acceptWorseStateFromUniformDistr==false) {
-		_chisqData.bestFitData.coolingDistr.save(getPartialFilesDirFull()+"/bestFit-coolingPDF"); 
+		_chisqData.bestFitData.coolingDistr.save(getRunDependentFileName(getPartialFilesDirFull()+"/bestFit-coolingPDF")); 
 	}
-	saveBestFitStepPDFs(getPartialFilesDirFull()+"/bestFit-stepPDFs"); 
+	saveBestFitStepPDFs(getPartialFilesDirFull()+"/bestFit-stepPDF"); 
 
-	_chisqData.bestFitData.model.save(getPartialFilesDirFull()+"/bestFit-model"); 			
+	_chisqData.bestFitData.model.save(getRunDependentFileName(getPartialFilesDirFull()+"/bestFit-model")); 			
 	//		_temperatureHistory.save(_partialFilesDir+"/temperature-history"); 			
-	_bestFit.save(getPartialFilesDirFull()+"/bestFit-link");
+	_bestFit.save(getRunDependentFileName(getPartialFilesDirFull()+"/bestFit-link"));
 	
 	
 	//
@@ -1414,16 +1511,20 @@ void cpedsMCMC::saveBestFit() {
 		double delta=max-min;
 		double thres=0.05;
 		if ((_bestFit[i] - min)/delta < thres or (max-_bestFit[i])/delta > 1.0-thres) {
-			msgs->say("WARNING: the best-fit solution is very close to the boundary of the parameter space for parameter %li. "
-					"Consider enlarging the parameter space volume.", i,High);
+			msgs->say("WARNING: the best-fit solution for parameter %li is close to the boundary, or beyond the range defined by the prior. "
+					"Consider enlarging the parameter space volume to improve likelihood reconstruction.", i,High);
 		}
 	}
 	
 	
-	saveChain(_MCbestFitChain,getOutputDir()+"/bestFitChain.mc");
+	saveChain(_MCbestFitChain,getRunDependentFileName(getPartialFilesDirFull()+"/bestFitChain"));
+	
 	if (_chisqData.covarianceMatrixDiag.size()>0 and _chisqData.covDiagonal) {
-		_chisqData.bestFitData.covDiag.save(getPartialFilesDirFull()+"/bestFit-covarianceMatrixDiagonal.mc",false,"double");
+		_chisqData.bestFitData.covDiag.save(getRunDependentFileName(getPartialFilesDirFull()+"/bestFit-covarianceMatrixDiagonal.mc"),false,"double");
 	}
+
+	
+/*
 	// save length
 	cpedsList<long> l;
 	l.append(_chisqData.bestFitData.lengthAtStoring);
@@ -1433,6 +1534,7 @@ void cpedsMCMC::saveBestFit() {
 	cpedsList<double> ct;
 	ct.append(_chisqData.bestFitData.temperatureAtStoring);
 	ct.save(getPartialFilesDirFull()+"/current-temperature"); 			
+*/
 	
 	
 }
@@ -1442,21 +1544,50 @@ void cpedsMCMC::saveResults() {
 	setDumpEveryMCMCstate(true);
 	dumpAll();
 	saveBestFit();
+	saveResiduals();
+	calculate1Dposteriors();
+	calculate1DCRs();
 	save1Dposteriors();
-	if (_IOcontrol.calculate2Dpdf) {
+	if (_IOcontrol.calculate2Dpdf) { //TODO: implement this stuff analogically as 1D posteriors
 		save2Dposteriors();
-		save2DCR(0.68);
-		save2DCR(0.95);
-		save2DCR(0.99);
+		for (long i = 0; i < chisqData().bestFitData.confidenceLevels.size(); i++) {
+			save2DCR(chisqData().bestFitData.confidenceLevels[i]);			
+		}
 	}
 
 	saveBestFitCovSimulations();
 }
 /***************************************************************************************/
+void cpedsMCMC::calculate1DCRs() {
+	_chisqData.bestFitData.confidenceRanges1D.clear();
+	// calculate 1d CRs
+	
+	for (long i = 0; i < getNparam(); i++) {
+		msgs->say("Calculating 1-D CRs for parameter: %li",i,Medium);
+		
+		mscsFunction3dregc CRs;
+		CRs.setSize(4,chisqData().bestFitData.confidenceLevels.size());
+		CRs.allocFunctionSpace();
+		for (long j = 0; j < chisqData().bestFitData.confidenceLevels.size(); j++) {
+			double CL=chisqData().bestFitData.confidenceLevels[j];
+			double lvl;
+			cpedsList<double> CR=get1DCR(i,CL,&lvl);
+			
+			CRs(0,j)=CL;
+			CRs(1,j)=CR[0];
+			CRs(2,j)=CR[CR.size()-1];
+			CRs(3,j)=lvl;
+			
+		}
+		chisqData().bestFitData.confidenceRanges1D.append(CRs);	
+	}
+}
+/* ******************************************************************************************** */
 void cpedsMCMC::calculate1Dposteriors() {
 	_chisqData.bestFitData.posteriors1D.clear();
+	msgs->say("Calculating 1-D posteriors",Medium);
+
 	for (long i = 0; i < getNparam(); i++) {
-		msgs->say("Calculating 1-D PDF for parameter: %li",i,Medium);
 		MscsPDF1D p=get1Dposterior(i,_IOcontrol.PDF1d_pointsCount);
 		p.checkRanges();
 		_chisqData.bestFitData.posteriors1D.append(p);
@@ -1477,9 +1608,32 @@ void cpedsMCMC::calculate2Dposteriors() {
 }
 /***************************************************************************************/
 void cpedsMCMC::save1Dposteriors() {
-	if (_chisqData.bestFitData.posteriors1D.size()!=dims()) calculate1Dposteriors();
+	if (_chisqData.bestFitData.posteriors1D.size()!=dims()) {
+		calculate1Dposteriors();
+	}
+	if (_chisqData.bestFitData.confidenceRanges1D.size()!=dims()) {
+		calculate1DCRs();		
+	}
+
 	for (long i = 0; i < getNparam(); i++) {
-		_chisqData.bestFitData.posteriors1D[i].save(getOutputDir()+"/parameterPosterior.param"+msgs->toStr(i));
+		_chisqData.bestFitData.posteriors1D[i].saveHDF5(getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i));
+
+		// save parameter name
+		_chisqData.bestFitData.posteriors1D[i].setHDF5_scalarStringAttribute(
+				getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i),
+				"full_name",parameterSpace().names_latex()[i]);
+
+		//
+		//  save best-fit parameter value
+		//
+		_chisqData.bestFitData.posteriors1D[i].setHDF5_scalarDoubleAttribute(
+				getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i),
+				"bestFit",bestFitLink().getParam(i),"best fit parameter value");
+
+		// save CR
+		_chisqData.bestFitData.confidenceRanges1D[i].saveHDF5(
+				getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i)+"_CR");
+	
 	}
 	
 }
@@ -1490,33 +1644,31 @@ void cpedsMCMC::save2Dposteriors() {
 	for (long i = 0; i < getNparam(); i++) {
 		for (long j = i+1; j < getNparam(); j++) {
 			
-			printf("i: %li j:%li, names_latex_size: %i\n",i,j,parameterSpace().names_latex().size());
+//			printf("i: %li j:%li, param idx: %li, names_latex_size: %i\n",i,j,paramij2idx(i,j),parameterSpace().names_latex().size());
 			_chisqData.bestFitData.posteriors2D[paramij2idx(i,j)].saveHDF5(
-					getOutputDir()+"/parameterPosterior.params"+msgs->toStr(i)+"_"+msgs->toStr(j)+".hdf5","L");
+					getOutputDir()+"/posterior2D.hdf5",msgs->toStr(i)+"-"+msgs->toStr(j));
 			
 			// save parameter names
 			_chisqData.bestFitData.posteriors2D[paramij2idx(i,j)].setHDF5_scalarStringAttribute(
-					getOutputDir()+"/parameterPosterior.params"+msgs->toStr(i)+"_"+msgs->toStr(j)+".hdf5",
-					"L",
+					getOutputDir()+"/posterior2D.hdf5",msgs->toStr(i)+"-"+msgs->toStr(j),
 					"full_name_x",parameterSpace().names_latex()[i]);
 			
 			_chisqData.bestFitData.posteriors2D[paramij2idx(i,j)].setHDF5_scalarStringAttribute(
-					getOutputDir()+"/parameterPosterior.params"+msgs->toStr(i)+"_"+msgs->toStr(j)+".hdf5",
-					"L",
+					getOutputDir()+"/posterior2D.hdf5",msgs->toStr(i)+"-"+msgs->toStr(j),
 					"full_name_y",parameterSpace().names_latex()[j]);
 			
 			//
 			//  save best-fit parameter
 			//
 			_chisqData.bestFitData.posteriors2D[paramij2idx(i,j)].setHDF5_scalarDoubleAttribute(
-					getOutputDir()+"/parameterPosterior.params"+msgs->toStr(i)+"_"+msgs->toStr(j)+".hdf5",
-					"L",
+					getOutputDir()+"/posterior2D.hdf5",msgs->toStr(i)+"-"+msgs->toStr(j),
 					"bestFit_x",bestFitLink().getParam(i),"best fit parameter for X axis");
 			
 			_chisqData.bestFitData.posteriors2D[paramij2idx(i,j)].setHDF5_scalarDoubleAttribute(
-					getOutputDir()+"/parameterPosterior.params"+msgs->toStr(i)+"_"+msgs->toStr(j)+".hdf5",
-					"L",
+					getOutputDir()+"/posterior2D.hdf5",msgs->toStr(i)+"-"+msgs->toStr(j),
 					"bestFit_y",bestFitLink().getParam(j),"best fit parameter for Y axis");
+
+//			exit(0);
 		}
 
 	}
@@ -1527,7 +1679,7 @@ void cpedsMCMC::save2Dposteriors() {
 /* ******************************************************************************************** */
 void cpedsMCMC::recalculateLikelihoods() {
 	cpedsList<double> p;
-	for (long i = 0; i < chain().size(); i++) {
+	for (long i = 0; i < acceptedStates().size(); i++) {
 		p.append(chain(i).chisq());
 	}
 	
@@ -1540,7 +1692,7 @@ void cpedsMCMC::recalculateLikelihoods() {
 	
 	p.getMinMaxValues(&chisqOffset,&dummy,&i,&j);
 
-	for (long i = 0; i < chain().size(); i++) {
+	for (long i = 0; i < acceptedStates().size(); i++) {
 		chain(i).setL(exp(-(chain(i).chisq()-chisqOffset)/2));
 	}
 	
@@ -1552,7 +1704,7 @@ void cpedsMCMC::recalculateLikelihoods() {
 /* ******************************************************************************************** */
 long cpedsMCMC::statesAboveRejectionThreshold() {
 	cpedsList<double> p;
-	for (long i = 0; i < chain().size(); i++) {
+	for (long i = 0; i < acceptedStates().size(); i++) {
 		p.append(chain(i).chisq());
 	}
 	
@@ -1566,7 +1718,7 @@ long cpedsMCMC::statesAboveRejectionThreshold() {
 	p.getMinMaxValues(&chisqOffset,&dummy,&i,&j);
 	long Nstates=0;
 	
-	for (long i = 0; i < chain().size(); i++) {
+	for (long i = 0; i < acceptedStates().size(); i++) {
 		if (exp(-(chain(i).chisq()-chisqOffset)/2)> getWalk().likelihoodRejectionThreshold) Nstates++;
 	}
 	
@@ -1577,28 +1729,76 @@ long cpedsMCMC::statesAboveRejectionThreshold() {
 	return Nstates;
 }
 /***************************************************************************************/
+/*
+void cpedsMCMC::save1DCR(double CL, string fname, string dset) {
+	msgs->say("Calculating confidence regions for CL=%lf %%",CL*100,Medium);
+
+	for (long i = 0; i < getNparam(); i++) {
+		double lvl;
+		stringstream ssCL;
+		ssCL << "CL " << setprecision(2) << CL*100;
+		
+
+		// save 1D CR contours for given CL
+		cpedsList<double> CR=get1DCR(i,CL,&lvl);
+
+		stringstream ssCRlow,ssCRhigh;
+		ssCRlow  << "CRlow " << CR[0];
+		ssCRhigh << "CRhigh " << CR[0];
+
+		// save CR for given CL
+		_chisqData.bestFitData.posteriors1D[i].setHDF5_scalarDoubleAttribute(
+				fname,dset,
+				ss.str(),lvl,"PDF value corresponding to a confidence region");
+		
+		// save CR level for given CL
+		_chisqData.bestFitData.posteriors1D[i].setHDF5_scalarDoubleAttribute(
+				fname,dset,
+				ss.str(),lvl,"PDF value corresponding to a confidence region");
+		
+	}
+
+}
+*/
+/* ******************************************************************************************** */
+
 void cpedsMCMC::save2DCR(double CL) {
+	msgs->say("Calculating confidence regions for CL=%lf %%",CL*100,Medium);
 	for (long i = 0; i < getNparam(); i++) {
 		for (long j = i+1; j < getNparam(); j++) {
 			double lvl;
-			cpedsList<double> lvls;
+//			cpedsList<double> lvls;
 			stringstream ss;
 			ss << "CLcontour" << setprecision(2) << CL*100;
-			get2DCR(i,j,CL,&lvl).save(getOutputDir()+"/CR"+msgs->toStrf(CL,2)+".params"+msgs->toStr(i)+"_"+msgs->toStr(j));
-			lvls.append(lvl);
-			lvls.save(getOutputDir()+"/PDF-contour"+msgs->toStrf(CL,2)+".params"+msgs->toStr(i)+"_"+msgs->toStr(j));
+
+			// save 2D CR contours for given CL
+			get2DCR(i,j,CL,&lvl).saveHDF5(getOutputDir()+"/CR_"+msgs->toStrf(CL*100,0)+".hdf5",msgs->toStr(i)+"-"+msgs->toStr(j));
+//			get2DCR(i,j,CL,&lvl).save(getOutputDir()+"/CR"+msgs->toStrf(CL,2)+".params"+msgs->toStr(i)+"_"+msgs->toStr(j));
+
+			// save 
+//			lvls.append(lvl);
+//			lvls.save(getOutputDir()+"/PDF-contour"+msgs->toStrf(CL,2)+".params"+msgs->toStr(i)+"_"+msgs->toStr(j));
+
+			// save 2-D contour level for given CL
 			_chisqData.bestFitData.posteriors2D[paramij2idx(i,j)].setHDF5_scalarDoubleAttribute(
-					getOutputDir()+"/parameterPosterior.params"+msgs->toStr(i)+"_"+msgs->toStr(j)+".hdf5",
-					"L",
+					getOutputDir()+"/posterior2D.hdf5",msgs->toStr(i)+"-"+msgs->toStr(j),
 					ss.str(),lvl,"contour level corresponding to a confidence region");
 
 			
-			cout << ss.str() << "\n";
+//			cout << ss.str() << "\n";
 		}
 	}
 
 }
 /***************************************************************************************/
+cpedsList<double> cpedsMCMC::get1DCR(int paramID1, double CL, double* LVL) {
+	MscsPDF1D pdf=get1Dposterior(paramID1);
+	cpedsList<double> CR;
+	CR=pdf.getCR(CL,LVL);
+	
+	return CR;	
+}
+/* ******************************************************************************************** */
 mscsFunction cpedsMCMC::get2DCR(int paramID1, int paramID2, double CL, double* LVL) {
 	MscsPDF2D pdf=get2Dposterior(paramID1, paramID2);
 	mscsFunction CR;
@@ -1620,27 +1820,39 @@ void cpedsMCMC::storeBestFit() {
 	}	
 }
 /***************************************************************************************/
-MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints) {
-	mscsFunction states=getParamValues(paramID);
+MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpolationType) {
+	
+	if (paramID<_chisqData.bestFitData.posteriors1D.size()) { // if it was calculated then return it right away
+		return _chisqData.bestFitData.posteriors1D[paramID];
+	}
 
+	msgs->say("Calculating 1-D PDF for parameter: %li",paramID,Medium);
+
+	mscsFunction states=getParamValues(paramID);
+	mscsFunction statesInv=states;
+	statesInv.invert();
+	statesInv.sortFunctionArgAscending();
+	statesInv.invert();
+	double increment=fabs(statesInv.getX(0)-statesInv.getX(1));
+	
 	states.checkRanges();
 	states/=states.getMaxValue();
 #ifdef DEBUG_MCMC_PDF
 	states.save("raw-states-paramID"+msgs->toStr(paramID,"%i")+".L");
 #endif
 	states.removeSmaller(1e-10);
+	states.sortFunctionArgAscending();
 	states.checkRanges();
 #ifdef DEBUG_MCMC_PDF
 	cout << "Number of states after cutting off at L<1e-10: "<< states.pointsCount() <<"\n";
 #endif
-	states.sortFunctionArgAscending();
 	
 	MscsPDF1D pdf;
 	
 	
 	cpedsList<long> bins;
 	double pdfRange;//=sqrt(params.variance());
-	pdfRange=states.getMaxArg()-states.getMinArg();
+	if (states.pointsCount()<2) pdfRange=increment; else pdfRange=states.getMaxArg()-states.getMinArg();
 	long pdfPoints_internal=long(sqrt(states.pointsCount()));
 	double dx=pdfRange/pdfPoints_internal;
 	
@@ -1653,23 +1865,43 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints) {
 	states.save("states-paramID"+msgs->toStr(paramID,"%i")+".pdf");
 #endif
 	
-	assert(pdf.pointsCount()>5);
-//	pdf.interpolate(pdf.getMinArg(),pdf.getMaxArg(),pdfPoints,true,"akima");
-	pdf.interpolate(pdf.getMinArg(),pdf.getMaxArg(),pdfPoints,true,"steffen");
-	pdf/=pdf.getMaxValue();
+	if (pdf.pointsCount()<6) { // we do not have enough points to probe the pdf, so we need to use some approximations
 
+		
+		// we will use gaussian PDF with fwhm = dx
+		double x0=pdf.getX(pdf.getMaxValueIdx());
+		printf("the number of PDF points for parameter %li is < 6, assuming gaussian PDF around %lE with fwhm=%lE\n",paramID,x0,dx);
+		pdf.clearFunction();
+		pdf.mkGauss(x0-pdfPoints/2*dx,x0+pdfPoints/2*dx,dx,1.0,x0,cpeds_fwhm2sigma(dx),0.0);
 #ifdef DEBUG_MCMC_PDF
-	pdf.save("rusty-interpolated-paramID"+msgs->toStr(paramID,"%i")+".pdf");
+		pdf.save("assumed-paramID"+msgs->toStr(paramID,"%i")+".pdf");
+//		exit(0);
 #endif
-
-	cpedsList<double> CR=pdf.getCR(0.9973).sort(12);
-#ifdef DEBUG_MCMC_PDF
-	CR.save("CR-paramID"+msgs->toStr(paramID,"%i")+".tmp");
-#endif
-	if (CR.size()!=2) { cout << "WARNING 0.9973 confidence interval suspicious. Will return a rusty pdf.\n"; }
+		
+//		assert(pdf.pointsCount()>5);
+	}
 	else {
-		double margin=CR[CR.size()-1]-CR[0];
-		pdf=pdf.cut(CR[0]-margin/2,CR[CR.size()-1]+margin/2);
+		//	pdf.interpolate(pdf.getMinArg(),pdf.getMaxArg(),pdfPoints,true,"akima");
+			pdf.interpolate(pdf.getMinArg(),pdf.getMaxArg(),pdfPoints,true,interpolationType);
+			pdf/=pdf.getMaxValue();
+
+#ifdef DEBUG_MCMC_PDF
+			pdf.save("rusty-interpolated-paramID"+msgs->toStr(paramID,"%i")+".pdf");
+#endif
+
+			cpedsList<double> CR=pdf.getCR(0.9973).sort(12);
+#ifdef DEBUG_MCMC_PDF
+			CR.save("CR-paramID"+msgs->toStr(paramID,"%i")+".tmp");
+#endif
+			assert(CR.size()>1);
+			if (CR.size()>2) { cout << "WARNING 0.9973 confidence interval suspicious. Will return a rusty pdf.\n"; }
+			else {
+				double margin=CR[CR.size()-1]-CR[0];
+				pdf=pdf.cut(CR[0]-margin/2,CR[CR.size()-1]+margin/2);
+#ifdef DEBUG_MCMC_PDF
+				pdf.save("rusty-interpolated-cut-paramID"+msgs->toStr(paramID,"%i")+".pdf");
+#endif
+			}
 	}
 	return pdf;	
 
@@ -1723,8 +1955,8 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints) {
 */
 }
 /***************************************************************************************/
-MscsPDF1D cpedsMCMC::get1Dposterior(string paramName, long pdfPoints) {
-	return get1Dposterior( getParameterByName(paramName),pdfPoints );	
+MscsPDF1D cpedsMCMC::get1Dposterior(string paramName, long pdfPoints, string interpolationType) {
+	return get1Dposterior( getParameterByName(paramName),pdfPoints, interpolationType );	
 }
 /***************************************************************************************/
 mscsFunction3dregc cpedsMCMC::get2Dposterior(string paramName1, string paramName2, long pdfPoints) {
@@ -1784,6 +2016,11 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pd
 	mscsFunction3dregc pdf;
 	if (getNparam()<2) return pdf;
 
+	
+#ifdef DEBUG_MCMC_PDF2
+	states1.save(getOutputDir()+"/"+getParameterDependentFileName("debug-states1",paramID1));
+	states2.save(getOutputDir()+"/"+getParameterDependentFileName("debug-states2",paramID2));
+#endif
 
 	double p1Min,p1Max,p2Min,p2Max;
 	if (_chisqData.bestFitData.posteriors1D.size()!=dims()) calculate1Dposteriors();
@@ -1798,7 +2035,6 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pd
 	p1Min=posteriors()[paramID1].getMinArg();
 	p1Max=posteriors()[paramID1].getMaxArg();
 //	posteriors()[paramID1].save("p1.1d");
-//	printf("p1min: %lf p1max: %lf\n",p1Min,p1Max);
 	p1Min=CR[0]-margin/2;
 	p1Max=CR[CR.size()-1]+margin/2;
 //	printf("p1min: %lf p1max: %lf\n",p1Min,p1Max);
@@ -1814,36 +2050,77 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pd
 //	printf("p2min: %lf p2max: %lf\n",p2Min,p2Max);
 	p2Min=CR[0]-margin/2;
 	p2Max=CR[CR.size()-1]+margin/2;
-//	printf("p2min: %lf p2max: %lf\n",p2Min,p2Max);
+#ifdef DEBUG_MCMC_PDF2
+	printf("p1min: %lf p1max: %lf\n",p1Min,p1Max);
+	printf("p2min: %lf p2max: %lf\n",p2Min,p2Max);
+#endif
 	long Nx=pdfPoints;
 	long Ny=pdfPoints;
 	cpedsPointSet3D ps(states1.pointsCount(),states1.toXList().toCarray(),states2.toXList().toCarray(),states1.toYList().toCarray(),states1.toYList().toCarray(),true);
 
+	
 	// maximize through parameter space (this pdf may have holes in it if not enough MCchains were run)
 	pdf.setSizeRange(Nx,Ny,1,p1Min,p2Min,0,p1Max,p2Max,0);
 	pdf.allocFunctionSpace();
 	pdf.populateField(ps,true,0,0,false,true,"max");
 	pdf/=pdf.getMaxValue();
-
+#ifdef DEBUG_MCMC_PDF
+	pdf.saveSlice(2,0,"2dposterior.slice");
+	ps.save("2dposterior.ps");	
+	printf("p1Min: %lE, p1Max: %lE, p2Min: %lE, p2Max: %lE\n",p1Min,p1Max,p2Min,p2Max);
+#endif
+	
 	// create a new set of points for interpolation
 	ps.clear();
+	mscsVector<double> vals;
 	for (long i = 0; i < Nx; i++) {
 		for (long j = 0; j < Ny; j++) {
 			if (pdf.fRe(i,j,0)>1e-10) {
 				cpedsPoint3D p(pdf.getX(i),pdf.getY(j),pdf.fRe(i,j,0));
+				p.setZ(0); // this is for the case when 2d PDF is interpolated using SP-interpolation
 				ps.append(p);
+				vals.push_back(pdf.fRe(i,j,0));
 			}
 		}
 	}
 	assert(ps.size()>0);
+	
+	subDomain_region_t r,t;
+	r.subx=pdf.Nx();
+	r.suby=pdf.Ny();
+	r.subz=1;
+	r.xmin=pdf.getMinX();
+	r.xmax=pdf.getMaxX();
+	r.ymin=pdf.getMinY();
+	r.ymax=pdf.getMaxY();
+	r.zmin=0;
+	r.zmax=0;
+	t=r;
+	t.subx=2;
+	t.suby=2;
+	t.subz=1;
+
+//	printf("r xmin: %lE, xmax: %lE \n",r.xmin,r.xmax);
+//	printf("r ymin: %lE, ymax: %lE \n",r.ymin,r.ymax);
+//	printf("r zmin: %lE, zmax: %lE \n",r.zmin,r.zmax);
+	
+	mscsVector<cpedsPoint3D> v=ps.exportAsVector();
+
+#ifdef DEBUG_MCMC_PDF2
+	pdf.setVerbosityLevel(Top);
+#endif
+	pdf.mkInterpolatedFieldScatter(r,t,v,vals,"gadget2");
 //	ps.save("ps");
 //	pdf.saveSlice(2,0,"pdf2d");
 //	printf("%li\n",ps.size());
-	pdf.mkInterpolatedFieldTriangLinear2D(ps);
-	
+//	pdf.mkInterpolatedFieldTriangLinear2D(ps);
+
+#ifdef DEBUG_MCMC_PDF2
 	pdf/=pdf.getMaxValue();
-//	pdf.saveSlice(2,0,"pdfint2d");
+	pdf.saveSlice(2,0,"pdfint2d");
+	pdf.printInfo();
 //	exit(0);
+#endif
 
 
 	
@@ -1912,7 +2189,7 @@ void cpedsMCMC::append(MClink& link) {
 /***************************************************************************************/
 void cpedsMCMC::append(cpedsMCMC& chain) {
 	setData(chain.getData());
-	_MCaccepted.append(chain.chain());
+	_MCaccepted.append(chain.acceptedStates());
 	_MCrej.append(chain.rejectedStates());
 	_MCbestFitChain.append(chain._MCbestFitChain);
 	if (chain.bestFitLink().chisq() < bestFitLink().chisq() or bestFitLink().chisq()==-1) {
@@ -1948,7 +2225,7 @@ mscsFunction cpedsMCMC::getParamValues(int j) {
 	}
 */
 
-	for (long i = 0; i < chain().size(); i++) {
+	for (long i = 0; i < acceptedStates().size(); i++) {
 		p.newPoint(chain(i).getParam(j),chain(i).chisq());
 	}
 	
@@ -1971,13 +2248,18 @@ mscsFunction cpedsMCMC::getParamValues(int j) {
 }
 /***************************************************************************************/
 int cpedsMCMC::paramij2idx(int i,int j) {
+	assert(i<j);
+	//TODO: make this smarter
 	int idx=0;
-	for (long i = 0; i < dims(); i++) {
-		for (long j = i+1; j < dims(); j++) {
+	for (long ii = 0; ii < getNparam(); ii++) {
+		for (long jj = ii+1; jj < getNparam(); jj++) {
+			if (ii==i and jj==j) return idx;
 			idx++;
 		}
 	}
-	return idx-1;
+	idx=-1;
+	assert(idx>=0);
+	return idx;
 }
 /***************************************************************************************/
 void cpedsMCMC::setVerbocity(cpeds_VerbosityLevel verb) {
@@ -2054,7 +2336,7 @@ void cpedsMCMC::burnOut() {
 
 	setInitialWalkStepSize(1); // we're not using this during burn-out, but I keep it here to remember of its existence
 
-	for (long i = 0; i < dims(); i++) {
+	for (long i = 0; i < dims(); i++) { // we need to find out the best step size in each direction for the burn-out
 		double oneSigma=0;
 		MscsPDF1D pdf=get1Dposterior(i);
 //		pdf.save("burnout-pdf-param."+msgs->toStr(i));
@@ -2124,4 +2406,36 @@ void cpedsMCMC::updateStepGeneratingPDF(long param, double expectedStepSize) {
 	// define step generating RNG
 	_walk.stepGeneratingRNG[param].setPDF(f.pointsCount(),f.extractArguments(),f.extractValues());	
 
+
+	
 }
+/* ******************************************************************************************** */
+void cpedsMCMC::saveResiduals(int inputDataColumn) {
+	string outfile=getOutputDir()+"/inputData.fit";
+//		outfile=getRunDependentFileName(outfile);
+	
+	if (_chisqData.data2dCol>-1) { // this means that the data2d were set
+		long bfCol,residCol;
+		bfCol=_chisqData.data2d.Nx()-2;
+		residCol=_chisqData.data2d.Nx()-1;
+		
+//		msgs->say("Saving residuals to test file: "+outfile+".test",Medium);
+//		_chisqData.data2d.saveSlice(2,0,outfile,0);
+//		_chisqData.data2d.setVerbosityLevel(Top);
+//		_chisqData.data2d.printInfo();
+//		printf("bf size: %li\n",_chisqData.bestFitData.model.pointsCount());
+//		printf("data2dCol: %li\n",_chisqData.data2dCol);
+//		exit(0);
+		// calculate residuals
+		for (long j = 0; j < _chisqData.data2d.Ny(); j++) {
+			_chisqData.data2d(bfCol,j)=_chisqData.bestFitData.model.f(j);
+			_chisqData.data2d(residCol,j)=_chisqData.data2d(_chisqData.data2dCol,j)-_chisqData.data2d(bfCol,j);
+		}
+		msgs->say("Saving residuals to file: "+outfile,Medium);
+		_chisqData.data2d.saveSlice(2,0,outfile,0);
+	}
+	else {
+		msgs->say("Residuals will not be saved.",Medium);
+	}
+}
+/* ******************************************************************************************** */

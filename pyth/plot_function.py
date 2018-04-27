@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 # #!/usr/bin/env python
 # -*- Encoding: utf-8 -*-
+# coding: utf-8
 
 import sys
 import os
@@ -55,26 +56,31 @@ parser.add_option("", "--titleAlignV", dest="titleAlignV", default='center', typ
 parser.add_option("", "--xlabel", dest="xlabel", type="string", help='plot x label', metavar="STRING", action="append")
 parser.add_option("", "--x2label", dest="x2label", type="string", help='plot x2 label', metavar="STRING", action="append")
 parser.add_option("", "--ylabel", dest="ylabel", type="string", help='plot y label', metavar="STRING", action="append")
-parser.add_option("", "--fontSize", dest="fontSize", default='18', type="string", help='coma separated list of font size used for ticks per each plot', metavar="VALUE")
-parser.add_option("", "--fontSizeLegend", dest="fontSizeLegend", default='18', type="string", help='coma separated list of font size used for legends per each plot', metavar="VALUE")
-parser.add_option("", "--fontSizeLabels", dest="fontSizeLabels", default='18', type="string", help='coma separated list of font size used for labels per each plot', metavar="VALUE")
+parser.add_option("", "--fontSize", dest="fontSize", default='20', type="string", help='coma separated list of font size used for ticks per each plot', metavar="VALUE")
+parser.add_option("", "--fontSizeCM", dest="fontSizeCM", default='20', type="string", help='coma separated list of font size used for ticks per each plot', metavar="VALUE")
+parser.add_option("", "--fontSizeLegend", dest="fontSizeLegend", default='20', type="string", help='coma separated list of font size used for legends per each plot', metavar="VALUE")
+parser.add_option("", "--fontSizeLabels", dest="fontSizeLabels", default='20', type="string", help='coma separated list of font size used for labels per each plot', metavar="VALUE")
 # parser.add_option("", "--fontSizeXtickLabels", dest="fontSizeXtickLabels", default='18', type="string", help='coma separated list of font size used for XtickLabels per each plot', metavar="VALUE")
 # parser.add_option("", "--fontSizeYtickLabels", dest="fontSizeYtickLabels", default='18', type="string", help='coma separated list of font size used for XtickLabels per each plot', metavar="VALUE")
 parser.add_option("", "--logYaxes", dest="logYaxes", default='', type="string", help='coma separated list of log,lin combination each for eahc of the subplots to defined log/lin Y axes ', metavar="VALUE")
 # parser.add_option("", "--maskBelow", dest="maskBelow", default=np.nan, type="float", help='disable plotting pixels with values below this value ', metavar="VALUE")
-# parser.add_option("", "--bad", dest="bad", default=-1, type="float", help='disable plotting pixels with these values ', metavar="VALUE")
+parser.add_option("", "--bad_val", dest="bad_val", default='None', type="string", help='disable plotting pixels with these values (map plots only)', metavar="VALUE")
+# parser.add_option("", "--set_below", dest="set_below", default='None', type="string", help='set regions with values below VAL to a color eg. "-0.5,#0D0D0D" or "-0.5,0.5" (map plots only)', metavar="VALUE")
 parser.add_option("", "--xmin", dest="xmin", type="float", help='minimal X value in the grid to show on X axis', action="append")
 parser.add_option("", "--xmax", dest="xmax", type="float", help='maximal X value in the grid to show on X axis', action="append")
 parser.add_option("", "--ymin", dest="ymin", type="float", help='minimal Y value in the grid to show on Y axis', action="append")
 parser.add_option("", "--ymax", dest="ymax", type="float", help='maximal Y value in the grid to show on Y axis', action="append")
+parser.add_option("", "--zmin", dest="zmin", default=-1, type="float", help='minimal Z value in the grid to show on Z axis (3d plots only)', metavar="VALUE")
+parser.add_option("", "--zmax", dest="zmax", default=-1, type="float", help='maximal Z value in the grid to show on Z axis (3d plots only)', metavar="VALUE")
+parser.add_option("", "--vmin", dest="vmin", type="float", help='Minimal value in the map. Below this value the setUnder option defines the color. If equal to vmax then will be calculated from the data.  (default: 0)', action="append")
+parser.add_option("", "--vmax", dest="vmax", type="float", help='Maximal value in the map. Above this value the setAbove option defines the color. If equal to vmax then will be calculated from the data.  (default: 0)', action="append")
+
 parser.add_option("", "--datexmin", dest="datexmin", type="string", help='minimal X value in the grid to show on X axis (only for ts type plots)', action="append")
 parser.add_option("", "--datexmax", dest="datexmax", type="string", help='maximal X value in the grid to show on X axis (only for ts type plots)', action="append")
 # parser.add_option("", "--xmin", dest="xmin", default=-1, type="float", help='minimal X value in the grid to show on X axis', action="append")
 # parser.add_option("", "--xmax", dest="xmax", default=-1, type="float", help='maximal X value in the grid to show on X axis', action="append")
 # parser.add_option("", "--ymin", dest="ymin", default=-1, type="float", help='minimal Y value in the grid to show on Y axis', action="append")
 # parser.add_option("", "--ymax", dest="ymax", default=-1, type="float", help='maximal Y value in the grid to show on Y axis', action="append")
-parser.add_option("", "--zmin", dest="zmin", default=-1, type="float", help='minimal Z value in the grid to show on Z axis (3d plots only)', metavar="VALUE")
-parser.add_option("", "--zmax", dest="zmax", default=-1, type="float", help='maximal Z value in the grid to show on Z axis (3d plots only)', metavar="VALUE")
 parser.add_option("", "--Qscale", dest="Qscale", default=1, type="float", help='Quiver plot arrows scale factor', metavar="VALUE")
 # parser.add_option("", "--yerrType", dest="yerrType", default="", type="string", help='type of y-error bars to be plotted (default "" not plotted). Possible values are: shaded. Used with "fn" type plots only', metavar="VALUE")
 parser.add_option("", "--Bleft", dest="border_left", default=0.1, type="float", help='border size in the plot from the left', metavar="VALUE")
@@ -90,6 +96,7 @@ parser.add_option("-o", "--outputFile", dest="outputFile", default='', type="str
 parser.add_option("-x", "--colx", dest="colx", type="int", help='number of the column to be plotted at x axis for each of the input files', action="append")
 parser.add_option("-y", "--coly", dest="coly", type="int", help='number of the column to be plotted at y axis for each of the input files', action="append")
 parser.add_option("-z", "--colz", dest="colz", type="int", help='number of the column to be plotted at z axis for each of the input files', action="append")
+parser.add_option("", "--badY", dest="badY", type="string", help='bad Y value that will be ignored. None for all data OK.', action="append")
 parser.add_option("", "--zorder", dest="zorder", type="int", help='z-order for the plot. By default it is generated according to the plotting order', action="append")
 parser.add_option("", "--x2", dest="x2", type="int", help='number of the column with data to be used with fillbtw type plots (eg -x 0 --x2 1 -y 2) ', action="append")
 parser.add_option("", "--y2", dest="y2", type="int", help='number of the column with data to be used with fillbtw type plots (eg -x 0 -y 1 --y2 2)', action="append")
@@ -164,10 +171,10 @@ parser.add_option("", "--hdf5dset", dest="hdf5dset", default='', type="string", 
 parser.add_option("", "--hdf5slice", dest="hdf5slice", default=0, type="int", help='for 3d grid data the slice to use along 3rd dimension (default: 0) ', metavar="INT")
 parser.add_option("", "--histNbin", dest="histNbin", type="int", default=20, help="number of bins in histogram (only for -t hist) (default: 20)")
 parser.add_option("", "--gridNbins", dest="gridNbins", type="string", default='25,25', help="number of bins when calculating points density using a histogram (only for -t scatDensCont and scatDensContFill plots) (default: 20,20)")
-parser.add_option("", "--mapPts", dest="mapPts", type="int", default=600, help="number of points in the 'map' type plot. This number is passed to draw_maps_new program")
+parser.add_option("", "--mapPts", dest="mapPts", type="int", default=600, help="number of points in the 'map' type plot. This number is passed to draw_maps program")
 parser.add_option("", "--circ", dest="circ", type="string", default='', help='circles to plot defined as x,y,r. eg. --circ 10,20,5 for circle at x=10 y=20 and radii=5 for fn and scat type plots. This creates a new patch on a plot.', metavar="STRING")
 parser.add_option("", "--rect", dest="rect", type="string", help='rectangles to plot defined as x,y,dx,dy,angle where x,y is the center point and dx,dy width,height. eg. --rect 10,20,5,6,0 for a rectangle at x=10 y=20 and width=5 and height=6. .', action="append", metavar="STRING")
-parser.add_option("", "--gridColor", dest="gridColor", type="string", default='k', help='grid color', metavar="STRING")
+parser.add_option("", "--gridColor", dest="gridColor", type="string", default='0.5', help='grid color', metavar="STRING")
 parser.add_option("", "--dateFmt", dest="dateFmt", type="string", default='', help='date format for ts type plots: eg "%Y-%m-%d %H:%M:%S"', metavar="STRING")
 parser.add_option("", "--dateFmtPlot", dest="dateFmtPlot", type="string", default='%Y-%m-%d %H:%M:%S', help='date format for ts type plots used for plotting: eg "%Y-%m-%d %H:%M:%S"', metavar="STRING")
 parser.add_option("", "--Rxlabels", dest="Rxlabels", default=0, type="float", help='rotate xticklabels by this angle [deg]', metavar="VALUE")
@@ -207,8 +214,8 @@ parser.add_option("", "--mapwidth", dest="mapwidth", default=500, type="float", 
 parser.add_option("", "--mapheight", dest="mapheight", default=500, type="float", help='Height in km of the projected map. Use only for "sphere" plot type. (default: 500)', metavar="NUM")
 parser.add_option("", "--mapresolution", dest="mapresolution", default='c', type="string", help='Map country/ocean contours resolution. Use only for "sphere" plot type. (default: c)', metavar="CHAR")
 parser.add_option("", "--levels", dest="levels", type="string", action="append", help='Number of levels for colorbar in the map plot, or list of comma-separated list of values to be used for lelvels ("map", scatDensCont* scatCont* type plots only) (default: 50)', metavar="LIST")
-parser.add_option("", "--vmin", dest="vmin", default=0, type="float", help='Minimal value in the map. Below this value the setUnder option defines the color. If equal to vmax then will be calculated from the data.  ("map" type plots only) (default: 0)', metavar="NUM")
-parser.add_option("", "--vmax", dest="vmax", default=0, type="float", help='Maximal value in the map. Above this value the setAbove option defines the color. If equal to vmax then will be calculated from the data.  ("map" type plots only) (default: 0)', metavar="NUM")
+# parser.add_option("", "--vmin", dest="vmin", default=0, type="float", help='Minimal value in the map. Below this value the setUnder option defines the color. If equal to vmax then will be calculated from the data.  ("map" type plots only) (default: 0)', metavar="NUM")
+# parser.add_option("", "--vmax", dest="vmax", default=0, type="float", help='Maximal value in the map. Above this value the setAbove option defines the color. If equal to vmax then will be calculated from the data.  ("map" type plots only) (default: 0)', metavar="NUM")
 parser.add_option("", "--setAbove", dest="setAbove", default="r", type="string", help='Color the be used in the map type plot for values > vmax.  ("map" type plots only) (default: r)', metavar="STRING")
 parser.add_option("", "--setBelow", dest="setBelow", default="b", type="string", help='Color the be used in the map type plot for values < vmin.  ("map" type plots only) (default: b)', metavar="STRING")
 parser.add_option("", "--colorbar", action="store_true", dest="colorbar", default=False, help='triggers showing the colorbar on plot ("map" type plots only) ')
@@ -218,18 +225,25 @@ parser.add_option("", "--IMGalpha", dest="IMGalpha", default=0.5, type="float", 
 # parser.add_option("", "--IMGflipX", action="store_true", dest="IMGflipX", default=False, help='Controls image flips about X axis.')
 parser.add_option("", "--IMGflipY", action="store_true", dest="IMGflipY", default=False, help='Controls image flips about Y axis.')
 parser.add_option("", "--sphereContour", action="store_true", dest="sphereContour", default=False, help='use fontour plot for sphere type plots insetad of pcolormesh ("sphere" type plots only) ')
-parser.add_option("", "--draw_maps_path", dest="draw_maps_path", default="/home/blew/programy/Mscs.devel/Mscs/bin/", type="string", help='directory where the draw_maps_new program should be searched for. (useful for php script executions)', metavar="STRING")
-parser.add_option("", "--draw_maps_options", dest="draw_maps_options", default="-n 256", type="string", help='string with options for draw_maps_new program for plotting circles (default: -n 256)', metavar="STRING")
+parser.add_option("", "--draw_maps_path", dest="draw_maps_path", default="/home/blew/programy/Mscs.devel/Mscs/bin/", type="string", help='directory where the draw_maps program should be searched for. (useful for php script executions)', metavar="STRING")
+parser.add_option("", "--draw_maps_options", dest="draw_maps_options", default="-n 256", type="string", help='string with options for draw_maps program for plotting circles (default: -n 256)', metavar="STRING")
 parser.add_option("", "--coastLines", action="store_true", dest="coastLines", default=False, help="triggers showing the coastLines on plot")
 parser.add_option("", "--countryLines", action="store_true", dest="countryLines", default=False, help="triggers showing country on plot")
 parser.add_option("", "--riverLines", action="store_true", dest="riverLines", default=False, help="triggers showing rivers on plot")
-parser.add_option("", "--zlabel", dest="zlabel", default='z', type="string", help='plot z label used for some spherical plots for colorbar descriptions', metavar="STRING")
+# parser.add_option("", "--zlabel", dest="zlabel", default='z', type="string", help='plot z label used for some spherical plots for colorbar descriptions', metavar="STRING")
+parser.add_option("", "--zlabel", dest="zlabel", type="string", help='plot z label', metavar="STRING", action="append")
 parser.add_option("", "--reverseLon", action="store_true", dest="reverseLon", default=False, help="triggers plotting longituges increasing leftwards")
 parser.add_option("", "--cbLabelsNum", dest="cbLabelsNum", type='float', default=7, help='''This option specifies the number of colorbar labels (default: 7). ''')
 parser.add_option("", "--ZticksFmt", dest="ZticksFmt", type='string', default='%.2f', help="format for the Zticklabels", metavar="STRING")
 
-parser.add_option("", "--CM", dest="CM", type="string", default='hot', help='''color palette to be used with 'scat' type plots. Interesting choices are 
-    hot, spectral, jet, afmhot, jet, none (default: "hot")''', metavar="STRING")
+#parser.add_option("", "--CM", dest="CM", type="string", default='hot', help='''color palette to be used with 'scat' type plots. Interesting choices are 
+#    hot, spectral, jet, afmhot, jet, none (default: "hot")''', metavar="STRING")
+parser.add_option("", "--CM", dest="CM", type="string", help='''color palette to be used with 'scat' type plots. Interesting choices are 
+    hot, spectral, jet, afmhot, jet, none (default: "hot"). 
+    Currently one CMap is available per sub-plot.''', metavar="STRING", action="append")
+parser.add_option("", "--CMrange", dest="CMrange", type='string', default='', help='''This option specifies 
+    the range of the colormap that will be used for color mapping. E.g. '0.0,0.9 will clip the  colors in the colormap CM that 
+    map to values between 0.9 and 1.0 (default: don't clip)''')
 
 
 #
@@ -438,14 +452,31 @@ if type(option.y2) != type(list()):    option.y2 = list()
 if type(option.colx) != type(list()):    option.colx = list([0])
 if type(option.coly) != type(list()):    option.coly = list([1])
 if type(option.colz) != type(list()):    option.colz = list([2])
+if type(option.badY) != type(list()):    option.badY = list(['None'])
 if type(option.colColor) != type(list()):    option.colColor = list([-1])
 if type(option.zorder) != type(list()):    option.zorder = list()
 if type(option.xlabel) != type(list()):   option.xlabel = list(['x'])
 if type(option.x2label) != type(list()):   option.x2label = list([None])
 if type(option.ylabel) != type(list()):   option.ylabel = list(['y'])
+if type(option.zlabel) != type(list()):   option.zlabel = list(['z'])
+if type(option.CM) != type(list()):   option.CM = list(['hot'])
 option.fontSize = cpedsPythCommon.getFloatList(option.fontSize)
+option.fontSizeCM = cpedsPythCommon.getFloatList(option.fontSizeCM)
 option.fontSizeLegend = cpedsPythCommon.getFloatList(option.fontSizeLegend)
 option.fontSizeLabels = cpedsPythCommon.getFloatList(option.fontSizeLabels)
+
+if option.bad_val=="None":
+    option.bad_val=None
+else:
+    option.bad_val=float(option.bad_val)
+
+# if option.set_below=="None":
+#     option.set_below=None
+# else:
+#     set_below=option.set_below.split(',')
+#     option.set_below=[float(set_below[0]),set_below[1]]
+
+
 # option.fontSizeXtickLabels=cpedsPythCommon.getFloatList(option.fontSizeXtickLabels)
 # option.fontSizeYtickLabels=cpedsPythCommon.getFloatList(option.fontSizeYtickLabels)
 option.logYaxes = option.logYaxes.split(',')
@@ -479,6 +510,8 @@ if type(option.xmin) != type(list()):    option.xmin = list([None])
 if type(option.xmax) != type(list()):    option.xmax = list([None])
 if type(option.ymin) != type(list()):    option.ymin = list([None])
 if type(option.ymax) != type(list()):    option.ymax = list([None])
+if type(option.vmin) != type(list()):    option.vmin = list([None])
+if type(option.vmax) != type(list()):    option.vmax = list([None])
 if type(option.datexmin) != type(list()):    option.datexmin = list([-1])
 if type(option.datexmax) != type(list()):    option.datexmax = list([-1])
 if type(option.xticks) != type(list()):    option.xticks = list([0])
@@ -2385,13 +2418,18 @@ def loadDataFromUDP(UDPparams):
 #     print adata
     return adata 
     
-def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples=-1):
+def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples=-1, colx=0, coly=1, badX='None', badY='None'):
     d = np.loadtxt(args[i])
     print startFrom, rowsCount, loadEvery
     if rowsCount == 0:
         d = d[startFrom::loadEvery]
     else:
         d = d[startFrom:rowsCount:loadEvery]
+        
+    if badY!='None':
+        d=d[d[:,coly]!=float(badY)]
+    
+    
     dbin = list()
     if binSamples > 1:
         for ci in range(len(d[0])):
@@ -2405,7 +2443,7 @@ def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples
     print d
     return d
     
-def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery=1, binSamples=-1):
+def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery=1, binSamples=-1, badX='None', badY='None'):
     
     l = list()
     lineNo = 0
@@ -2485,6 +2523,10 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
 #    loaded=loaded[::loadEvery]
     print "selected %i lines" % len(loaded)
     
+    if badY!='None':
+        loaded=loaded[loaded[:,1]!=badY]
+    
+    
     if binSamples > 1:
         l1 = np.array(loaded[:, 0], dtype=float)
         l2 = np.array(loaded[:, 1], dtype=float)
@@ -2497,6 +2539,9 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
             idx = idx + binSamples
         loaded = array(loadedl)
         
+        
+    
+    
     return loaded
 
 
@@ -2696,7 +2741,7 @@ def makeMayaViPlot(dataList):
     if option.noAxes == False:
         if option.xmin[0] != None or option.xmax[0] != None or option.ymin[0] != None or option.ymax[0] != None or option.zmin != None or option.zmax != None:
             extentxyz = [option.xmin[0], option.xmax[0], option.ymin[0], option.ymax[0], option.zmin, option.zmax]
-            mlab.axes(extent=extentxyz, xlabel=option.xlabel[i % len(option.xlabel)], ylabel=option.ylabel[i % len(option.ylabel)], zlabel=option.zlabel)
+            mlab.axes(extent=extentxyz, xlabel=option.xlabel[i % len(option.xlabel)], ylabel=option.ylabel[i % len(option.ylabel)], zlabel=option.zlabel[i % len(option.zlabel)])
         else:
             extentxyz = None
 
@@ -3009,6 +3054,7 @@ def makeFunctionPlot(inFile):
                 data = inFile[i]
     
             if (option.plotType[plotTypeIdx] != 'map' and option.plotType[plotTypeIdx] != 'img' and option.plotType[plotTypeIdx] != 'ts') or option.dateFmt == '%Y %m %d %H %M %S':
+#             if (option.plotType[plotTypeIdx] != 'map' and option.plotType[plotTypeIdx] != 'img' and option.plotType[plotTypeIdx] != 'ts') or option.dateFmt == '':
                 data = inFile[i]
                 
                 if option.plotType[plotTypeIdx] == 'barchartH':
@@ -3200,6 +3246,15 @@ def makeFunctionPlot(inFile):
                 map = data[0]
                 lons = data[1]
                 lats = data[2]
+#                 print 'map',map
+                # this is a dirty hack to remove the data that cannot be plotted 
+                # and if plotted the plot looks ugly.
+                if option.proj == 'ortho' and option.lat0 == 90:
+                    lats = lats[lats>0]
+                    map=map[-len(lats):-1]
+#                 print 'map',map
+                
+                
                 map, lons = shiftgrid(180, map, lons, start=False)
                 if option.proj == 'stere':
                     projectMap = Basemap(projection=option.proj, lon_0=0.5 * (lons[0] + lons[-1]), lat_0=option.lat0, lat_ts=option.lat0, llcrnrlat=option.lat1, urcrnrlat=option.lat2, llcrnrlon=option.lon1, urcrnrlon=option.lon2)
@@ -3208,7 +3263,8 @@ def makeFunctionPlot(inFile):
                         projectMap = Basemap(projection=option.proj, lon_0=0.5 * (lons[0] + lons[-1]))
         #                projectMap = Basemap(projection=option.proj,lon_0=option.lon0, lat_0=option.lat0)
                     else:
-                        projectMap = Basemap(projection=option.proj, lon_0=option.lon0, lat_0=option.lat0, llcrnrlat=option.lat1, urcrnrlat=option.lat2, llcrnrlon=option.lon1, urcrnrlon=option.lon2)
+#                         projectMap = Basemap(projection=option.proj, lon_0=option.lon0, lat_0=option.lat0, llcrnrlat=option.lat1, urcrnrlat=option.lat2, llcrnrlon=option.lon1, urcrnrlon=option.lon2)
+                        projectMap = Basemap(projection=option.proj, lon_0=option.lon0, lat_0=option.lat0)
                 lons, lats = meshgrid(lons, lats)
                 palette = getPalette()
     #            palette = matplotlib.cm.jet
@@ -3218,12 +3274,12 @@ def makeFunctionPlot(inFile):
                 print 'map maximal value: %lE ' % np.amax(map.reshape(-1, 1))
                 
     
-                if option.vmin == option.vmax:
+                if option.vmin[figIdx % len(option.vmin)] == option.vmax[figIdx % len(option.vmin)]:
                     minv = np.amin(map.reshape(-1, 1))
                     maxv = np.amax(map.reshape(-1, 1))
                 else:
-                    minv = option.vmin
-                    maxv = option.vmax
+                    minv = option.vmin[figIdx % len(option.vmin)]
+                    maxv = option.vmax[figIdx % len(option.vmin)]
                     
                 print "minv: " + str(minv)
                 print "maxv: " + str(maxv)
@@ -3237,21 +3293,28 @@ def makeFunctionPlot(inFile):
                 
                 
                 # set bad values
-                for j in arange(len(map)):
-                    for k in arange(len(map[j])):
-                        if map[j][k] == -1: 
-                            map[j][k] = nan
-    #            palette.set_bad('b', 0.0)
-    #             set masked values
-    #            map = ma.array(map)
-    #            for j in arange(len(map)):
-    #                for k in arange(len(map[j])):
-    #                    if map[j][k]==-1: 
-    #                        map[j][k]=ma.masked
+#                 for j in arange(len(map)):
+#                     for k in arange(len(map[j])):
+#                         if map[j][k] == -1: 
+#                             map[j][k] = nan
+                if option.bad_val!=None:
+                    palette.set_bad('#0d0d0d', float(option.bad_val))
+                    
+#                set masked values
+#                 map = ma.array(map)
+#                 for j in arange(len(map)):
+#                     for k in arange(len(map[j])):
+#                         if map[j][k]==option.bad_val: 
+#                            map[j][k]=ma.masked
                 
                 
-                map = np.ma.masked_invalid(map)
+#                 map = np.ma.masked_invalid(map)
+#                     map = np.ma.masked_where(map==option.bad_val,map)
+                    map = np.ma.masked_values(map,option.bad_val)
                 
+#                 if option.set_below!=None:
+#                     palette.set_under(option.set_below[1],option.set_below[0])
+#                     levels[0]=option.set_below[0]
                 
                 # this works but is slow and leaves while lines along contours. the hack below doesn't seem to help
                 if option.sphereContour:
@@ -3273,7 +3336,7 @@ def makeFunctionPlot(inFile):
     
                 # draw meridians and parallels
                 if len(meridians) > 0:
-                    projectMap.drawmeridians(-meridians, labels=[0, 0, 0, 1], color=option.MPcolor)
+#                     projectMap.drawmeridians(-meridians, labels=[0, 0, 0, 1], color=option.MPcolor)
     #                projectMap.drawmeridians(arange(180,180.2,0.1),labels=[0,0,0,1], color=option.MPcolor)
 #                    if option.proj=='lcc':
 #                        txtl=[]; txtb=[]; txt=[];
@@ -3286,6 +3349,7 @@ def makeFunctionPlot(inFile):
 #                            text(xpt,ypt,txt[j],fontsize=option.MPfontSize)
 
                     if option.proj == 'moll':
+                        projectMap.drawmeridians(-meridians, labels=[0, 0, 0, 1], color=option.MPcolor)
                         txtl = []; txtb = []; txt = [];
                         for j in range(len(meridians)):
                             txtl.append(meridians[j]);
@@ -3295,6 +3359,7 @@ def makeFunctionPlot(inFile):
                             xpt, ypt = projectMap(-txtl[j], txtb[j])
                             text(xpt, ypt, txt[j], fontsize=option.MPfontSize)
                     elif option.proj == 'ortho' and option.lat0 == 90:
+                        projectMap.drawmeridians(-meridians, labels=[0, 0, 0, 0], color=option.MPcolor)
                         txtl = []; txtb = []; txt = [];
                         for j in range(len(meridians)):
                             txtl.append(meridians[j]);
@@ -3314,6 +3379,7 @@ def makeFunctionPlot(inFile):
                                     text(xpt, ypt, txt[j], fontsize=option.MPfontSize, horizontalalignment='left', verticalalignment='top')
                     
                     else:
+                        projectMap.drawmeridians(-meridians, labels=[0, 0, 0, 1], color=option.MPcolor)
                         txtl = []; txtb = []; txt = [];
                         for j in range(len(meridians)):
                             txtl.append(meridians[j]);
@@ -3382,7 +3448,8 @@ def makeFunctionPlot(inFile):
                 projectMap.drawmapboundary(color='k', linewidth=1.0, ax=None)
                 if option.colorbar:
                     cb = colorbar(cs)
-                    cb.set_label(option.zlabel)
+#                     cb.set_label(option.zlabel)
+                    cb.set_label(option.zlabel[figIdx % len(option.zlabel)])
     
                 if option.interactive:
                     fig.canvas.mpl_connect('pick_event', onMapPick)
@@ -3397,7 +3464,7 @@ def makeFunctionPlot(inFile):
                 from mpl_toolkits.basemap import Basemap, shiftgrid
                 global projectMap
                 if len(option.label) > 0:
-                    plotLegendLabel = option.label[i % len(option.label)]
+                    plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
                 else:
                     plotLegendLabel = None
                 
@@ -3430,12 +3497,12 @@ def makeFunctionPlot(inFile):
                 palette.set_over(option.setAbove)  # , 1.0)
                 palette.set_under(option.setBelow, 1)
 
-                if option.vmin == option.vmax:
+                if option.vmin[figIdx % len(option.vmin)] == option.vmax[figIdx % len(option.vmin)]:
                     minv = np.amin(map.reshape(-1, 1))
                     maxv = np.amax(map.reshape(-1, 1))
                 else:
-                    minv = option.vmin
-                    maxv = option.vmax
+                    minv = option.vmin[figIdx % len(option.vmin)]
+                    maxv = option.vmax[figIdx % len(option.vmin)]
                     
                 print "minv: " + str(minv)
                 print "maxv: " + str(maxv)
@@ -3560,9 +3627,10 @@ def makeFunctionPlot(inFile):
 #                            xpt,ypt = projectMap(-txtl[j],txtb[j])
 #                            text(xpt,ypt,txt[j],fontsize=option.MPfontSize)
     
-                if option.colorbar:
+                if option.colorbar and option.CM[figIdx % len(option.CM)]!='None':
                     cb = colorbar()
-                    cb.set_label(option.zlabel)
+#                     cb.set_label(option.zlabel)
+                    cb.set_label(option.zlabel[figIdx % len(option.zlabel)])
 
                 axes(ax)
                 if option.xlabel[i % len(option.xlabel)] != "None":
@@ -3588,7 +3656,7 @@ def makeFunctionPlot(inFile):
                     projectMap.drawrivers()
     
                 if len(option.label) > 0 and i == Nfiles - 1:  # this isn't working as is should - FIX IT
-                    legend(option.label, loc=legendLocation[figIdx % len(legendLocation)], prop={'size':option.fontSizeLegend[figIdx % len(option.fontSizeLegend)]}, ncol=option.legendNcol, mode=option.legendMode, borderaxespad=option.legendBorderAxesPad)
+                    legend(option.label.decode('utf8'), loc=legendLocation[figIdx % len(legendLocation)], prop={'size':option.fontSizeLegend[figIdx % len(option.fontSizeLegend)]}, ncol=option.legendNcol, mode=option.legendMode, borderaxespad=option.legendBorderAxesPad)
 
 
 
@@ -3681,7 +3749,7 @@ def makeFunctionPlot(inFile):
             if option.plotType[plotTypeIdx] == 'ts':
                 if len(option.label) > 0:
                     if option.label[i % len(option.label)] != "None":
-                        plotLegendLabel = option.label[i % len(option.label)]
+                        plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
                     else:
                         plotLegendLabel = None
                 else:
@@ -3790,11 +3858,11 @@ def makeFunctionPlot(inFile):
             # function type plot
             ###############################################################################################
     
-            if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX' or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'barchartH':
+            if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'step' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX' or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'barchartH':
     #            if option.colColor!=-1 or option.colSize!=-1:
                 if len(option.label) > 0:
                     if option.label[i % len(option.label)] != "None":
-                        plotLegendLabel = option.label[i % len(option.label)]
+                        plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
                     else:
                         plotLegendLabel = None
                 else:
@@ -3816,8 +3884,24 @@ def makeFunctionPlot(inFile):
 
                     if option.dateFmt == '':
                         datax, datay, scatterGlobalData = removeNans3(datax, datay, scatterGlobalData)
-                    palette = getPalette()
-                    palette = cm.get_cmap(option.CM, int(option.cbLabelsNum))
+#                     palette = getPalette()
+
+                    palette=None
+                    if option.CM[figIdx % len(option.CM)]!='None':
+                        palette = cm.get_cmap(option.CM[figIdx % len(option.CM)], int(option.cbLabelsNum))
+                        if option.CMrange!='':
+                            from matplotlib.colors import LinearSegmentedColormap
+                            CMrange=cpedsPythCommon.getFloatList(option.CMrange)
+                            # Remove the middle 40% of the RdBu_r colormap
+    #                         interval = np.hstack([np.linspace(0, CMclip[0]), np.linspace(CMclip[1], 1)])
+                            # remove top white part of the hot colormap
+                            interval = np.linspace(CMrange[0], CMrange[1])
+    #                         colors = plt.cm.hot(interval)
+                            print 'palette: ',palette
+                            colors=palette(interval)
+                            cmap = LinearSegmentedColormap.from_list('name', colors)                        
+                            palette = cm.get_cmap(cmap, int(option.cbLabelsNum))
+                        
 #                     palette = cm.get_cmap(option.CM, int(option.levels))
 
 #                    scatter(datax,datay, c=scatterGlobalData, s=sizeData, lw=1, marker=option.pt[i % len(option.pt)], label=plotLegendLabel, cmap=palette,  zorder=option.zorder[i % len(option.zorder)], picker=True)
@@ -3836,9 +3920,10 @@ def makeFunctionPlot(inFile):
                         else:
                             cmax = max(scatterGlobalData)
                             cmin = min(scatterGlobalData)
-                            if option.vmin != 0 and option.vmax != 0:
-                                cmin = option.vmin
-                                cmax = option.vmax
+                            if option.vmin[figIdx % len(option.vmin)] != option.vmax[figIdx % len(option.vmin)]:
+#                             if option.vmin[figIdx % len(option.vmin)] != None and option.vmax[figIdx % len(option.vmin)] != None:
+                                cmin = option.vmin[figIdx % len(option.vmin)]
+                                cmax = option.vmax[figIdx % len(option.vmin)]
 
                             scatter(datax, datay, c=scatterGlobalData, s=sizeData, vmin=cmin, vmax=cmax, lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], marker=option.pt[i % len(option.pt)], label=plotLegendLabel, cmap=palette, zorder=option.zorder[i % len(option.zorder)], picker=True)
                     elif option.plotType[plotTypeIdx] == 'scat3d':
@@ -3925,6 +4010,27 @@ def makeFunctionPlot(inFile):
 
                     
                     plotLine = plot(datax, datay, lw=option.width[i % len(option.width)], marker=option.pt[i % len(option.pt)], linestyle=option.ls[i % len(option.ls)], c=option.lc[i % len(option.lc)], markersize=option.ps[i % len(option.ps)], mew=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], mec=option.ec[i % len(option.ec)], mfc=option.pc[i % len(option.pc)], label=plotLegendLabel, zorder=option.zorder[i % len(option.zorder)], picker=True)
+
+
+                    if option.ls[i % len(option.ls)] == '--' or option.ls[i % len(option.ls)] == '-.' or option.ls[i % len(option.ls)] == ':':
+                        if type(option.lsdash) == type(list()):
+                            plotLine[-1].set_dashes(option.lsdash[i % len(option.lsdash)])
+
+                elif option.plotType[plotTypeIdx] == 'step':
+                    print
+                    print "plot %i" % i
+                    print "marker %s" % option.pt[i % len(option.pt)]
+                    print "color %s" % option.pc[i % len(option.pc)]
+                    print "all markers" 
+                    print option.pt
+                    print "all colors" 
+                    print option.pc
+                    print
+                    if option.dateFmt == '':
+                        datax, datay = removeNans2(datax, datay)
+
+                    
+                    plotLine = step(datax, datay, lw=option.width[i % len(option.width)], where='mid', marker=option.pt[i % len(option.pt)], linestyle=option.ls[i % len(option.ls)], c=option.lc[i % len(option.lc)], markersize=option.ps[i % len(option.ps)], mew=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], mec=option.ec[i % len(option.ec)], mfc=option.pc[i % len(option.pc)], label=plotLegendLabel, zorder=option.zorder[i % len(option.zorder)], picker=True)
 
 
                     if option.ls[i % len(option.ls)] == '--' or option.ls[i % len(option.ls)] == '-.' or option.ls[i % len(option.ls)] == ':':
@@ -4386,7 +4492,7 @@ def makeFunctionPlot(inFile):
                     print 'title: ', option.title
                     print 'title: ', option.title[figIdx % len(option.title)]
                     if option.title[figIdx % len(option.title)] != "":
-                        tit = option.title[figIdx % len(option.title)]
+                        tit = option.title[figIdx % len(option.title)].decode('utf8')
                         title(tit, fontsize=option.fontSizeTitle, horizontalalignment=option.titleAlignH, verticalalignment=option.titleAlignV)
 
 #                if i % option.dsPerPlot == 0:
@@ -4401,7 +4507,7 @@ def makeFunctionPlot(inFile):
                     print 'option.fontSize[(2*labidx) % len(option.fontSize)]: ', option.fontSize[(2 * labidx) % len(option.fontSize)]
                     print 'option.fontSize[(2*labidx+1) % len(option.fontSize)]: ', option.fontSize[(2 * labidx + 1) % len(option.fontSize)]
                     if option.xlabel[labidx % len(option.xlabel)] != "None":
-                        xlabel(option.xlabel[labidx % len(option.xlabel)], fontsize=option.fontSizeLabels[(2 * labidx) % len(option.fontSizeLabels)])
+                        xlabel(option.xlabel[labidx % len(option.xlabel)].decode('utf8'), fontsize=option.fontSizeLabels[(2 * labidx) % len(option.fontSizeLabels)])
 #                    if option.plotType[plotTypeIdx]!='ts':
                     if option.fontSize[(2 * labidx) % len(option.fontSize)] > 0:
                         setp(ax.get_xticklabels(), fontsize=option.fontSize[(2 * labidx) % len(option.fontSize)])
@@ -4412,7 +4518,7 @@ def makeFunctionPlot(inFile):
     #                        ax.set_xticks([])
                         
                     if option.ylabel[labidx % len(option.ylabel)] != "None":
-                        ylabel(option.ylabel[labidx % len(option.ylabel)], fontsize=option.fontSizeLabels[(2 * labidx + 1) % len(option.fontSizeLabels)])
+                        ylabel(option.ylabel[labidx % len(option.ylabel)].decode('utf8'), fontsize=option.fontSizeLabels[(2 * labidx + 1) % len(option.fontSizeLabels)])
                     if option.fontSize[(2 * labidx + 1) % len(option.fontSize)] > 0:
                         setp(ax.get_yticklabels(), fontsize=option.fontSize[(2 * labidx + 1) % len(option.fontSize)])
                     else:
@@ -4571,17 +4677,31 @@ def makeFunctionPlot(inFile):
                     
                 if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatDensContFill':
                     if option.colorbar:
+                        labidx = figIdx
+
                         cmax = max(scatterGlobalData)
                         cmin = min(scatterGlobalData)
-                        if option.vmin != 0 and option.vmax != 0:
-                            cmin = option.vmin
-                            cmax = option.vmax
+                        if option.vmin[figIdx % len(option.vmin)] != option.vmax[figIdx % len(option.vmin)]:
+#                         if option.vmin[figIdx % len(option.vmin)] != None and option.vmax[figIdx % len(option.vmin)] != None:
+                            cmin = option.vmin[figIdx % len(option.vmin)]
+                            cmax = option.vmax[figIdx % len(option.vmin)]
                         cdelta = (cmax - cmin) / (option.cbLabelsNum - 1)
                         cbyticks = np.arange(cmin, cmax + cdelta, cdelta)
                         print cbyticks
                         cb = colorbar(ticks=cbyticks)
-                        cb.ax.tick_params(labelsize=option.fontSize[i % len(option.fontSize)])
-                        cb.set_label(option.zlabel, size=option.fontSizeLabels[i % len(option.fontSizeLabels)])
+#                         cb.ax.tick_params(labelsize=option.fontSize[i % len(option.fontSize)])
+                        if option.fontSizeCM[figIdx % len(option.fontSizeCM)] > 0:
+                            cb.ax.tick_params(labelsize=option.fontSizeCM[figIdx % len(option.fontSizeCM)])
+                        else:
+                            print 'switching off zlabels'
+                            cb.ax.set_yticklabels([])
+
+
+
+#                         cb.set_label(option.zlabel, size=option.fontSizeLabels[i % len(option.fontSizeLabels)])
+                        cb.set_label(option.zlabel[figIdx % len(option.zlabel)], size=option.fontSizeCM[figIdx % len(option.fontSizeCM)])
+                        
+                        
                         
     #                    if option.colorbar:
                         if option.linZtickLabels:
@@ -4612,6 +4732,9 @@ def makeFunctionPlot(inFile):
                                 cbyticksLabelsNew.append(option.ZticksFmt % float(lab))
                             cax.set_yticklabels(cbyticksLabelsNew)
 
+
+                    if option.CM[figIdx % len(option.CM)]=='None':
+                        fig.delaxes(cax)
 
                 #
                 # circles            
@@ -5142,7 +5265,7 @@ while 1:
                         if option.plotType[plotTypeIdx] == 'barchartH':
                             inFile.append(np.loadtxt(args[i], dtype="string"))
                             
-                        if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX'  or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'sphere' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'mayaScat':
+                        if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'step' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX'  or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'sphere' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'mayaScat':
                             if option.big:  # or len(option.rows)>0:
                                 if args[i] == "stdin":
                                     print "warning: option big cannot read from stdin yet. The result might not be what you wanted."
@@ -5150,7 +5273,9 @@ while 1:
                                 if 'txtCol' in option.fileFormat[i % len (option.fileFormat)]:
                                     print "warning: format txtCol=X cannot read from stdin yet."
                                     sys.exit()
-                                inFile.append(loadDataFromFile(args[i], option.colx[i % len(option.colx)], option.coly[i % len(option.coly)], option.startFrom, option.rows[i % len(option.rows)], option.every[i % len(option.every)], option.bin[i % len(option.bin)]))
+                                inFile.append(loadDataFromFile(args[i], option.colx[i % len(option.colx)], option.coly[i % len(option.coly)], 
+                                                               option.startFrom, option.rows[i % len(option.rows)], option.every[i % len(option.every)], 
+                                                               option.bin[i % len(option.bin)], badY=option.badY[i % len(option.badY)]))
                             else:
                                 if args[i] == "stdin":
                                     if globalStdInData == '':
@@ -5168,7 +5293,10 @@ while 1:
 #                                         option.rows=list([1])
 #                                     inFile.append(np.loadtxt(args[i]))
 
-                                    inFile.append(loadDataFromFileStd(args[i], option.startFrom, option.rows[i % len(option.rows)], option.every[i % len(option.every)], option.bin[i % len(option.bin)]))
+                                    inFile.append(loadDataFromFileStd(fname=args[i], startFrom=option.startFrom, rowsCount=option.rows[i % len(option.rows)], loadEvery=option.every[i % len(option.every)], binSamples=option.bin[i % len(option.bin)], 
+                                                                      colx=option.colx[i % len(option.colx)],
+                                                                      coly=option.coly[i % len(option.coly)],
+                                                                      badY=option.badY[i % len(option.badY)]))
     
                                 if 'txtCol' in option.fileFormat[i % len (option.fileFormat)]:
                                     txtNcols = int(option.fileFormat[i % len (option.fileFormat)].split('=')[1])
@@ -5207,13 +5335,13 @@ while 1:
                     if option.plotType[plotTypeIdx] == 'map':
                         cmd = ''
                         if args[i][-7:] == '-Tn-bin':
-                            cmd = 'draw_maps_new %s -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                            cmd = 'draw_maps %s -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
                             cpedsPythCommon.sayAndExecute("Exporting data from binary file", cmd, 1)
                         if args[i][-5:] == '.fits':
                             if option.fileFormat[i % len (option.fileFormat)] == 'fitsWMAP':
-                                cmd = 'draw_maps_new %s --ft fitsWMAP -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                                cmd = 'draw_maps %s --ft fitsWMAP -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
                             if option.fileFormat[i % len (option.fileFormat)] == 'fitsPL':
-                                cmd = 'draw_maps_new %s --ft fitsPL -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                                cmd = 'draw_maps %s --ft fitsPL -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
                             cpedsPythCommon.sayAndExecute("Exporting data from binary file", cmd, 1)
             
                         inFile.append(array([np.loadtxt(args[i] + '.lonlatT'), np.loadtxt(args[i] + '.lon'), np.loadtxt(args[i] + '.lat')]))
@@ -5256,14 +5384,15 @@ while 1:
     for i in arange(len(option.plotCircle)):
         print "Generating circles"
         lbr = array([ toFloat(v) for v in option.plotCircle[i].split(',') ])
-        cmd = '%sdraw_maps_new nofile %s --tl %lf --tb %lf --tv 1 --ts %lf --plot_reg_type emptydot --dont_plot_zero -o lb' % (option.draw_maps_path, option.draw_maps_options, lbr[0], lbr[1], lbr[2])
+        cmd = '%sdraw_maps nofile %s --tl %lf --tb %lf --tv 1 --ts %lf --plot_reg_type emptydot --dont_plot_zero -o lb' % (option.draw_maps_path, option.draw_maps_options, lbr[0], lbr[1], lbr[2])
         os.system(cmd)
         inFile.append(np.loadtxt('lb'))
         os.remove('lb')
         
     if option.mk11line:
         print "Generating 11line"
-        xy = np.array([[option.xmin, option.xmin], [option.xmax, option.xmax]])
+        xy = np.array([[option.xmin[0], option.xmin[0]], [option.xmax[0], option.xmax[0]]])
+        print xy
         inFile.append(xy)
         option.colx.append(0)
         option.coly.append(1)
