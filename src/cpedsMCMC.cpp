@@ -322,7 +322,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 	_walk.statesTot=0;
 	
 	// randomly choose the starting location in the parameter space
-	msgs->say("Drawing random starting point in the prameter space",Medium);
+	msgs->say("Generating random starting point in the prameter space",Medium);
 	current().set(dims(),getStartingPoint());
 	current().setAccepted(true);
 	current().setIdx(0);
@@ -508,7 +508,10 @@ void cpedsMCMC::startChain(bool followPriors) {
 		//
 		// saving section
 		//
+//#pragma omp critical
+		{
 		dumpAll();
+		}
 		
 		//
 		// test convergence section 
@@ -1048,6 +1051,7 @@ void cpedsMCMC::saveStepPDFs(string fname) {
 	string outfile;
 	outfile=getRunDependentFileName(fname);
 	msgs->say("Saving step PDF to file: "+outfile,Medium);
+#pragma omp critical 
 	for (long j = 0; j < dims(); j++) {
 //		outfile=getParameterDependentFileName(fname,j);
 //		outfile=getRunDependentFileName(outfile);
@@ -1075,7 +1079,7 @@ void cpedsMCMC::saveMCsteps(string fname) {
 	string outfile;
 
 	outfile=getRunDependentFileName(fname);
-	
+#pragma omp critical 	
 	for (long i = 0; i < getNparam(); i++) {
 //		getMCsteps(i).save(fname+"param_"+msgs->toStr(i,"%li")+".mc");
 		
@@ -1091,6 +1095,7 @@ void cpedsMCMC::saveBestFitStepPDFs(string fname) {
 	string outfile;
 	outfile=getRunDependentFileName(fname);
 	msgs->say("Saving step PDF to file: "+outfile,Medium);
+#pragma omp critical 
 	for (long j = 0; j < dims(); j++) {
 		
 //		outfile=getParameterDependentFileName(fname,j);
