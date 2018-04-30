@@ -46,7 +46,7 @@ set (CPEMS_VERSION "0.1")
 #set (VELKB_LIB_DIR "external_packages/velKB") 
 
 add_custom_target(extdir
-    COMMAND /bin/bash -c 'if [ ! -d ${PROJECT_BINARY_DIR}/external_packages ]\; then mkdir${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND /bin/bash -c 'if [ ! -d ${PROJECT_BINARY_DIR}/external_packages ]\; then mkdir ${PROJECT_BINARY_DIR}/external_packages\; fi'
     )
     
 add_custom_target(Lib_velKB
