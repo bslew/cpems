@@ -84,7 +84,7 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_walk.Nparam=Npar;
 	_walk.maximalChainLength=200000;
 	_walk.statesTot=0;
-	_walk.initialPDFstepCRfraction=0.1;
+	_walk.initialPDFstepCRfraction=0.5;
 	_walk.initialPDFstepCRfractionAfterBurnIn=0.05;
 //	current()Direction=new double[Npar];
 	_walk.currentDirection.makeLength(Npar);
@@ -244,7 +244,7 @@ void cpedsMCMC::addParameter(string param_name, double from, double to, long Npt
 void cpedsMCMC::walkNstates(long Nstates, MClink startingLink, int how) {
 	bool walk=true;
 	long burnOutStates=0;
-	
+	if (Nstates==0) walk=false;
 	current()=startingLink;
 	
 	while (walk) {
@@ -369,11 +369,22 @@ void cpedsMCMC::startChain(bool followPriors) {
 			//			}
 		}
 		else {
-//			printf("%li\n", _walk.statesTot);
-			nextCandidate()=getNextPoint(current());
-			nextCandidate().setIdx(_walk.statesTot);
-			msgs->say("Current temperature is: "+msgs->toStr(getTemperature())+", final temperature is:"+msgs->toStr(getFinalTemperature()),Zero);
-			nextCandidate().setChisq(chisq(nextCandidate()));
+			if (getInitialStepSize()==0 and length()<getBurnInLength()) { 
+				MClink randomLink;
+				randomLink.set(dims(),getStartingPoint());
+				randomLink.setAccepted(true);
+				randomLink.setIdx(_walk.statesTot);
+
+				nextCandidate()=randomLink;
+				msgs->say("Current temperature is: "+msgs->toStr(getTemperature())+", final temperature is:"+msgs->toStr(getFinalTemperature()),Zero);
+				nextCandidate().setChisq(chisq(nextCandidate()));
+			}
+			else {
+				nextCandidate()=getNextPoint(current());
+				nextCandidate().setIdx(_walk.statesTot);
+				msgs->say("Current temperature is: "+msgs->toStr(getTemperature())+", final temperature is:"+msgs->toStr(getFinalTemperature()),Zero);
+				nextCandidate().setChisq(chisq(nextCandidate()));
+			}
 		}
 		
 
