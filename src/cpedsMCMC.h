@@ -426,6 +426,7 @@ class cpedsMCMC {
 			\date Jan 9, 2018, 1:20:33 PM
 		*/
 		void setMaximalRejectionsCount(long n) { _cooling.maximalRejectionsCount=n; }
+//		void setProbeRandomlyAtBurnIn(bool tf) { _walk; }
 		void setBurnInLength(long l);
 		long getBurnInLength() const { return _walk.convergenceTestMinimalLength; }
 		void setBurnOutLength(long l);
@@ -551,7 +552,7 @@ class cpedsMCMC {
 
 			default value: 0.5
 
-			This controls how large the initial step size will be for every parameter.
+			This controls how large the step size will be for every parameter during the burn-in stage.
 
 			By default size=0.5 corresponds to the half of the domain size over which the parameter has been defined.
 			The MC step is drawn from Boltzmann distribution.
@@ -583,13 +584,16 @@ class cpedsMCMC {
 			An alternative solution is to use large size parameter during burn-in period, and abruptly switch to smaller values after the burn-in period regenerating
 			the step generating PDFs. Such behaviour is also possible and it is triggered by setting setInitialWalkStepSize(size) to a non-zero value.
 			By default this is not done.
+			
+			If you want to have randomly chosen parameter values during the burn-in state, i.e. chosen from within the prior volume
+			and according to the prior PDF you should set this value to zero (0).
 		
 			\date Mar 11, 2011, 12:32:10 PM
 			\author Bartosz Lew
 		*/
 		void setInitialStepSize(double size) { 
 			_walk.initialPDFstepCRfraction=size; 
-			if (getNparam()>0) {
+			if (getNparam()>0 and size>0) {
 				string s="Setting initial step size but "+msgs->toStr(getNparam())+"parameters have already been added. These settings will not alter the parameters that were already added";
 				msgs->warning(s,High);
 				addImplementationNote("");
@@ -597,6 +601,9 @@ class cpedsMCMC {
 				addImplementationNote(s);
 			}
 		}
+		
+		double getInitialStepSize() const { return _walk.initialPDFstepCRfraction; }
+		
 		/*!
 			\brief set initial and final system temperatures
 			\details 
