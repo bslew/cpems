@@ -85,7 +85,7 @@ add_dependencies(Lib_velKB extdir)
 add_dependencies(Lib_slaRefr extdir)
 add_dependencies(Lib_novas extdir)
 add_dependencies(Lib_ccSHT3 extdir)
-add_dependencies(external Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
+add_dependencies(external extdir Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
 
 #add_custom_target(gsl18
 #    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/gsl-1.8 && ./configure && make -j10
