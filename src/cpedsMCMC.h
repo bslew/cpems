@@ -548,7 +548,8 @@ class cpedsMCMC {
 		/*!
 			\brief set the initial step size factor for all parameters
 			\details 
-			@param size - initial maximal possible value of the step size in units of the size of the parameter space defined by the parameter prior.
+			@param size - initial maximal value of the step size in units of the size of the 
+			parameter space defined by the parameter prior.
 
 			default value: 0.5
 
@@ -559,34 +560,40 @@ class cpedsMCMC {
 			This means that the expected initial step size for that parameter will be moderated by the system temperature.
 			1/_initialMaximalEnergy (kT) of the domain size.
 			
-			The full domain size is covered by a scaled boltzmann PDF and sampled within range 0 to _initialMaximalEnergy=10 by default 
+			The full domain size is covered by a scaled boltzmann PDF and sampled within 
+			range 0 to _initialMaximalEnergy=10 by default 
 			(which is numerically doable for the initial default temperature of 1000 K).
 			This distribution is then scaled to the range [0,size]
 			Since the expectation value for the boltzmann PDF is kT - the expected value of the step size will be 
 			size/_initialMaximalEnergy=1/20 of the full domain size for any given parameter.
 
-			By lowering the value of this parameter the movement of MCMC will more and more resemble bug rowing motion rather than
-			jumping motion as in Gibbs sampling. 
+			By lowering the value of this parameter the movement of MCMC will more and more resemble bug rowing motion 
+			rather than	jumping motion as in Gibbs sampling. 
 			
 			Generally it is a good idea to have this parameter small <<1 because
-			once the burn-in period is finished the chain automatically switches to the found best fit solution, cools down appropriately 
-			and continues from there. If the size parameter is large it is possible that the system will not cool down sufficiently in that single switch
-			to the best fit solution (to amount of cooling is generally proportional function of deltaChisq) and it may be that the chain will jump away from
-			the best fit solution. It will try to find it again, but in practice it may not return to the best fit solution and in the result the 
-			likelihood surface will be very poorly probed around the best fit solution. By making this parameter small, the chain will not depart too much
-			from the best fit solution after the burn-in period is finished. In fact, with this parameter small, the having large burn-in periods (lengths) probably
-			doesn't make much sense either. On the other hand having this parameter small, worsens the mixing of the chain, so it is advisable to use large number
-			of chains in such case.
+			once the burn-in period is finished the chain automatically switches to the found best fit solution, 
+			cools down appropriately and continues from there. If the size parameter is large it is possible 
+			that the system will not cool down sufficiently in that single switch to the best fit solution 
+			(to amount of cooling is generally proportional function of deltaChisq) and it may be that the chain 
+			will jump away from the best fit solution. It will try to find it again, but in practice it may not 
+			return to the best fit solution and in the result the likelihood surface will be very poorly probed 
+			around the best fit solution. By making this parameter small, the chain will not depart too much
+			from the best fit solution after the burn-in period is finished. In fact, with this parameter small, 
+			the having large burn-in periods (lengths) probably	doesn't make much sense either. 
+			On the other hand having this parameter small, worsens the mixing of the chain, so it is advisable 
+			to use large number	of chains in such case.
 			
-			Remember to set this parameter BEFORE adding a new parameter, as the parameter step generating PDFs are generated using this information when the parameter
-			is added.
+			Remember to set this parameter BEFORE adding a new parameter, as the parameter step generating PDFs 
+			are generated using this information when the parameter	is added.
 			
-			An alternative solution is to use large size parameter during burn-in period, and abruptly switch to smaller values after the burn-in period regenerating
-			the step generating PDFs. Such behaviour is also possible and it is triggered by setting setInitialWalkStepSize(size) to a non-zero value.
+			An alternative solution is to use large size parameter during burn-in period, 
+			and abruptly switch to smaller values after the burn-in period regenerating
+			the step generating PDFs. Such behaviour is also possible and it is triggered by 
+			setting setInitialWalkStepSize(size) to a non-zero value.
 			By default this is not done.
 			
-			If you want to have randomly chosen parameter values during the burn-in state, i.e. chosen from within the prior volume
-			and according to the prior PDF you should set this value to zero (0).
+			If you want to have randomly chosen parameter values during the burn-in state, i.e. 
+			chosen from within the prior volume	and according to the prior PDF you should set this value to zero (0).
 		
 			\date Mar 11, 2011, 12:32:10 PM
 			\author Bartosz Lew

@@ -561,7 +561,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 		// test for maximal rejections count
 		if (_walk.rejectionsCount>=_cooling.maximalRejectionsCount and length()>getBurnInLength()) {
 			if (forcedCoolingPossible()) { 
-				msgs->say("Maximal rejections count (%li) reached reached at T>Tfinal",_walk.rejectionsCount,Medium);
+				msgs->say("Maximal rejections count (%li) reached at T>Tfinal",_walk.rejectionsCount,Medium);
 				/* if the system is too hot then we can be here because the generated 
 					steps are too big and MCMC departs too far from the bestFit solution and 
 					the system won't have a chance to cool down. Cooling down here will force smaller steps 
