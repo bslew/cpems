@@ -141,7 +141,7 @@ class cpedsMCMC {
 				double initialPDFstepCRfractionAfterBurnIn; //!< fraction of the parameter domain used for generation of initial step size PDFs after burn in period is finished (by default: 0 - ie. not used)
 				long runRNGseed;
 				bool poorX2improvement; //!< this flag becomes true whenever poor X2 improvement is detected; this may influence cooling
-				bool uphillClimbing; //!< this defines whether to keep the direction of motion if the previous state was accepted and deltaX2>0 (true) or otherwise whether the next step direction should be random (false: defalut)
+				bool uphillClimbing; //!< this defines whether to keep the direction of walk if the previous state was accepted and deltaX2>0 (true) or otherwise whether the next step direction should be random (default: true)
 				bool keepDirectionNow; //!< defines whether to keep the current direction when _uphillClimbing is on
 				cpedsList<double> currentDirection; //!< holds the current climb direction
 				vector< cpedsList<double> > steps; //!< holds history of MC steps in each direction
