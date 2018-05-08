@@ -48,6 +48,8 @@ parser.add_option("", "--DPIgui", dest="DPIgui", default=70, type="int", help='D
 parser.add_option("", "--DPI", dest="DPI", default=70, type="int", help='DPI for saving to file', metavar="NUM")
 parser.add_option("", "--bgcolor", dest="bgcolor", default='white', type="string", help='color to use for the background of the figure', metavar="NUM")
 parser.add_option("", "--xticks", dest="xticks", type="float", help='x ticks to be plotted every this cells', action="append")
+parser.add_option("", "--xticksMinor", dest="xticksMinor", type="float", help='minor x ticks to be plotted every this cells', action="append")
+parser.add_option("", "--yticksMinor", dest="yticksMinor", type="float", help='minor y ticks to be plotted every this cells', action="append")
 parser.add_option("", "--yticks", dest="yticks", type="float", help='y ticks to be plotted every this cells', action="append")
 parser.add_option("", "--title", dest="title", type="string", help='list of plot titles (for multiplot mode) and single title for single plot mode', metavar="STRING", action="append")
 parser.add_option("", "--fontSizeTitle", dest="fontSizeTitle", type="int", help='title font size', metavar="STRING", default=15)
@@ -368,7 +370,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab
-from matplotlib.ticker import FuncFormatter
+from matplotlib.ticker import FuncFormatter, MultipleLocator, FormatStrFormatter
 # from matplotlib.image import AxesImage
 
 from matplotlib.patches import Circle, Wedge, Polygon
@@ -515,6 +517,8 @@ if type(option.vmax) != type(list()):    option.vmax = list([None])
 if type(option.datexmin) != type(list()):    option.datexmin = list([-1])
 if type(option.datexmax) != type(list()):    option.datexmax = list([-1])
 if type(option.xticks) != type(list()):    option.xticks = list([0])
+if type(option.xticksMinor) != type(list()):    option.xticksMinor = list([None])
+if type(option.yticksMinor) != type(list()):    option.yticksMinor = list([None])
 if type(option.yticks) != type(list()):    option.yticks = list([0])
 if type(option.axesSwitch) != type(list()):    option.axesSwitch = list([1])
         
@@ -4556,7 +4560,18 @@ def makeFunctionPlot(inFile):
                         yticks(arange(min(tcs[0], option.ymin[figIdx % len(option.ymin)]), max(tcs[-1], option.ymax[figIdx % len(option.ymax)]), option.yticks[figIdx % len(option.yticks)]))
 
 
-                    
+                    if option.xticksMinor[figIdx % len(option.xticks)] != None:
+                        minorLocatorX = MultipleLocator(option.xticksMinor[figIdx % len(option.xticksMinor)])
+                        ax.xaxis.set_minor_locator(minorLocatorX)
+                    if option.yticksMinor[figIdx % len(option.yticks)] != None:
+                        minorLocatorY = MultipleLocator(option.yticksMinor[figIdx % len(option.yticksMinor)])
+                        ax.yaxis.set_minor_locator(minorLocatorY)
+#                     ax1.tick_params(axis='x',which='major',direction='out',length=4,width=4,color='b',pad=10,labelsize=20,labelcolor='g')
+                    ax.tick_params(axis='x',which='major',direction='in',length=8,width=2,color='k',pad=10)
+                    ax.tick_params(axis='y',which='major',direction='in',length=8,width=2,color='k',pad=10)
+                    ax.tick_params(axis='x',which='minor',direction='in',length=4,width=1,color='k',pad=10)
+                    ax.tick_params(axis='y',which='minor',direction='in',length=4,width=1,color='k',pad=10)
+
                     
                     
 #                 setp( ax.get_xticklabels(), fontsize=option.fontSizeXtickLabels[i % len(option.fontSizeXtickLabels)])

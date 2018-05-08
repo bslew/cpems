@@ -95,6 +95,7 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_walk.keepDirectionStepGenerationFailuresNumber=50;
 	_walk.rejectedLinkNumber=0;
 	_walk.uphillClimbing=true;
+	_walk.uphillGradient=false;
 	_walk.userOutputFrequency=1000;
 	_walk.likelihoodRejectionThreshold=1.0e-10;
 	_walk.convergenceTestMinimalLength=300; 
@@ -239,7 +240,14 @@ void cpedsMCMC::addParameter(string param_name, double from, double to, long Npt
 	param.normalize();
 	addParameter(param,param_full_name);
 }
-
+/* ******************************************************************************************** */
+void cpedsMCMC::addParameter(string param_name, double from, double to, double delta, string param_full_name) {
+	mscsFunction param(param_name);
+	double dx=delta;
+	param.mkConst(from,to,dx,1.0); 
+	param.normalize();
+	addParameter(param,param_full_name);	
+}
 /***************************************************************************************/
 void cpedsMCMC::walkNstates(long Nstates, MClink startingLink, int how) {
 	bool walk=true;
@@ -369,7 +377,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 			//			}
 		}
 		else {
-			if (getInitialStepSize()==0 and length()<getBurnInLength()) { 
+			if (getInitialStepSize()==0 and length()<getBurnInLength()) { // we are in the burn-in phase
 				MClink randomLink;
 				randomLink.set(dims(),getStartingPoint());
 				randomLink.setAccepted(true);
@@ -379,22 +387,24 @@ void cpedsMCMC::startChain(bool followPriors) {
 				msgs->say("Current temperature is: "+msgs->toStr(getTemperature())+", final temperature is:"+msgs->toStr(getFinalTemperature()),Zero);
 				nextCandidate().setChisq(chisq(nextCandidate()));
 			}
-			else {
-				nextCandidate()=getNextPoint(current());
+			else { // we are no longer in the burn-in phase
+				if (getUphillGradient()) {
+					nextCandidate()=getNextPointUphillGradient(current());
+				}
+				else {
+					nextCandidate()=getNextPoint(current());
+					msgs->say("Current temperature is: "+msgs->toStr(getTemperature())+", final temperature is:"+msgs->toStr(getFinalTemperature()),Zero);
+				}
 				nextCandidate().setIdx(_walk.statesTot);
-				msgs->say("Current temperature is: "+msgs->toStr(getTemperature())+", final temperature is:"+msgs->toStr(getFinalTemperature()),Zero);
 				nextCandidate().setChisq(chisq(nextCandidate()));
 			}
 		}
-		
-
-
 		
 		//
 		// decide what to do with the new state
 		//
 		
-		// define the current accept worse threhold
+		// define the current accept worse threshold
 		if (length()<=getBurnInLength()) { acceptWorseThreshold=_cooling.acceptWorseThreshold; acceptWorseBoltzmannFactor=_cooling.acceptWorseBoltzmannFact; }
 		else  { acceptWorseThreshold=_cooling.acceptWorseThresholdAfterBurnIn; acceptWorseBoltzmannFactor=_cooling.acceptWorseAfterBurnInBoltzmannFact; }
 		
@@ -414,8 +424,10 @@ void cpedsMCMC::startChain(bool followPriors) {
 			_walk.poorX2improvement=(current().chisq()-nextCandidate().chisq())/_bestFit.chisq()<_convergence.relChisqChangeThres;
 			
 			if (_walk.poorX2improvement) { 
-				_walk.rejectionsCount++;
-				msgs->say("Poor X2 improvement detected. Counting as rejection.",Low);
+//				if (!getUphillGradient()) {
+					_walk.rejectionsCount++;
+					msgs->say("Poor X2 improvement detected. Counting as rejection.",Low);
+//				}
 			}
 			else {
 				/*
@@ -456,6 +468,8 @@ void cpedsMCMC::startChain(bool followPriors) {
 									break;
 								case cpedsMCMC::coolingScheme_chisqPerDoFprop:
 									coolDownProp(deltaX);
+									break;
+								case cpedsMCMC::coolingScheme_none:
 									break;
 								default:
 									break;
@@ -1482,7 +1496,7 @@ void cpedsMCMC::acceptWorseState(bool acceptWorse, MClink& next, long& rejection
 		_walk.rejectedLinkNumber++;
 		msgs->say("rejected "+msgs->toStr(rejectionsCount)+" points in row. Maximal rejections count is: "+msgs->toStr(_cooling.maximalRejectionsCount),Zero);
 		_MCrej.append(next); // store the calculations that were done as they also probe the likelihood surface, but we are prepending to avoid confusing the delta chisq calculations
-		appendLinkForConvergenceTest(next);
+//		appendLinkForConvergenceTest(next);
 		rejectionsCount++;		
 	}
 }
@@ -2454,4 +2468,45 @@ void cpedsMCMC::saveResiduals(int inputDataColumn) {
 		msgs->say("Residuals will not be saved.",Medium);
 	}
 }
+
 /* ******************************************************************************************** */
+MClink cpedsMCMC::getNextPointUphillGradient(const MClink& current) {
+	msgs->say("generating the next point", Zero);
+#ifdef DEBUGMCMC
+	msgs->say("current state is:", Low);
+	//	if (msgs->getVerbosity()>
+	printLink(current);
+	msgs->say("Best fit link is:", Low);
+	printLink(_bestFit);	
+#endif
+	double grad[dims()];
+	double delta[dims()];
+	double sign;
+	double tmp;
+	long failures=0;
+	MClink newLink(current),testLink;
+//	printf("chisq cur: %lE\n",current.chisq());
+	for (long i = 0; i < dims(); i++) {
+		failures++;
+//		delta[i]=_walk.initialPDFstepCRfractionAfterBurnIn*_parameterSpace.resolution(i)*getTemperature()/getInitialTemperature();
+		delta[i]=_walk.initialPDFstepCRfractionAfterBurnIn*_parameterSpace.length(i)*getTemperature()/getInitialTemperature();
+		testLink=current;
+		testLink[i]+=delta[i];
+		assert(delta[i]>0);
+		// calculate gradient
+		double X2=chisq(testLink);
+		grad[i]=(X2-current.chisq())/current.chisq();
+//		printf("i: %li, delta: %lE, chisq: %lE, grad[i]: %lE\n", i, delta[i],X2,grad[i]);
+	}
+	_walk.keepDirectionNow=false;
+
+	// set new link
+	for (long i = 0; i < dims(); i++) {
+		newLink[i]-=grad[i]*delta[i];
+		MCsteps(i).append(grad[i]*delta[i]); // store the step
+	}
+//	printf("new link\n");
+//	newLink.printLink();
+//	printf("\n\n");
+	return newLink;		
+}

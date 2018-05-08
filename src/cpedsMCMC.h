@@ -141,6 +141,7 @@ class cpedsMCMC {
 				double initialPDFstepCRfractionAfterBurnIn; //!< fraction of the parameter domain used for generation of initial step size PDFs after burn in period is finished (by default: 0 - ie. not used)
 				long runRNGseed;
 				bool poorX2improvement; //!< this flag becomes true whenever poor X2 improvement is detected; this may influence cooling
+				bool uphillGradient; //!< this flag modifies the way of taking the next step; it calculates grad(chisq) and takes the steepest negative direction with step size proportional to the gradient and the initial step size (default: false)
 				bool uphillClimbing; //!< this defines whether to keep the direction of walk if the previous state was accepted and deltaX2>0 (true) or otherwise whether the next step direction should be random (default: true)
 				bool keepDirectionNow; //!< defines whether to keep the current direction when _uphillClimbing is on
 				cpedsList<double> currentDirection; //!< holds the current climb direction
@@ -363,6 +364,7 @@ class cpedsMCMC {
 			\date May 29, 2017, 10:02:09 PM
 		*/
 		void addParameter(string param_name, double from, double to, long Npts=1000, string param_full_name="");
+		void addParameter(string param_name, double from, double to, double delta, string param_full_name);
 		
 		/*!
 			\brief get parameter data by name
@@ -543,6 +545,35 @@ class cpedsMCMC {
 		void setDumpEveryMCMCstate(bool tf) { _IOcontrol.dumpEveryMCMCstate=tf; }
 		void setOutputDir(string dirName);		
 		void setUpHillClimbing(bool tf) { _walk.uphillClimbing=tf; }
+		/*!
+			\brief specifies how the next step is chosen
+			\details 
+			@param tf - if true then the next step is chosen by probing the d(chisq)/dth_i in each dimension and setting the
+			next step in each direction that is proportional to the gradient in that direction. 
+
+			The step size is controlled by the value set by setInitialWalkStepSize() method and the size of the parameter space
+			along that direction.
+			
+			Setting this option to true, makes setUpHillClimbing() settings irrelevant,
+			and also resets the cooling scheme to cpedsMCMC::coolingScheme_none (the cooling will be done abruptly only when convergence is 
+			reached e.g. in cases when the steps are too big). In this mode the temperatures moderate the step sizes taken along the gradient.
+			The lower temperatures the smaller steps.
+
+
+			In this mode the rejections count is not incremented when poor X2 improvement is detected. ? is this useful
+			and also resets the current, initial and final temperatures to 1 since the temperatures and cooling are irrelevant in this mode.? is this useful
+		
+			\date May 5, 2018, 9:04:25 PM
+		*/
+		void setUpHillGradient(bool tf) { 
+			_walk.uphillGradient=tf; 
+			if (_walk.uphillGradient) {
+//				setTemperatures(1,1);
+//				setTemperature(getInitialTemperature());
+				setCoolingScheme(cpedsMCMC::coolingScheme_none);
+			}
+		}
+		bool getUphillGradient() const { return _walk.uphillGradient; }
 		void setChisqSignature(string sig) { _IOcontrol.chisqSignature=sig; }
 		const string getChisqSignature() const { return _IOcontrol.chisqSignature; }
 		/*!
@@ -1043,6 +1074,7 @@ class cpedsMCMC {
 		double* getStartingPoint();
 		
 		MClink getNextPoint(const MClink& current);
+		MClink getNextPointUphillGradient(const MClink& current);
 		
 		double getSign();
 		void generateInitialStepSizePDFsAfterBurnIn();

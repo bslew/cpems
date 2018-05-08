@@ -46,6 +46,8 @@ class MCparameterSpace : public QList<mscsFunction> {
 		QList<string>& names_latex() { return _MCparameterSpace_data.names_full; }
 		QList<string>& names_full() { return _MCparameterSpace_data.names_full; }
 		QList<string>& names() { return _MCparameterSpace_data.names; }
+		double length(long i) const { return at(i).getX(at(i).pointsCount()-1)-at(i).getX(0); }
+		double resolution(long i) const { return length(i)/at(i).pointsCount(); }
 		
 		
 		const MCparameterSpace& operator=(const MCparameterSpace& rhs);
