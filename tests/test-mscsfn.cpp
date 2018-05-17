@@ -111,6 +111,7 @@ int main(int argc, char** argv) {
 		printf("57 - test mscsFunction3dregc hole filling by degrade/prograde\n");
 		printf("58 - test MscsDataTimeData\n");
 		printf("59 - mscsFunction3dregc: test hdf5 string attribute\n");
+		printf("60 - shiftYwrtX\n");
 		exit(0);
 	}
 	long testNo=strtol(argv[1],NULL,10);
@@ -1273,6 +1274,18 @@ int main(int argc, char** argv) {
 			
 			break;
 		}
+		case 60:
+			f.newPoint(1,1);
+			f.newPoint(2,2);
+			f.newPoint(3,3);
+			f.newPoint(4,4);
+			f.save("inf");
+			f.shiftYwrtX(1);
+			f.save("inf.shift1");
+			f.shiftYwrtX(-1);
+			f.save("inf.shift1.shift-1");
+
+			break;
 		default:
 			break;
 	}

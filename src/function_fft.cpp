@@ -54,7 +54,7 @@ double _convolve;
 //bool _testModulation;
 
 
-long _Nx,_Ny,_Nz, _dimension, _sliceAndAverage, _calibrateByStdev, _movingWindowStep, _corrStep, _corrNum;
+long _Nx,_Ny,_Nz, _dimension, _sliceAndAverage, _calibrateByStdev, _movingWindowStep, _corrStep, _corrNum, _shiftPoints;
 long _skipFirst, _Nrows, _calculate1Dto3DpowerCalibFact;
 int _colx,_coly, _colx2, _coly2, _ref1, _ref2, _save3DboxSlicesPlane;
 string _outfile, _infile, _infile2, _format, _filterData, _prewhiten, _correlation, _outputFormat;
@@ -629,6 +629,12 @@ int main(int argc, char** argv) {
 			mscsFunction corr=calculateCorrelationFunction(f,f2,msgs); 
 			corr.setName("correlationFunction");
 			corr.save(_outfile);
+			exit(0);
+		}
+		
+		if (_shiftPoints!=0) {
+			f.shiftYwrtX(_shiftPoints);
+			f.save(_outfile);
 			exit(0);
 		}
 		
@@ -1217,6 +1223,8 @@ void parseOptions(int argc, char** argv) {
 		ValueArg<long> corrNum("","corrNum","Number of points in the correlation coefficient function used for calculating "
 				"cross-correlation function value."
 				"(default: 0 - means all data samples are used)",false,0,"long"); cmd.add(corrNum);
+		ValueArg<long> shiftPoints("","shiftPoints","shift Y values forward wrt X values by this number of points."
+				"(default: 0 - means not used)",false,0,"long"); cmd.add(shiftPoints);
 		
 		SwitchArg calcDistance1D("","calcDistance1D", "Calculate distance between point sets defined in the two files."
 				"If the point sets are defined for different x values interpolation is done in the second set to the x values from the"
@@ -1447,6 +1455,7 @@ void parseOptions(int argc, char** argv) {
 		_correlation=correlation.getValue();
 		_corrStep=corrStep.getValue();
 		_corrNum=corrNum.getValue();
+		_shiftPoints=shiftPoints.getValue();
 		_sliceAndAverage=sliceAndAverage.getValue();
 		_samplingRate=sampling.getValue();
 		_samplingRate2=sampling2.getValue();

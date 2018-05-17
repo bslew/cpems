@@ -10,7 +10,8 @@ setup(name='pyCPEDScommonFunctions',
       url='',
       package_dir = {'': ''},
       packages = ['pyCPEDScommonFunctions'],
-      scripts=['pyCPEDScommonFunctions/confidenceRange.py','pyCPEDScommonFunctions/cal2jd.py',]
+      scripts=['pyCPEDScommonFunctions/confidenceRange.py','pyCPEDScommonFunctions/cal2jd.py',
+               'pyCPEDScommonFunctions/jd2cal.py']
      )
 
 #       py_modules=['RadiometerData.RPG_tau','RadiometerData.RPG_Tatm'],

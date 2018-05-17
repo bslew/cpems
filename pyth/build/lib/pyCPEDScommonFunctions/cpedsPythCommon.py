@@ -18,6 +18,7 @@ import subprocess
 #from pylab import *
 import numpy as np
 from datetime import datetime, date, time
+from time import strftime
 import signal
 import h5py
 from astropy.time import Time
@@ -372,15 +373,19 @@ def getUDPdatagram(ip,port,N, multicast=False):
         
         
 
-def jd2cal(jd,precision=0):
+def jd2cal(jd,precision=0, DT_FMT='iso'):
     t=Time(jd, format='jd',precision=precision)
-#     t.format('%Y-%m-%d %H:%M:%S')
-#     t.format='unix'
-#     t.format(format)value=int(t.value)
-    t.format='iso'
-#     print t.jd1,t.jd2
-#     print t.value
-    return t.value
+
+    if DT_FMT=='iso':
+        t.format='iso'
+        return t.value
+    else:
+        if type(jd)==type(0.0):
+            dt=t.strftime(DT_FMT)
+        else:
+            dt=[x.tt.datetime.strftime(DT_FMT) for x in t]
+            
+        return np.asarray(dt)
 
 def u2cal(utm,precision=0):
     t=Time(utm, format='unix',precision=precision)
@@ -404,18 +409,24 @@ def cal2u(date_time_str):
 
 '''
 date_time_str in format %Y-%m-%d %H:%M:%S 
+convert given date_time_str string to JD and apply offset given in JD
 '''
-def cal2jd(date_time_str):
-    t=Time(date_time_str, format='iso',scale='utc')
-#     t.format('%Y-%m-%d %H:%M:%S')
-#     t.format='unix'
-#     t.format(format)value=int(t.value)
+def cal2jd(date_time_str, offset=0.0, DT_FMT='iso'):
+    # make time object from string with given format
+    if type(date_time_str)==type(list()):
+        
+        dt = [datetime.strptime(x, DT_FMT) for x in date_time_str]
+        # convert that string to iso format
+        dtiso=[x.strftime("%Y-%m-%d %H:%M:%S.%f") for x in dt]
+    else:
+        dt = datetime.strptime(date_time_str, DT_FMT)
+    
+        # convert that string to iso format
+        dtiso=dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+    t=Time(dtiso, format='iso',scale='utc')
     t.format='jd'
     
-#     print date_time_str,t.jd1,t.jd2,t.jd
-#     print t.jd
-#     print t.value
-    return t.jd
+    return t.jd+offset
 
 '''
 time_interval - float [JD]
