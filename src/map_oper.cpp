@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 	if (_cmd.contains("smoothG"))  { smoothG(_infiles);	}
 	if (_cmd.contains("smoothB"))  { smoothB(_infiles);	}
 	if (_cmd=="sub")  { subtract_files(_infiles);	}
-	if (_cmd=="mul")  { subtract_files(_infiles);	}
+	if (_cmd=="mul")  { multiply_files(_infiles);	}
 	if (_cmd=="mulV")  { multiply_value(_infiles,_const_value);	}
 	if (_cmd=="stat")  { print_map_stat(_infiles);	}
 	if (_cmd=="convPLANCKfits2Tnbin")  { convPLANCKfits2Tnbin(_infiles);	}
