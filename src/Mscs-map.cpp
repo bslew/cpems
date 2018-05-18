@@ -2468,13 +2468,13 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 	
 	long int i, j, corr_i;
 	double ang;
-	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
+//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
 	
-	cpedsList<double> separation_number;
+//	cpedsList<double> separation_number;
 	mscsCorrelationFunction Cth;
 	
-	Cth.setPointsNum(point_num_C_th);
-	separation_number.makeLength(point_num_C_th);
+//	Cth.setPointsNum(point_num_C_th);
+//	separation_number.makeLength(point_num_C_th);
 	
 	msgs->say(
 			"calculating C_th from theta=" + msgs->toStr(theta_min)

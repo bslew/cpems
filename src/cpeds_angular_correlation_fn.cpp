@@ -11,6 +11,9 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 	mscsFunction Cth;
 	double ang;
 	long i,j,corr_i;
+
+	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"
+			"is smaller than the bin resolution.\n");
 	
 	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
 	
@@ -30,7 +33,7 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 				corr_i = (long) round((ang - theta_min) / resolution);
 				separation_number[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
 				Cth[corr_i].rx() += ang;
-				Cth[corr_i].ry() += ds[i].val() * ds[j].val(); // the mask check is done in the condition above
+				Cth[corr_i].ry() += ds[i].val() * ds[j].val(); 
 			}
 		}
 		

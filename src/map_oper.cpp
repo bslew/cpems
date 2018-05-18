@@ -53,6 +53,7 @@ void multiply_value(vector<string> _infiles, double val);
 */
 void smooth_gaussian(mscsMap& map, double fwhm);
 void smoothG(vector<string> _infiles);
+void thresold_map(vector<string> _infiles,QString cmd);
 void print_map_stat(vector<string> _infiles);
 void convPLANCKfits2Tnbin(vector<string> _infiles);
 void convPLANCKfits_1sthdu1col_2Tnbin(vector<string> _infiles,string hdu);
@@ -81,6 +82,7 @@ int main(int argc, char **argv) {
 	if (_cmd=="convPLANCKfits2Tnbin")  { convPLANCKfits2Tnbin(_infiles);	}
 	if (_cmd=="convPLANCKfits_1sthdu1col_2Tnbin")  { convPLANCKfits_1sthdu1col_2Tnbin(_infiles,_hduName);	}
 	if (_cmd.contains("renside"))  { change_nside(_infiles);	}
+	if (_cmd.contains("thres"))  { thresold_map(_infiles,_cmd);	}
 
 	return 0;
 }
@@ -117,6 +119,7 @@ void parseOptions(int argc, char** argv) {
 				"mulV - with value specified with --val option\n"
 				"smoothG,fwhp [']\n"
 				"smoothB,beam_transfer_function_file\n"
+				"thres,ctrVal,low,high - reset maps values to low/high if T<thres/T>=thres respectively \n"
 				"stat\n"
 				"convPLANCKfits2Tnbin - to extract maps form PLANCK fits files from FULL SKY MAP hdus\n"
 				"convPLANCKfits_1sthdu1col_2Tnbin - to extract a single column data from hdu specified with --hdu option\n"
@@ -350,4 +353,28 @@ void change_nside(vector<string> _infiles) {
 		m1.savebinT(_outfile);
 		return;
 	}
+}
+/* ******************************************************************************************** */
+void thresold_map(vector<string> _infiles,QString cmd) {
+	mscsMap m1;
+	QStringList qsl=_cmd.split(",");
+	double ctr=qsl[1].toDouble(); 
+	double l=qsl[2].toDouble(); 
+	double h=qsl[3].toDouble(); 
+
+	for (unsigned long i = 0; i < _infiles.size(); i++) {
+		printf("loading %s\n",_infiles[i].c_str());
+		m1.loadbinT(_infiles[i]);
+		printf("thresholding map\n");
+		
+		for (long j = 0; j < m1.pixNum(); j++) {
+			if (m1.T()[j]>=ctr) m1.T()[j]=h;
+			else m1.T()[j]=l;
+		}
+		
+		printf("saving to file: %s\n",_outfile.c_str());
+		m1.savebinT(_outfile);
+		return;
+	}
+
 }
