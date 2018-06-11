@@ -2508,6 +2508,48 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 	return Cth;
 }
 
+/* ******************************************************************************************** */
+mscsCorrelationFunction mscsMap::calculate_Sth(double theta_min, double theta_max, double resolution) {
+	theta_min *= PI180;
+	theta_max *= PI180;
+	resolution *= PI180;
+	
+	long int i, j, corr_i;
+	double ang;
+//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
+	
+//	cpedsList<double> separation_number;
+	mscsCorrelationFunction Cth;
+	
+//	Cth.setPointsNum(point_num_C_th);
+//	separation_number.makeLength(point_num_C_th);
+	
+	msgs->say(
+			"calculating C_th from theta=" + msgs->toStr(theta_min)
+					+ ", to theta= " + msgs->toStr(theta_max), High);
+	if (!coordLoaded()) set_map_coord();
+	/* for (i=0;i<point_num_C_th;i++) { C_th[i][0] = C_th[i][1] = 0; separation_number[i] = 0;} // zeroing tables */
+
+	if (maskLoaded()==false) {
+		makekill_space_manager("make","m");
+		m()=1;
+	}
+	
+	
+	cpedsDirectionSet ds;
+	long pix_num = pixNum();
+	for (i = 0; i < pix_num; i++) {
+		if (get_m(i)!=0) {
+			ds.append(get_C(i));
+			ds.last().setVal(get_T(i));
+		}
+	}
+	Cth=cpeds_calculate_angular_correlation_fn(ds,theta_min, theta_max, resolution);
+	
+	return Cth;
+	
+}
+
 //************************************************************************
 
 

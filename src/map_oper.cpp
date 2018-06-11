@@ -32,7 +32,7 @@ bool _add;
 vector<string> _infiles;
 string _outfile;
 QString _cmd;
-string _hduName;
+string _hduName,_mask_file;
 double _const_value;
 
 void parseOptions(int argc, char** argv);
@@ -54,7 +54,7 @@ void multiply_value(vector<string> _infiles, double val);
 void smooth_gaussian(mscsMap& map, double fwhm);
 void smoothG(vector<string> _infiles);
 void thresold_map(vector<string> _infiles,QString cmd);
-void print_map_stat(vector<string> _infiles);
+void print_map_stat(vector<string> _infiles, string mask_file);
 void count_values(vector<string> _infiles, double val);
 void convPLANCKfits2Tnbin(vector<string> _infiles);
 void convPLANCKfits_1sthdu1col_2Tnbin(vector<string> _infiles,string hdu);
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 	if (_cmd=="sub")  { subtract_files(_infiles);	}
 	if (_cmd=="mul")  { multiply_files(_infiles);	}
 	if (_cmd=="mulV")  { multiply_value(_infiles,_const_value);	}
-	if (_cmd=="stat")  { print_map_stat(_infiles);	}
+	if (_cmd=="stat")  { print_map_stat(_infiles,_mask_file);	}
 	if (_cmd=="convPLANCKfits2Tnbin")  { convPLANCKfits2Tnbin(_infiles);	}
 	if (_cmd=="convPLANCKfits_1sthdu1col_2Tnbin")  { convPLANCKfits_1sthdu1col_2Tnbin(_infiles,_hduName);	}
 	if (_cmd.contains("renside"))  { change_nside(_infiles);	}
@@ -127,6 +127,7 @@ void parseOptions(int argc, char** argv) {
 				"convPLANCKfits_1sthdu1col_2Tnbin - to extract a single column data from hdu specified with --hdu option\n"
 				"",false,"","string"); cmd.add(oper);
 		
+		ValueArg<string> mask("m","mask","mask file",false,"","string"); cmd.add(mask);
 //		std::vector<string> allowedStr;
 //		allowedStr.push_back("none");
 //		allowedStr.push_back("incAIncH");
@@ -161,6 +162,7 @@ void parseOptions(int argc, char** argv) {
 //		_outdir = outdir.getValue(); 	if (_outdir=="") _outdir=".";
 		_hduName=hdu.getValue();
 		_const_value=const_value.getValue();
+		_mask_file = mask.getValue(); 
 		
 	} catch ( ArgException& e )
 	{ cout << "ERROR: " << e.error() << " " << e.argId() << endl; }
@@ -310,12 +312,13 @@ void smooth_gaussian(mscsMap& map, double fwhm) {
 	map.SH_synthesis(alm,lmax,bl,wf);
 }
 /***************************************************************************************/
-void print_map_stat(vector<string> _infiles) {
+void print_map_stat(vector<string> _infiles, string mask_file) {
 	mscsMap m1;
 	m1.setVerbosityLevel(High);
 	for (unsigned long i = 0; i < _infiles.size(); i++) {
 		printf("loading %s\n",_infiles[i].c_str());
 		m1.loadbinT(_infiles[i]);
+		if (mask_file!="") m1.loadbinm(mask_file);
 		m1.calculate_map_stats(1);
 	}
 }

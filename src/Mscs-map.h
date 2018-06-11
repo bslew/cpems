@@ -788,6 +788,20 @@ class mscsMap : public mscsObject {
   */
   mscsCorrelationFunction calculate_C_th(double theta_min, double theta_max, double resolution); // calculates the correlation function on a map // if resolution is -1 then it's taken from values set by read_binC_th_parameters (or txt of course too :)
 
+  /*!
+	\brief calculate S correlation statistic on the map
+	\details 
+    @param theta_min - the minimal angle in the correlation function [deg]
+    @param theta_max - the maximal angle in the correlation function [deg]
+    @param resolution - step in resolving the correlation function [deg]
+    @return calculates S correlation statistic
+    
+    S = 2 * <Ti mi Tj mj> / ( <Ti^2 mi mj> + <Tj^2 mi mj> )
+
+	\date Jun 11, 2018, 3:28:45 PM
+  */
+  mscsCorrelationFunction calculate_Sth(double theta_min, double theta_max, double resolution); // calculates the correlation function on a map // if resolution is -1 then it's taken from values set by read_binC_th_parameters (or txt of course too :)
+
   /* /\*! */
   /*   \brief extracts the power spectrum from the loaded map using MASTER method */
   /*   \details  */
