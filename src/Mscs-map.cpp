@@ -2516,19 +2516,13 @@ mscsCorrelationFunction mscsMap::calculate_Sth(double theta_min, double theta_ma
 	
 	long int i, j, corr_i;
 	double ang;
-//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
 	
-//	cpedsList<double> separation_number;
 	mscsCorrelationFunction Cth;
 	
-//	Cth.setPointsNum(point_num_C_th);
-//	separation_number.makeLength(point_num_C_th);
-	
 	msgs->say(
-			"calculating C_th from theta=" + msgs->toStr(theta_min)
+			"calculating S_th from theta=" + msgs->toStr(theta_min)
 					+ ", to theta= " + msgs->toStr(theta_max), High);
 	if (!coordLoaded()) set_map_coord();
-	/* for (i=0;i<point_num_C_th;i++) { C_th[i][0] = C_th[i][1] = 0; separation_number[i] = 0;} // zeroing tables */
 
 	if (maskLoaded()==false) {
 		makekill_space_manager("make","m");

@@ -800,7 +800,7 @@ class mscsMap : public mscsObject {
 
 	\date Jun 11, 2018, 3:28:45 PM
   */
-  mscsCorrelationFunction calculate_Sth(double theta_min, double theta_max, double resolution); // calculates the correlation function on a map // if resolution is -1 then it's taken from values set by read_binC_th_parameters (or txt of course too :)
+  mscsCorrelationFunction calculate_Sth(double theta_min, double theta_max, double resolution);
 
   /* /\*! */
   /*   \brief extracts the power spectrum from the loaded map using MASTER method */
