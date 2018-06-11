@@ -272,6 +272,7 @@ set (MSCSCORELIB_HEADERS
 	src/Mscs-gaussian_simulation.h
 	src/mscsMapINC.h
 	src/Mscsgrid.h
+	src/Mscs-minkowski-f.h
 	)		
 
 
@@ -288,6 +289,9 @@ set (MSCSCORELIB_SOURCES
 	src/Mscs-gaussian_simulation.cpp 
 	src/mscsMapINC.cpp 
 	src/Mscsgrid.cpp 
+	src/Mscs-minkowski-f.cpp
+	src/Mscs-map-minkowski-functionals.cpp
+	src/Mscs-map-differencial-calculus.cpp 
 	)		
 
 
@@ -338,7 +342,6 @@ set (MSCSFNLIB_SOURCES
 #	src/Mscs-topo-dodecahedron.c Mscs-topo-dodecahedron.h
 #	src/Mscs-map-minkowski-functionals.c src/Mscs-map-minkowski-functionals.h
 #	src/Mscs-map-differencial-calculus.c src/Mscs-map-differencial-calculus.h
-#	src/Mscs-map-differencial-calculus.cpp src/Mscs-map-differencial-calculus.h
 #	src/Mscs-transfer_function.c src/Mscs-transfer_function.h
 #	src/Mscs-matter_power_spectrum.cpp src/Mscs-matter_power_spectrum.h
 
@@ -411,6 +414,8 @@ add_executable(calcCMBflux src/calcCMBflux.cpp )
 add_executable(mkCMBfield src/mkCMBfield.cpp)
 add_executable(smoothPoints src/smoothPoints.cpp)
 add_executable(draw_maps src/draw_maps.cpp)
+add_executable(calculate_minkowski_v src/calculate_minkowski_v.cpp )
+
 #draw_mapsMPI	:
 #	MPIFLAG = -DGOMPI
 #	$(CCMPI) $(OFLAGS) $(MPIFLAG) $(DISTR_DIRcpp)/draw_maps.c -o $(OUTDIR)/draw_mapsMPI $(IFLAGS) $(LLFLAGS) $(LFLAGS) 
@@ -806,6 +811,7 @@ target_link_libraries(mkFractal ${LIBRARIES})
 target_link_libraries(mk_gauss_map ${LIBRARIES})
 target_link_libraries(map_oper ${LIBRARIES} ${LIBRARIES})
 target_link_libraries(calculate_Cth ${LIBRARIES} ${LIBRARIES})
+target_link_libraries(calculate_minkowski_v ${LIBRARIES} ${LIBRARIES})
 
 # Link Mscs test targets
 #
@@ -846,6 +852,7 @@ install (TARGETS
 	LMdataFit
 	smoothPoints
 	calculate_Cth
+	calculate_minkowski_v
 	DESTINATION bin)
 
 install(TARGETS

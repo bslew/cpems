@@ -63,8 +63,8 @@ bool _visibility, _vsa, _vsz, _vst, _thA, _lA, _Rc, _Wtot0, _Wtot, _Wk, _agea,
 		_cs, _ang, _q, _a, _Tcmb, _cmbfMax, _dAvsz, _Xvsz, _lbtdvsz, _partMass;
 bool _Wl, _Wr, _Wm, _Wb, _Wl0fit2flat, _rhoC, _boxesInField, _Wvsz, _lightCone,
 		_printGadgetUnits, _a0H0inv, _WkRTopHat, _Efact;
-bool _JD, _doJD2cal;
-double _JD2cal, _JDut1;
+bool _JD, _doJD2cal, _dou2cal;
+double _JD2cal, _JDut1, _u2cal;
 string _cal2JD;
 
 int _verbosity;
@@ -793,6 +793,14 @@ int main(int argc, char **argv) {
 	if (_cal2JD!="") {
 		printf("%.15lf\n",doCal2JDconversion(_cal2JD));
 	}
+	
+	if (_dou2cal) {
+		printf("%s\n",cpeds_unixToYMDhms(_u2cal).c_str());
+		
+//		rt4_time_date dt=cpeds_RT4_cal_date(_JD2cal);
+//		printf("%i-%i-%i\n",dt.year,dt.month,dt.day);
+//		printf("JD=%.14f\n",cpeds_rt4_JulianDay(dt.year,dt.month,dt.day));
+	}
 
 	return 0;
 }
@@ -1127,6 +1135,8 @@ void parseOptions(int argc, char** argv) {
 						"and to specify frequency use --freq", false);	cmd.add(RTres);
 		ValueArg<double> JD2cal("", "JD2cal","print date/time for given JD_UTC (default: dont do anything)", false, 0,"double");		cmd.add(JD2cal);
 		ValueArg<string> cal2JD("", "cal2JD","print JD_UTC given date/time. Eg. 2016-05-13-17-40-01.234 (default: dont do anything)", false, "","string");		cmd.add(cal2JD);
+		ValueArg<double> u2cal("", "u2cal","print date/time for given unix time (default: don't do anything). If set to -1"
+				"then the current time is taken", false, -1,"double");		cmd.add(u2cal);
 		SwitchArg JD("", "JD",	"print current julian date/time", false); cmd.add(JD);
 		ValueArg<double> JDut1("", "JDut1","provides JD_ut1 time for --radec2000toNow test (default: current time)", false, 0,"double");		cmd.add(JDut1);
 		
@@ -1286,6 +1296,8 @@ void parseOptions(int argc, char** argv) {
 		_JD=JD.getValue();
 		_JDut1=JDut1.getValue();
 		_JD2cal=JD2cal.getValue();
+		_u2cal=u2cal.getValue();
+		if (u2cal.isSet()) _dou2cal=true; else _dou2cal=false;
 		_doJD2cal=JD2cal.isSet();
 		_cal2JD=cal2JD.getValue();
 		

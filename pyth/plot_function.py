@@ -3271,6 +3271,8 @@ def makeFunctionPlot(inFile):
                         projectMap = Basemap(projection=option.proj, lon_0=option.lon0, lat_0=option.lat0)
                 lons, lats = meshgrid(lons, lats)
                 palette = getPalette()
+                palette = cm.get_cmap(option.CM[figIdx % len(option.CM)], int(option.cbLabelsNum))
+
     #            palette = matplotlib.cm.jet
                 palette.set_over(option.setAbove)  # , 1.0)
                 palette.set_under(option.setBelow, 1)
@@ -3358,7 +3360,7 @@ def makeFunctionPlot(inFile):
                         for j in range(len(meridians)):
                             txtl.append(meridians[j]);
                             txtb.append(-5);
-                            txt.append('%1.1f' % (meridians[j]))
+                            txt.append('%1.0f' % (meridians[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
                             xpt, ypt = projectMap(-txtl[j], txtb[j])
                             text(xpt, ypt, txt[j], fontsize=option.MPfontSize)
@@ -3368,19 +3370,19 @@ def makeFunctionPlot(inFile):
                         for j in range(len(meridians)):
                             txtl.append(meridians[j]);
                             txtb.append(1);
-                            txt.append(' %1.1f ' % (meridians[j]))
+                            txt.append(' %1.0f ' % (meridians[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
                             xpt, ypt = projectMap(-txtl[j], txtb[j])
                             if txtl[j] > 90 and txtl[j] < 270:
                                 if txtl[j] > 0 and txtl[j] <= 180:
-                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, horizontalalignment='right', verticalalignment='bottom')
+                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, color=option.MPcolor, horizontalalignment='right', verticalalignment='bottom')
                                 else:
-                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, horizontalalignment='left', verticalalignment='bottom')
+                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, color=option.MPcolor, horizontalalignment='left', verticalalignment='bottom')
                             else:
                                 if txtl[j] > 0 and txtl[j] <= 180:
-                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, horizontalalignment='right', verticalalignment='top')
+                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, color=option.MPcolor, horizontalalignment='right', verticalalignment='top')
                                 else:
-                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, horizontalalignment='left', verticalalignment='top')
+                                    text(xpt, ypt, txt[j], fontsize=option.MPfontSize, color=option.MPcolor, horizontalalignment='left', verticalalignment='top')
                     
                     else:
                         projectMap.drawmeridians(-meridians, labels=[0, 0, 0, 1], color=option.MPcolor)
@@ -3394,7 +3396,7 @@ def makeFunctionPlot(inFile):
                                     mltmp.append('')
                                 txt.append(u'%s\N{DEGREE SIGN}%s' % (mltmp[0], mltmp[1]))
                             else:
-                                txt.append('%1.1f' % (meridians[j]))
+                                txt.append('%1.0f' % (meridians[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
                             xpt, ypt = projectMap(-txtl[j], txtb[j])
                             text(xpt, ypt, txt[j], fontsize=option.MPfontSize)
@@ -3411,10 +3413,10 @@ def makeFunctionPlot(inFile):
                         for j in range(len(parallels)):
                             txtl.append(0);
                             txtb.append(parallels[j]);
-                            txt.append('%1.1f' % (parallels[j]))
+                            txt.append('%1.0f' % (parallels[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
                             xpt, ypt = projectMap(-txtl[j], txtb[j])
-                            text(xpt, ypt, txt[j], fontsize=option.MPfontSize)
+                            text(xpt, ypt, txt[j], color=option.MPcolor, fontsize=option.MPfontSize)
                         if len(parallels) > 0:
                             projectMap.drawparallels(parallels, labels=[1, 0, 0, 0], fontsize=option.MPfontSize, color=option.MPcolor)
 #                     elif option.proj=='lcc' or option.proj=='stere':
@@ -3428,7 +3430,7 @@ def makeFunctionPlot(inFile):
                         for j in range(len(parallels)):
                             txtl.append(0);
                             txtb.append(parallels[j]);
-                            txt.append('%1.1f' % (parallels[j]))
+                            txt.append('%1.0f' % (parallels[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
                             xpt, ypt = projectMap(-txtl[j], txtb[j])
                             text(xpt, ypt, txt[j], fontsize=option.MPfontSize)
@@ -3453,10 +3455,16 @@ def makeFunctionPlot(inFile):
                 if option.colorbar:
                     cb = colorbar(cs)
 #                     cb.set_label(option.zlabel)
-                    cb.set_label(option.zlabel[figIdx % len(option.zlabel)])
-    
+#                     cb.set_label(option.zlabel[figIdx % len(option.zlabel)])
+                    cb.set_label(option.zlabel[figIdx % len(option.zlabel)], size=option.fontSizeCM[figIdx % len(option.fontSizeCM)])
+
+                    if option.fontSizeCM[figIdx % len(option.fontSizeCM)] > 0:
+                        cb.ax.tick_params(labelsize=option.fontSizeCM[figIdx % len(option.fontSizeCM)])
+
                 if option.interactive:
                     fig.canvas.mpl_connect('pick_event', onMapPick)
+
+
     
                 
             ###############################################################################################
@@ -3634,7 +3642,8 @@ def makeFunctionPlot(inFile):
                 if option.colorbar and option.CM[figIdx % len(option.CM)]!='None':
                     cb = colorbar()
 #                     cb.set_label(option.zlabel)
-                    cb.set_label(option.zlabel[figIdx % len(option.zlabel)])
+                    cb.set_label(option.zlabel[figIdx % len(option.zlabel)], size=option.fontSizeCM[figIdx % len(option.fontSizeCM)])
+
 
                 axes(ax)
                 if option.xlabel[i % len(option.xlabel)] != "None":
@@ -3664,6 +3673,7 @@ def makeFunctionPlot(inFile):
 
 
 
+            if option.plotType[plotTypeIdx] == 'sphere' or option.plotType[plotTypeIdx] == 'map':
 
                 #
                 # circles            
@@ -3681,6 +3691,7 @@ def makeFunctionPlot(inFile):
                     if option.title[figIdx % len(option.title)] != "":
                         tit = option.title[figIdx % len(option.title)]
                         title(tit, fontsize=option.fontSizeTitle, horizontalalignment=option.titleAlignH, verticalalignment=option.titleAlignV)
+
 
                 #
                 # extra texts

@@ -569,6 +569,16 @@ void cpeds_JDToYMDhms(double JD,long* year, long* month, long* day, long* hour, 
 	\author Bartosz Lew
 */
 string cpeds_JDToYMDhms(double JD=-1e9, string fmt="%li-%02li-%02li, %02li:%02li:%06.3lf");
+
+/*!
+	\brief convert unix time stamp to date
+	\details 
+	@param u - unix time stamp (assumed to be localtime in seconds)
+	@return date string 
+
+	\date Jun 4, 2018, 9:44:42 AM
+*/
+string cpeds_unixToYMDhms(double u=-1, string fmt="%Y-%m-%d %H:%M:%S");
 /***************************************************************************************/
 /*!
 	\brief converts the given JD date for the UT time to the corresponding year.

@@ -49,7 +49,9 @@ parser = OptionParser(description=programDescription)
 parser.add_option("-c", "--col", dest="col", default=0, type="int", help='column in data file to look for date. ', metavar="VAL")
 parser.add_option("-o", "", dest="outfile", default="out", type="string", help='output file name', metavar="STRING")
 parser.add_option("", "--offset", dest="offset", default=0, type="float", help='time offset to apply to the converted times [JD]', metavar="VALUE")
-parser.add_option("", "--fmt", dest="fmt", default="iso", type="string", help='input file time format (default: yyyy-mm-dd H:M:S)', metavar="STRING")
+parser.add_option("", "--fmt", dest="fmt", default="iso", type="string", help='''input file time 
+    format (default: %Y-%m-%d %H:%M:%S). To read time with fraction of seconds you can used eg.
+    %Y %m %d %H %M %S.%f''', metavar="STRING")
 
 
 # switches

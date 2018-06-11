@@ -34,6 +34,7 @@
 /* #include "Mscs-colormap.h" */
 #include "Mscs-alms.h"
 #include "ccSHT3.h"
+#include <vector>
 
 
 
@@ -991,7 +992,7 @@ class mscsMap : public mscsObject {
   mscsFunction calculate_minkowski_v1(long thres_num, double min, double max);
   mscsFunction calculate_minkowski_v2(long thres_num, double min, double max);
 /*   minkowski_fs* calculate_minkowski_v0v1v2(long thres_num, double min, double max); */
-  void calculate_minkowski_v0v1v2(long thres_num, double min, double max, bool calc_derivs, bool calc_grads, mscsMap** derivs, double** grads, mscsFunction& f1, mscsFunction& f2, mscsFunction& f3);
+  vector<mscsFunction> calculate_minkowski_v0v1v2(long thres_num, double min, double max);
 
 /*   void test_minkowski_circ(); */
 
@@ -1024,8 +1025,18 @@ class mscsMap : public mscsObject {
   /*********************************************/
   /* // MINKOWSKI FUNCTIONAL RELATED FUNCTIONS */
   /*********************************************/
-  double Ngrmu(double mu, double nsig, double sigma0);
-  double Nlemu(double mu);
+  /*!
+	\brief count pixels in temperature map above threshold mu
+	\details 
+	@param mu - threshold
+	@param nsig - not used
+	@param sigma0 - not used
+	@return pixel count
+
+	\date Jun 7, 2018, 7:34:14 PM
+   */
+  long Ngrmu(double mu, double nsig, double sigma0);
+  long Nlemu(double mu);
   void Ngrmu(double mu, long* counts);
   void Ngrmu(double *t, long thres_num, long** counts);
   void Ninthresmu(double *mapl, double *t, long thres_num, double** counts);
@@ -1045,7 +1056,21 @@ class mscsMap : public mscsObject {
   /*************/
   /* OPERATORS */
   /*************/
-  const mscsMap& operator=(const mscsMap& rhs) {   if (this != &rhs) { map=rhs.map; mask=rhs.mask; mapInfo=rhs.mapInfo; this->mscsObject::operator=(rhs); } return *this; }
+  const mscsMap& operator=(const mscsMap& rhs) {   
+	  if (this != &rhs) { 
+		  map=rhs.map; 
+		  mask=rhs.mask; 
+		  mapInfo=rhs.mapInfo; 
+		  loaded=rhs.loaded; 
+		  r2n_conv=rhs.r2n_conv;
+		  n2r_conv=rhs.n2r_conv;
+		  setLoadedMaskFileName(rhs.getLoadedMaskFileName());
+		  setLoadedMapFileName(rhs.getLoadedMapFileName());
+
+		  this->mscsObject::operator=(rhs); 
+	  }
+	  return *this; 
+  }
 
  protected:
 /* ---------------------------------------------------------------------------------------------------- */

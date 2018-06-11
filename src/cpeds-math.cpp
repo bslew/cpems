@@ -14,6 +14,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <string>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -543,6 +544,33 @@ string cpeds_JDToYMDhms(double JD, string fmt) {
 	string str=buff;
 	//	printf("cpeds_JDToYMDhms: DEBUG: |%s|\n",str.c_str());
 	return str;
+}
+/* ******************************************************************************************** */
+string cpeds_unixToYMDhms(double u, string fmt) {
+	time_t t;
+	long msec=round((u-floor(u))*1000);
+	printf("%.15lf %li %li\n",u,floor(u),msec);
+	if (u==-1) {
+		t = time(0);
+	}
+	else {
+		t = static_cast<time_t> (u);
+	}
+
+	long YYYY,MM,DD,h,m;
+	double s;
+	
+	struct tm *tm = localtime(&t);
+
+	char buff[100];
+	bzero(buff,100);
+	strftime(buff, sizeof(buff), fmt.c_str(), tm);
+	
+	string str=buff;
+	stringstream ss;
+	ss<< str << "." << setfill('0') << setw(3) << msec;
+	//	printf("cpeds_unixToYMDhms: DEBUG: |%s|\n",str.c_str());
+	return ss.str();	
 }
 /***************************************************************************************/
 long cpeds_JDToYear(double JD) {

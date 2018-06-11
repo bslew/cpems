@@ -414,8 +414,15 @@ convert given date_time_str string to JD and apply offset given in JD
 def cal2jd(date_time_str, offset=0.0, DT_FMT='iso'):
     # make time object from string with given format
     if type(date_time_str)==type(list()):
-        
-        dt = [datetime.strptime(x, DT_FMT) for x in date_time_str]
+
+#         for x in date_time_str:
+#             print x
+#             dt=datetime.strptime(x, DT_FMT)
+            
+        try:
+            dt = [datetime.strptime(x, DT_FMT) for x in date_time_str]
+        except:
+            print 'cannot convert: ',x
         # convert that string to iso format
         dtiso=[x.strftime("%Y-%m-%d %H:%M:%S.%f") for x in dt]
     else:

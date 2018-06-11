@@ -11,7 +11,7 @@ setup(name='pyCPEDScommonFunctions',
       package_dir = {'': ''},
       packages = ['pyCPEDScommonFunctions'],
       scripts=['pyCPEDScommonFunctions/confidenceRange.py','pyCPEDScommonFunctions/cal2jd.py',
-               'pyCPEDScommonFunctions/jd2cal.py']
+               'pyCPEDScommonFunctions/jd2cal.py', 'pyCPEDScommonFunctions/join_interpolate.py']
      )
 
 #       py_modules=['RadiometerData.RPG_tau','RadiometerData.RPG_Tatm'],

@@ -268,45 +268,12 @@ void mscsMap::clone(const mscsMap &orig) {
 	// long i;
 
 	msgs->say("cloning from object: " + orig.getName(), Medium);
-	// copying map, mask and alm flags
-	// set_nside(orig.nside());
-	/* set_alms_lmax(orig.lmax);  */
-	loaded = orig.loaded; //mask_loaded  = orig.mask_loaded; coord_loaded = orig.coord_loaded; Nobs_loaded = orig.Nobs_loaded;
-
-	mapInfo = orig.mapInfo;
-	mask = orig.mask;
-	setLoadedMaskFileName(orig.getLoadedMaskFileName());
-	setLoadedMapFileName(orig.getLoadedMapFileName());
+//
+//	mapInfo = orig.mapInfo;
+//	mask = orig.mask;
+//	map = orig.map;
 	
-	map = orig.map;
-	
-	
-	// copying map and alms data
-	/*   if (map_loaded == 1) { map_loaded = 0; makekill_space_manager("make","T",1);   for (i=0;i<pix_num;i++) map->T[i] = orig.map->T[i]; }  */
-	/*   if (mask_loaded == 1) { mask_loaded = 0; makekill_space_manager("make","m",1);   for (i=0;i<pix_num;i++) map->m[i] = orig.map->m[i]; }  */
-	/*   if (coord_loaded == 1) { coord_loaded = 0; makekill_space_manager("make","C",1);   for (i=0;i<pix_num;i++) map->n[i] = orig.map->n[i]; }  */
-	/*   if (Nobs_loaded == 1) { Nobs_loaded = 0; makekill_space_manager("make","N",1);   for (i=0;i<pix_num;i++) map->N[i] = orig.map->N[i]; }  */
-	/*   if (alms_loaded == 1) { alms_loaded = 0; makekill_space_manager("make","F",1);  for (i=0;i<alms_num;i++) alm[i] = orig.alm[i]; } */
-
-	// for safety reasons it better to check  if the memory is allocated, not the state of the flag so:
-	/* if (orig.map->T != NULL) { loaded.T = 0; makekill_space_manager("make","T",1);   for (i=0;i<pix_num;i++) map->T[i] = orig.map->T[i]; loaded.T  = orig.loaded.T; }  */
-	/* if (orig.map->Q != NULL) { loaded.Q = 0; makekill_space_manager("make","Q",1);   for (i=0;i<pix_num;i++) map->Q[i] = orig.map->Q[i]; loaded.Q  = orig.loaded.Q; }  */
-	/* if (orig.map->U != NULL) { loaded.U = 0; makekill_space_manager("make","U",1);   for (i=0;i<pix_num;i++) map->U[i] = orig.map->U[i]; loaded.U  = orig.loaded.U; }  */
-	/* if (orig.map->V != NULL) { loaded.V = 0; makekill_space_manager("make","V",1);   for (i=0;i<pix_num;i++) map->V[i] = orig.map->V[i]; loaded.V  = orig.loaded.V; }  */
-	/* if (orig.map->m != NULL) { loaded.m = 0; makekill_space_manager("make","m",1);   for (i=0;i<pix_num;i++) map->m[i] = orig.map->m[i]; loaded.m  = orig.loaded.m; }  */
-	/* if (orig.map->n != NULL) { loaded.n = 0; makekill_space_manager("make","C",1);   for (i=0;i<pix_num;i++) map->n[i] = orig.map->n[i]; loaded.n = orig.loaded.n; }  */
-	/* if (orig.map->N != NULL) { loaded.N = 0; makekill_space_manager("make","N",1);   for (i=0;i<pix_num;i++) map->N[i] = orig.map->N[i]; loaded.N = orig.loaded.N; }  */
-	/* if (orig.alms_loaded == 1) { alms_loaded = 0; makekill_space_manager("make","F",1);  for (i=0;i<alms_num;i++) alm[i] = orig.alm[i]; alms_loaded = orig.alms_loaded; } */
-
-	/* strcpy(data_path,orig.data_path);  */
-
-	// copying minkowski parameters
-	/* minkowski_level_num_area = orig.minkowski_level_num_area; */
-	/* minkowski_level_num_circ = orig.minkowski_level_num_circ; */
-	/* minkowski_level_num_genus = orig.minkowski_level_num_genus; */
-
-	// rediriving map statistics
-	/* if (orig.map->T != NULL) {   check_mask();    calculate_map_stats(0);} */
+	(*this)=orig;
 
 }
 
@@ -393,10 +360,10 @@ int mscsMap::load_conv_tabs(long ns, string type) {
 			return ret;
 		}
 		msgs->say("success", Low);
-		if (n2r_conv.size() != cpeds_get_healpix_pix_num(nside())) {
+		if (r2n_conv.size() != cpeds_get_healpix_pix_num(nside())) {
 			msgs->error(
 					"The conversion table size is invalid (" + msgs->toStr(
-							n2r_conv.size()) + ", should be: " + msgs->toStr(
+							r2n_conv.size()) + ", should be: " + msgs->toStr(
 							cpeds_get_healpix_pix_num(nside()))
 							+ "). Will not load", Low);
 			r2n_conv.clear();
@@ -435,6 +402,8 @@ void mscsMap::kill_conv_tabs() {
 
 // void mscsMap::conv_ring2nest(mscsMap * map_loc) {
 void mscsMap::conv_ring2nest() {
+	
+	if (ordering()==mscsMap::nested) return;
 	long int i;
 	mscsMap maptmp(*this);
 	// if (map_loc==NULL) map_loc=this;
@@ -496,11 +465,14 @@ void mscsMap::conv_ring2nest() {
 
 	// if (map_loc==this) *this=maptmp;
 	// *map_loc=maptmp;
+	set_ordering(mscsMap::nested);
 }
 //************************************************************************
 // converts the map from the nest ordering to ring ordering using CPEDS functions or precalculated conversion arrays
 // void mscsMap::conv_nest2ring(map_structure * map_loc) {
 void mscsMap::conv_nest2ring() {
+	if (ordering()==mscsMap::ring) return;
+
 	long int i;
 	mscsMap maptmp(*this);
 	// if (map_loc==NULL) map_loc=&map;
@@ -521,7 +493,7 @@ void mscsMap::conv_nest2ring() {
 			kill_conv_tabs();
 		}
 		if (load_conv_tabs(nside(), "n2r") == 0) {
-			msgs->say("got it\n", Low);
+			msgs->say("N2R conversion tabs loaded", Low);
 		} // if there is no file then we have to do all the job
 		else {
 			msgs->say(
@@ -562,6 +534,7 @@ void mscsMap::conv_nest2ring() {
 
 	// if (map_loc==map_ptr) map=maptmp;
 	// *map_loc = maptmp;
+	set_ordering(mscsMap::ring);
 }
 
 //************************************************************************
@@ -1906,7 +1879,7 @@ void mscsMap::calculate_map_stats(int output) {
 		mapInfo.imaxT = idx[mapInfo.imaxT];
 		get_moments_of_distribution(tmp, &mapInfo.meanT, &mapInfo.varianceT,
 				&mapInfo.skewnessT, &mapInfo.kurtosisT);
-		mask.masked_pix_num = pix_num - j;
+		mask.masked_pix_num = pix_num - idx.size();
 		mask.f_sky = (double) mask.masked_pix_num / (double) pix_num;
 		
 		
@@ -3271,7 +3244,8 @@ void mscsMap::copy_map(mscsMap *map_from, mscsMap *map_to,
 	long i;
 	long N;
 	// make sure to hava enough space in the destination map
-	*map_to = *map_from;
+//	*map_to = *map_from; // this assignment is too much, it 
+						 // screws up the map flags and other internal data so don't do that
 	// convert using the conversion array
 	if (conv_tab != NULL) {
 		N = map_from->T().size();

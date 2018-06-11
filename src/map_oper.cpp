@@ -55,6 +55,7 @@ void smooth_gaussian(mscsMap& map, double fwhm);
 void smoothG(vector<string> _infiles);
 void thresold_map(vector<string> _infiles,QString cmd);
 void print_map_stat(vector<string> _infiles);
+void count_values(vector<string> _infiles, double val);
 void convPLANCKfits2Tnbin(vector<string> _infiles);
 void convPLANCKfits_1sthdu1col_2Tnbin(vector<string> _infiles,string hdu);
 void change_nside(vector<string> _infiles);
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
 	if (_cmd=="convPLANCKfits_1sthdu1col_2Tnbin")  { convPLANCKfits_1sthdu1col_2Tnbin(_infiles,_hduName);	}
 	if (_cmd.contains("renside"))  { change_nside(_infiles);	}
 	if (_cmd.contains("thres"))  { thresold_map(_infiles,_cmd);	}
+	if (_cmd=="count")  { count_values(_infiles,_const_value);	}
 
 	return 0;
 }
@@ -315,6 +317,21 @@ void print_map_stat(vector<string> _infiles) {
 		printf("loading %s\n",_infiles[i].c_str());
 		m1.loadbinT(_infiles[i]);
 		m1.calculate_map_stats(1);
+	}
+}
+/* ******************************************************************************************** */
+void count_values(vector<string> _infiles, double val) {
+	mscsMap m1;
+	long n=0;
+	m1.setVerbosityLevel(High);
+	for (unsigned long i = 0; i < _infiles.size(); i++) {
+		printf("loading %s\n",_infiles[i].c_str());
+		m1.loadbinT(_infiles[i]);
+		m1.calculate_map_stats(1);
+		for (long i = 0; i < m1.pixNum(); i++) {
+			if (m1.T(i)==val) n++;
+		}
+		printf("number of %lE values in the map: %li\n",val,n);
 	}
 }
 /***************************************************************************************/

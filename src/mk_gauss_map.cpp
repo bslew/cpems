@@ -36,16 +36,20 @@ using namespace TCLAP;
 
 
 string _outFile,_outDir,_mask_file, _Cl, _alms, _smf, _lowls, _noiseFile;
-bool _from_Cl, _from_alms,_save_alms,_save_Cl,_masked, _nol01, _unit_alms,_check,_white_noise,_extract_l,_tmp_block,_pixtf,_fastsims,_Folmax,_rrange;
+bool _from_Cl, _from_alms,_save_alms,_save_Cl,_masked, _nol01, _unit_alms,_check;
+bool _white_noise,_extract_l,_tmp_block,_pixtf,_fastsims,_Folmax,_rrange;
 long _lmax,_nside,_lmaxP,_wn_method,_extract_l_size,*_extract_ls,_loaduptol,_rr1,_rr2,_seed_offset;
 double _smG, _ATfactor,_wns,_wnm,_Clcalib, _gaussianBeamFWHP;
+string _uniform_noise, _uniform_noise_int;
 bool _Clconv;
 
 string _programVersionString;
 
 void parseOptions(int argc, char** argv);
 string getProgramVersionString();
-
+void mkUniformNoise(string uniform_noise, mscsMap& sim, cpedsMsgs& msgs);
+void mkUniformNoiseMap(string uniform_noise, mscsMap& sim, cpedsMsgs& msgs);
+void mkUniformIntegerNoiseMap(string uniform_noise, mscsMap& sim, cpedsMsgs& msgs);
 /*!
 	\brief adapts resolution of noise map to the specified nside
 	\details 
@@ -108,7 +112,14 @@ int main(int argc, char **argv) {
 	//	    return 0;
 	//	  }
 	
-	
+	if (_uniform_noise!="") {
+		mkUniformNoiseMap(_uniform_noise, sim,msgs);
+		exit(0);
+	}
+	if (_uniform_noise_int!="") {
+		mkUniformIntegerNoiseMap(_uniform_noise_int, sim,msgs);
+		exit(0);
+	}
 	
 	// check out about the power spectrum of the map
 	
@@ -330,7 +341,13 @@ void parseOptions(int argc, char** argv) {
 		
 		//		SwitchArg unit_alms("","unit_alms", "whether or not make unitary all alms (default: false)", false);	cmd.add(unit_alms);
 		//		SwitchArg check("","check", "whether or not make fwd STH to check resluts (default: false)", false);	cmd.add(check);
-		//		SwitchArg white_noise("","white_noise", "makes gaussian real space white noise map with variace --wns (default: false)", false);	cmd.add(white_noise);
+//		SwitchArg white_noise("","white_noise", "makes gaussian real space white noise map with variace --wns (default: false)", false);	cmd.add(white_noise);
+		ValueArg<string> uniform_noise("","uniform_noise", "makes uniform real space white noise map. "
+				"You should specify"
+				"min and max values in the map (default: '')", false, "", "string");	cmd.add(uniform_noise);
+		ValueArg<string> uniform_noise_int("","uniform_noise_int", "makes uniform real space white noise map of integer "
+				"values. You should specify"
+				"min and max values in the map (default: '')", false, "","string");	cmd.add(uniform_noise_int);
 		//		SwitchArg tmp_block("","tmp", "perform the special temporary block in the program and quit", false);	cmd.add(tmp_block);
 		//		SwitchArg pixtf("","pixtf", "use pix.tf. for given resolution", false);	cmd.add(pixtf);
 		//		SwitchArg fastsims("","fastsims", "use when the simsulation will be repeatedly done faster than a second to help avoind dwawing the same set of numbers from GRF", false);	cmd.add(fastsims);
@@ -383,6 +400,8 @@ void parseOptions(int argc, char** argv) {
 		
 		
 		//		_white_noise = white_noise.getValue();
+		_uniform_noise = uniform_noise.getValue();
+		_uniform_noise_int = uniform_noise_int.getValue();
 		//		_wns = wns.getValue();
 		//		_wnm = wnm.getValue();
 		//		_wn_method = wn_method.getValue();
@@ -455,3 +474,37 @@ void fitNoiseToResolution(mscsMap& map, long target_nside) {
 	
 	
 }
+/* ******************************************************************************************** */
+void mkUniformNoise(string uniform_noise, mscsMap& sim, cpedsMsgs& msgs) {
+	cpedsRNG rns("uniform");
+	QString qs=uniform_noise.c_str();
+	QStringList qsl=qs.split(',');
+	if (qsl.size()!=2) {
+		msgs.error("You should provide range",High);
+		exit(-1);
+	}
+	rns.setMinMax(qsl[0].toDouble(),qsl[1].toDouble());
+	
+	sim.T()=rns.getRNs(sim.pixNum());
+	
+}
+
+/* ******************************************************************************************** */
+void mkUniformNoiseMap(string uniform_noise, mscsMap& sim, cpedsMsgs& msgs) {
+	mkUniformNoise(uniform_noise,sim,msgs);
+	msgs.say("Saving temperature map",High);
+	sim.savebinT(_outFile+"-Tn-bin");
+	msgs.say("done",Low);
+}
+
+/* ******************************************************************************************** */
+void mkUniformIntegerNoiseMap(string uniform_noise, mscsMap& sim, cpedsMsgs& msgs) {
+	mkUniformNoise(uniform_noise,sim,msgs);
+	for (long i = 0; i < sim.pixNum(); i++) {
+		sim.T()[i]=round(sim.T()[i]);
+	}
+	msgs.say("Saving temperature map",High);
+	sim.savebinT(_outFile+"-Tn-bin");
+	msgs.say("done",Low);
+}
+
