@@ -108,7 +108,6 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 
 /* ******************************************************************************************** */
 mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet ds, double theta_min, double theta_max, double resolution) {
-/*
 	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"
 			"is smaller than the bin resolution.\n");
 	
@@ -118,7 +117,11 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 	
 	mscsFunction Cth;
 	Cth.setPointsNum(point_num_C_th);
+	cpedsList<double> auto_term1,auto_term2;
+	
 	separation_number.makeLength(point_num_C_th);
+	auto_term1.makeLength(point_num_C_th);
+	auto_term2.makeLength(point_num_C_th);
 
 	long i,j,Ndone=0;
 	long pix_num = ds.size();
@@ -126,29 +129,30 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 	{
 		double ang=0;
 		long corr_i=0;
-		mscsFunction cross_term=Cth;
-		mscsFunction auto_term1=Cth;
-		mscsFunction auto_term2=Cth;
+		mscsFunction cross_term_priv=Cth;
+//		mscsFunction auto_term1=Cth;
+//		mscsFunction auto_term2=Cth;
 		cpedsList<double> separation_number_priv=separation_number;
+		cpedsList<double> auto_term1_priv=separation_number;
+		cpedsList<double> auto_term2_priv=separation_number;
 		
 #pragma omp for schedule(dynamic)
 		for (long i = 0; i < pix_num-1; i++) {
 			cpedsDirection d1=ds[i];
-			auto_term1[corr_i].rx()++;
-			auto_term1[corr_i].ry()+=d1.val()*d1.val();
 			for (long j = i+1; j < pix_num; j++) {
 				cpedsDirection d2=ds[j];
-				auto_term2[corr_j].rx()++;
-				auto_term2[corr_j].ry()+=d2.val()*d2.val();
-
-				
 				ang=d1.angle(d2);
 				
 				if ((ang >= theta_min) && (ang <= theta_max)) {
 					corr_i = (long) round((ang - theta_min) / resolution);
 					separation_number_priv[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
-					cross_term[corr_i].rx() += ang;
-					cross_term[corr_i].ry() += d1.val() * d2.val(); 
+					cross_term_priv[corr_i].rx() += ang;
+					cross_term_priv[corr_i].ry() += d1.val() * d2.val(); 
+
+					auto_term1_priv[corr_i]+=d1.val()*d1.val();
+					auto_term2_priv[corr_i]+=d2.val()*d2.val();
+
+				
 				}
 			}
 #pragma omp critical
@@ -165,9 +169,11 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 #pragma omp critical
 		{
 			for (long k=0; k<point_num_C_th; k++) {
-				Cth[k].rx()+=cross_term[k].rx();
-				Cth[k].ry()+=cross_term[k].ry();
+				Cth[k].rx()+=cross_term_priv[k].rx();
+				Cth[k].ry()+=cross_term_priv[k].ry();
 				separation_number[k]+=separation_number_priv[k];
+				auto_term1[k]+=auto_term1_priv[k];
+				auto_term2[k]+=auto_term2_priv[k];
 			}
 		}
 	}
@@ -178,7 +184,10 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 	for (long i = 0; i < point_num_C_th; i++) {
 //		if (separation_number[i]>0) {
 			Cth[i].rx() *= PI180inv/separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
-			Cth[i].ry() /= separation_number[i]; // normalization of C(th)
+			Cth[i].ry() *= 2.0/separation_number[i]; // normalization of C(th)
+			auto_term1[i]/=separation_number[i];
+			auto_term2[i]/=separation_number[i];
+			Cth[i].ry() /= (auto_term1[i] + auto_term2[i]);
 //		}
 	}
 	
@@ -188,5 +197,4 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 	
 	return Cth;
 	
-*/
 }

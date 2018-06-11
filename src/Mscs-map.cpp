@@ -2538,7 +2538,7 @@ mscsCorrelationFunction mscsMap::calculate_Sth(double theta_min, double theta_ma
 			ds.last().setVal(get_T(i));
 		}
 	}
-	Cth=cpeds_calculate_angular_correlation_fn(ds,theta_min, theta_max, resolution);
+	Cth=cpeds_calculate_angular_S_correlation_statistic(ds,theta_min, theta_max, resolution);
 	
 	return Cth;
 	

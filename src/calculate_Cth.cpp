@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 	  Cth=map.calculate_C_th(_minang,_maxang,_res);
 	  Cth/=map.get_varianceT();
   }
-  if (_CthType=="Sstat") Cth=map.calculate_C_th(_minang,_maxang,_res);
+  if (_CthType=="Sth") Cth=map.calculate_Sth(_minang,_maxang,_res);
 //  outfile = _input_file+_outfile;
   Cth.save(_outfile);
 
@@ -82,7 +82,7 @@ void parseOptions(int argc, char** argv) {
 			"hist - w(th=ang(n1,n2)) = f(n1)*f(n2)/count_in_bin,"
 			"histNormVar - like hist but normalized by variance"
 			"DDRR - w(th=ang(n1,n2)) = DD/RR-1 - NOT IMPLEMENTED,"
-			"Sstat - S(th_ij) = 2*<fi*fj*mi*mj>/(<fi^2*mi*mj> + <fj^2*mi*mj>) "
+			"Sth - S(th_ij) = 2*<fi*fj*mi*mj>/(<fi^2*mi*mj> + <fj^2*mi*mj>) "
 			"where i,j are map pixels, m is the mask and f are the map values."
 			"",false,"out","string"); cmd.add(CthType);
 	ValueArg<string> outfile("o","outfile","name of the output file",false,"out","string"); cmd.add(outfile);
