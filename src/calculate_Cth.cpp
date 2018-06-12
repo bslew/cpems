@@ -59,8 +59,8 @@ int main(int argc, char **argv) {
 
   mscsCorrelationFunction Cth;
   
-  if (_CthType=="hist")  Cth=map.calculate_C_th(_minang,_maxang,_res);
-  if (_CthType=="histNormVar")  {
+  if (_CthType=="Cth")  Cth=map.calculate_C_th(_minang,_maxang,_res);
+  if (_CthType=="CthNormVar")  {
 	  Cth=map.calculate_C_th(_minang,_maxang,_res);
 	  Cth/=map.get_varianceT();
   }
@@ -79,8 +79,8 @@ void parseOptions(int argc, char** argv) {
 
 	UnlabeledValueArg<string> file("files", "input binary file name (prefix) in Mscs format ",true,"", "string");     	cmd.add( file );
 	ValueArg<string> CthType("","type","type of correlation function. Possible values are:"
-			"hist - w(th=ang(n1,n2)) = f(n1)*f(n2)/count_in_bin,"
-			"histNormVar - like hist but normalized by variance"
+			"Cth - w(th=ang(n1,n2)) = f(n1)*f(n2)/count_in_bin,"
+			"CthNormVar - like hist but normalized by variance"
 			"DDRR - w(th=ang(n1,n2)) = DD/RR-1 - NOT IMPLEMENTED,"
 			"Sth - S(th_ij) = 2*<fi*fj*mi*mj>/(<fi^2*mi*mj> + <fj^2*mi*mj>) "
 			"where i,j are map pixels, m is the mask and f are the map values."
