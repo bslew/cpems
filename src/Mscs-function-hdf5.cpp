@@ -212,6 +212,10 @@ cpedsStatusCodes mscsFunction::saveHDF5(string filename, string datasetName, str
     status = H5Fclose (file);
 //    printf("closing file: %li\n",status);
 
+	cpedsStatusCodes cpeds_exit_code=cpedsSuccess;
+	if (status!=0) cpeds_exit_code=cpedsError;
+		
+	return cpeds_exit_code;
 }
 /***************************************************************************************/
 void mscsFunction::setHDF5_scalarStringAttribute(hid_t& dset, string attributeName, string attributeValue) {
