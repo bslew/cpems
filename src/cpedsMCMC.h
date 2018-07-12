@@ -655,7 +655,7 @@ class cpedsMCMC {
 		void setInitialWalkStepSize(double size) { _walk.initialPDFstepCRfractionAfterBurnIn=size; }
 		
 		void setWalkInfoOutputFrequency(long everyNstates) { _walk.userOutputFrequency=everyNstates;	}
-		long getWalkInfoOutputFrequency() { return _walk.userOutputFrequency;	}
+		long getWalkInfoOutputFrequency() const { return _walk.userOutputFrequency;	}
 		
 		/*!
 			\brief add a string about particular implementation 

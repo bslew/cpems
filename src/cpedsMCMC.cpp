@@ -889,6 +889,7 @@ void cpedsMCMC::printInfo() const {
 	msgs->say("step generating PDF points: "+msgs->toStr(_cooling.stepGeneratingPDFPoints),Medium);
 	msgs->say("Burn-in stage step PDF domain fraction (_walk.initialPDFstepCRfraction): "+msgs->toStr(_walk.initialPDFstepCRfraction),Medium);
 	msgs->say("After Burn-in stage step PDF domain fraction (_walk.initialPDFstepCRfractionAfterBurnIn): "+msgs->toStr(_walk.initialPDFstepCRfractionAfterBurnIn),Medium);
+	msgs->say("user output frequency: "+msgs->toStr(getWalkInfoOutputFrequency()),Medium);
 	msgs->say("Burn-in period length (number of steps to start cooling down): "+msgs->toStr(getBurnInLength(),"%li"),Medium);
 	msgs->say("maximal number of times to force cooling: "+msgs->toStr(_cooling.maximalNumberOfForcedCoolings),Medium);
 	msgs->say("maximal number of rejections to force cooling or break chain: "+msgs->toStr(_cooling.maximalRejectionsCount),Medium);
