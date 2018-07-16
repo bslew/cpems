@@ -4568,7 +4568,16 @@ def makeFunctionPlot(inFile):
 #                         xticks(arange(min(tcs[0],option.xmin[figIdx % len(option.xmin)]),max(tcs[-1],option.xmax[figIdx % len(option.xmax)]),option.xticks[figIdx % len(option.xticks)]))
                     if option.yticks[figIdx % len(option.yticks)] != 0:
                         tcs = ax.get_yticks()
-                        yticks(arange(min(tcs[0], option.ymin[figIdx % len(option.ymin)]), max(tcs[-1], option.ymax[figIdx % len(option.ymax)]), option.yticks[figIdx % len(option.yticks)]))
+                        if option.ymin[figIdx % len(option.ymin)] != None:
+                            y1 = option.ymin[figIdx % len(option.ymin)]
+                        else:
+                            y1 = tcs[0]
+                        if option.ymax[figIdx % len(option.ymax)] != None:
+                            y2 = option.ymax[figIdx % len(option.ymax)]
+                        else:
+                            y2 = tcs[-1]
+                        yticks(arange(y1, y2, option.yticks[figIdx % len(option.yticks)]))
+#                         yticks(arange(min(tcs[0], option.ymin[figIdx % len(option.ymin)]), max(tcs[-1], option.ymax[figIdx % len(option.ymax)]), option.yticks[figIdx % len(option.yticks)]))
 
 
                     if option.xticksMinor[figIdx % len(option.xticks)] != None:
