@@ -395,6 +395,7 @@ class cpedsMCMC {
 		cpedsMC& acceptedStates() { return _MCaccepted; }
 		MClink getBestFitLink() { return _bestFit; }
 		MClink getStartingLink() { return _startingLink; }
+		MClink generateStartingLink() { MClink l(getNparam()); l.setLink(getNparam(),getStartingPoint(),-1); return l; }
 		mscsFunction getBestFitModel() { return _chisqData.bestFitData.model; }
 		MClink& bestFitLink() { return _bestFit; }
 		void addNewBestFitLink(MClink& l);
