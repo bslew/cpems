@@ -2,7 +2,7 @@
 all: lib
 
 targets: 
-	gfortran -c *.f
+	gfortran -fPIC -c *.f
 
 
 lib: targets

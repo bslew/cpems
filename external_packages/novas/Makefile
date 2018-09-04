@@ -1,27 +1,27 @@
-
+GCC=c++ -fPIC
 all: lib eph
 
 targets: novas eph_manager novascon nutation solsys1 readeph0
 
 novas:
-	c++ -c $@.c
+	${GCC} -c $@.c
 eph_manager:
-	c++ -c $@.c 
+	${GCC} -c $@.c 
 
 novascon: 
-	c++ -c $@.c
+	${GCC} -c $@.c
 
 nutation:
-	c++ -c $@.c
+	${GCC} -c $@.c
 
 solsys1: 
-	c++ -c $@.c
+	${GCC} -c $@.c
 
 readeph0:
-	c++ -c $@.c
+	${GCC} -c $@.c
 
 example:
-	c++  $@.c -o $@ -lnovas -L.
+	${GCC}  $@.c -o $@ -lnovas -L.
 
 lib: targets
 	ar ru libnovas.a novas.o eph_manager.o novascon.o nutation.o solsys1.o readeph0.o

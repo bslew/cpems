@@ -54,7 +54,7 @@ install:
 	sudo cp include/sizedType.h $(INSTALL_PATH)/../include
 
 FFTW = -I$(FFTWINCLUDE) -L$(FFTWLIBRARY)
-CFLAGS2 = $(CFLAGS)
+CFLAGS2 = $(CFLAGS) -fPIC
 #MPCFLAGS2 = $(MPCFLAGS) -D USE_MPI
 INCLUDE = -I./include $(FFTW)
 LINK = -L./lib

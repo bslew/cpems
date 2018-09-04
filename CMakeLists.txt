@@ -146,6 +146,15 @@ find_path(QTCORE_HEADERS QList
 
 ################################################################
 ################################################################
+# find python installation path
+execute_process(
+  COMMAND "python" -c "from distutils import sysconfig as sc
+print(sc.get_python_lib(prefix='', plat_specific=True))"
+  OUTPUT_VARIABLE PYTHON_SITE
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+################################################################
+################################################################
 ################################################################
 # Output status
 #
@@ -153,6 +162,8 @@ find_path(QTCORE_HEADERS QList
 #MESSAGE( STATUS "FITSIO_INCLUDE_DIR: " ${FITSIO_INCLUDE_DIR} )
 #MESSAGE( STATUS "PROJECT_BINARY_DIR: " ${PROJECT_BINARY_DIR})
 
+MESSAGE( STATUS "PYTHON_SITE: " ${PYTHON_SITE})
+#MESSAGE( STATUS "PYTHON: " ${PYTHON_EXECUTABLE})
 ################################################################
 ################################################################
 ################################################################
@@ -169,6 +180,7 @@ include_directories(
 	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
 #	${CPEDS_INCLUDE_DIR}
 #	${MSCS_INCLUDE_DIR}
+    /usr/include/python2.7
 	)
 
 #add_subdirectory(external_packages/novas)
@@ -262,6 +274,9 @@ set (CPEDSLIB_SOURCES
 	)
 #	${CPEDS_INCLUDE_DIR}/cpeds-msgs.h
 
+set (CPEDS_PYTHON_BINDINGS 
+    pyth/pyCPEDScommonFunctions/cpedsRotation.cpp
+    )
 
 set (MSCSCORELIB_HEADERS
 	src/Mscs-global-defs.h
@@ -383,11 +398,12 @@ set (MSCSWMAPLIB_SOURCES
 #add_library(Mscsplot STATIC ${MSCSPLOTLIB_SOURCES} )
 #add_library(MscsWMAP STATIC ${MSCSWMAPLIB_SOURCES} )
 
-add_library(CPEDS  ${CPEDSLIB_SOURCES} )
-add_library(Mscsfn  ${MSCSFNLIB_SOURCES} )
-add_library(Mscscore  ${MSCSCORELIB_SOURCES} )
-add_library(Mscsplot  ${MSCSPLOTLIB_SOURCES} )
-add_library(MscsWMAP  ${MSCSWMAPLIB_SOURCES} )
+add_library(CPEDS SHARED  ${CPEDSLIB_SOURCES} )
+#add_library(cpedsRotation SHARED ${CPEDS_PYTHON_BINDINGS} )
+add_library(Mscsfn SHARED  ${MSCSFNLIB_SOURCES} )
+add_library(Mscscore SHARED ${MSCSCORELIB_SOURCES} )
+add_library(Mscsplot SHARED ${MSCSPLOTLIB_SOURCES} )
+add_library(MscsWMAP SHARED ${MSCSWMAPLIB_SOURCES} )
 
 #add_library(${PROJECT_BINARY_DIR}/external_packages/
 #add_dependencies(CPEDS slaRefr novas ccSHT3 velKB)
@@ -719,8 +735,8 @@ SET( CMAKE_CXX_FLAGS
 	"${CMAKE_CXX_FLAGS} -fopenmp"  
 	)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra") # -fPIC
+set(CMAKE_CXX_FLAGS_RELEASE "-O3") # -fPIC
 
 add_definitions(
 	-DGO64BIT 
@@ -782,6 +798,8 @@ set (LIBRARIES
 	${NOVAS_LIB}
 	${SLAREFR_LIB}
 	${PGPLOT_LIB}
+	${ARMADILLO_LIB}
+	${CCSHT3_LIB}
 	)
 
 ################################################################
@@ -873,6 +891,7 @@ install (TARGETS
 	${CPEMS_LIBS}
 	DESTINATION lib)
 
+
 install (FILES
     ${PROJECT_BINARY_DIR}/external_packages/velKB/libvelKB.a
     ${PROJECT_BINARY_DIR}/external_packages/sla-refr/libslaRefr.a
@@ -881,10 +900,18 @@ install (FILES
     
     DESTINATION lib)
 
+
 install (FILES 
 	${CPEMS_HEADERS}
 	DESTINATION include/cpems)
 
+#--prefix=${CMAKE_INSTALL_PREFIX} 
+install (CODE "execute_process(COMMAND sudo python setup.py install -f
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/pyth)")
+ 
+
+
+# fetch this into setup.py too
 install (FILES 
     ${PROJECT_SOURCE_DIR}/pyth/plot_likelihood.py
     ${PROJECT_SOURCE_DIR}/pyth/plot_function.py
