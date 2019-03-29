@@ -25,6 +25,8 @@
 #include "cpeds-point3d.h"
 
 // dependences for 2d sibson triangulation based interpolation
+#include <CGAL/basic.h>
+#include <utility>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 //#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_2.h>
@@ -36,7 +38,8 @@
 // dependences for 2d linear triangulation based interpolation
 #include <CGAL/Interpolation_traits_2.h>
 
-
+struct K : CGAL::Exact_predicates_inexact_constructions_kernel {};
+typedef std::vector< std::pair< K::Point_2, K::FT  > > Point_coordinate_vector;
 /***************************************************************************************/
 mscsFunction3dregc::mscsFunction3dregc() : mscsObject("function3Dregc",Zero) {
 	//	plan_r2c=new fftw_plan;
@@ -2880,6 +2883,7 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldTriangLinear2D(const 
 	typedef CGAL::Interpolation_traits_2<K>               Traits;
 	typedef K::FT                                         Coord_type;
 	typedef K::Point_2                                    Point;
+	typedef std::vector< std::pair< Point, Coord_type  > > Point_coordinate_vector;
 	
 	Delaunay_triangulation T;
 	std::map<Point, Coord_type, K::Less_xy_2> function_values;
@@ -2893,7 +2897,7 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldTriangLinear2D(const 
 	}
 
 	//coordiante computation
-	std::vector< std::pair< Point, Coord_type > > coords;
+	Point_coordinate_vector coords;
 	
 //	for (long k = 0; k< Nz(); k++) {
 	long k=0,i,j;
@@ -2902,12 +2906,21 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldTriangLinear2D(const 
 		for (j = 0; j < Ny(); j++) {
 			//coordinate computation
 			K::Point_2 p(getX(i),getY(j));
-			std::vector< std::pair< Point, Coord_type > > coords;
+			Point_coordinate_vector coords;
+
+/*
+			CGAL::Triple< std::back_insert_iterator<Point_coordinate_vector>, Coord_type, bool> result;
+			result=CGAL::natural_neighbor_coordinates_2(T, p,std::back_inserter(coords));
+			Coord_type norm =result.second;
+*/
+
 			Coord_type norm =
 					CGAL::natural_neighbor_coordinates_2
 					(T, p,std::back_inserter(coords)).second;
-			Coord_type res = CGAL::linear_interpolation(coords.begin(), coords.end(), norm, Value_access(function_values));
-			fRe(i,j,k)=res;
+//			if (result.third) {
+				Coord_type res = CGAL::linear_interpolation(coords.begin(), coords.end(), norm, Value_access(function_values));
+				fRe(i,j,k)=res;
+//			}
 		}
 	}
 //	}

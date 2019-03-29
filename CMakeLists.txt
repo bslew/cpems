@@ -144,6 +144,10 @@ find_path(QTCORE_HEADERS QList
     /usr/include/qt4/QtCore
 )
 
+find_path(STL_INCLUDE_DIR stl_iterator.h 
+	/usr/include/c++/7/bits 
+	)
+
 ################################################################
 ################################################################
 # find python installation path
@@ -177,6 +181,7 @@ include_directories(
 	${FITSIO_INCLUDE_DIR}
 	${OLDGSL_INCLUDE_DIR}
 	${QTCORE_HEADERS}
+	${STL_INCLUDE_DIR}
 	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
 #	${CPEDS_INCLUDE_DIR}
 #	${MSCS_INCLUDE_DIR}

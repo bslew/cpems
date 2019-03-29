@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/python2.7
 # #!/usr/bin/env python
 # -*- Encoding: utf-8 -*-
 # coding: utf-8
