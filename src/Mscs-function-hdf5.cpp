@@ -21,8 +21,9 @@
 #include "Mscs-function.h"
 #include "Mscs-map-window_function.h"
 #include "cpeds-math.h"
-#include <QtCore/QStringList>
-#include <QtCore/QString>
+//#include <QtCore/QStringList>
+//#include <QtCore/QString>
+#include "qtbase.h"
 //#include "cpeds-point3d.h"
 
 string _HDF5currentGroup_tmp;

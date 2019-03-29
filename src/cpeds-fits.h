@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <string>
 #include <fitsio.h>
-#include <QtCore/QList>
+//#include <QtCore/QList>
 #include "cpeds-common.h"
 #include "cpeds-msgs.h"
 #include "cpeds-list.h"

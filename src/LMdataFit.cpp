@@ -12,8 +12,8 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-#include <QtCore/QStringList>
-#include <QtCore/QString>
+//#include <QtCore/QStringList>
+//#include <QtCore/QString>
 #include "cpeds-msgs.h"
 #include "Mscs-global-defs.h"
 #include "mscsFunctionFit.h"

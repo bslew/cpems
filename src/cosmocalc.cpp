@@ -20,9 +20,9 @@
 #include <string.h>
 #include <iostream>
 #include <tclap/CmdLine.h>
-#include <QtCore/QStringList>
-#include <QtCore/QString>
-#include <QtCore/QFileInfo>
+//#include <QtCore/QStringList>
+//#include <QtCore/QString>
+//#include <QtCore/QFileInfo>
 #include "cpeds-cosmo.h"
 #include "cpeds-function-cosmo.h"
 #include "Mscs-function3dregc.h"

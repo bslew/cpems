@@ -10,8 +10,9 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
-#include <QtCore/QList>
-#include <QtCore/QDateTime>
+//#include <QtCore/QList>
+//#include <QtCore/QDateTime>
+#include "qtbase.h"
 #include "cpeds-math.h"
 
 

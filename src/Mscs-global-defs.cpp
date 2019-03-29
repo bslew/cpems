@@ -1,8 +1,9 @@
 #include <string.h>
 #include "Mscs-common.h"
 #include "Mscs-global-defs.h"
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+#include "qtbase.h"
+//#include <QtCore/QString>
+//#include <QtCore/QStringList>
 //#include "cpeds-math.h"
 
 // package version information

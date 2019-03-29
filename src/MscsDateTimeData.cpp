@@ -5,7 +5,8 @@
  *      Author: blew
  */
 #include <MscsDateTimeData.h>
-#include <QtCore/QStringList>
+//#include <QtCore/QStringList>
+#include "qtbase.h"
 
 MscsDateTimeData::MscsDateTimeData() {
 //	_f=NULL;

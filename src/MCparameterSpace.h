@@ -5,7 +5,7 @@
 #ifndef SRC_MCPARAMETERSPACE_H_
 #define SRC_MCPARAMETERSPACE_H_
 
-#include <QtCore/QList>
+//#include <QtCore/QList>
 #include "Mscs-function.h"
 
 /*!

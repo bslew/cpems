@@ -5,7 +5,7 @@
 #ifndef SRC_CPEDSMC_H_
 #define SRC_CPEDSMC_H_
 
-#include <QtCore/QList>
+//#include <QtCore/QList>
 #include "MClink.h"
 
 

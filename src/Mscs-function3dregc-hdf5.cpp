@@ -14,7 +14,8 @@
 #include <fstream>
 #include <sstream>
 #include <sys/dir.h>
-#include <QtCore/QStringList>
+//#include <QtCore/QStringList>
+#include "qtbase.h"
 //#include <pthread.h>
 //#include <H5Cpp.h>
 //#include <fftw3.h>

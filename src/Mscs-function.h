@@ -7,9 +7,10 @@
 /* **************************************************************************************************** */
 /* INCLUDES */
 /* **************************************************************************************************** */
-#include <QtCore/QtAlgorithms>
-#include <QtCore/QPointF>
-#include <QtCore/QList>
+//#include <QtCore/QtAlgorithms>
+//#include <QtCore/QPointF>
+//#include <QtCore/QList>
+#include "qtbase.h"
 #include <string>
 #include <iostream>
 #include <sstream>

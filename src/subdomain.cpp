@@ -7,7 +7,7 @@
 
 #include "subdomain.h"
 #include "Mscs-common.h"
-#include "QtCore/QList"
+//#include "QtCore/QList"
 
 
 /***************************************************************************************/

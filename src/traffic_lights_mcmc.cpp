@@ -12,8 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-#include <QtCore/QStringList>
-#include <QtCore/QString>
+#include "qtbase.h"
 #include "cpeds-msgs.h"
 #include "cpeds-list.h"
 

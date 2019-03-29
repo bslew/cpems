@@ -12,7 +12,7 @@ project (cpems CXX)
 ################################################################
 # Set version number
 #
-set (CPEMS_VERSION "0.1")
+set (CPEMS_VERSION "0.2")
 
 ################################################################
 ################################################################
@@ -107,7 +107,8 @@ add_dependencies(external extdir Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
 ################################################################
 # Find required packages
 #
-find_package(Qt4 4.8 REQUIRED)
+#find_package(Qt4 4.8 REQUIRED)
+#find_package(Qt5  REQUIRED)
 #FIND_PACKAGE(GSL 2 REQUIRED)
 #find_package(libnova REQUIRED)
 #find_package(m REQUIRED)
@@ -140,8 +141,7 @@ find_path(OLDGSL_INCLUDE_DIR gsl_multifit.h
 	)
 
 find_path(QTCORE_HEADERS QList
-    /usr/include/QtCore
-    /usr/include/qt4/QtCore
+    /usr/include/qt5/QtCore
 )
 
 find_path(STL_INCLUDE_DIR stl_iterator.h 
@@ -181,8 +181,9 @@ include_directories(
 	${FITSIO_INCLUDE_DIR}
 	${OLDGSL_INCLUDE_DIR}
 	${QTCORE_HEADERS}
+	${QTCORE_HEADERS}/..
 	${STL_INCLUDE_DIR}
-	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
+#	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
 #	${CPEDS_INCLUDE_DIR}
 #	${MSCS_INCLUDE_DIR}
     /usr/include/python2.7
@@ -210,6 +211,7 @@ link_directories(
 # Define source files
 #
 set (CPEDSLIB_HEADERS 
+    src/qtbase.h
     src/cpeds-common.h
 	src/cpeds-consts.h
 	src/cpeds-rng.h
@@ -678,7 +680,7 @@ find_library (M_LIB m)
 find_library (PROJ_LIB proj)
 
 # QtCore library
-find_library (QTCORE_LIB QtCore)
+find_library (QTCORE_LIB Qt5Core)
 
 # FFTW library
 find_library (FFTW3_LIB fftw3)
@@ -737,7 +739,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 SET( CMAKE_CXX_FLAGS  
-	"${CMAKE_CXX_FLAGS} -fopenmp"  
+	"${CMAKE_CXX_FLAGS} -fopenmp -fPIC"  
 	)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra") # -fPIC

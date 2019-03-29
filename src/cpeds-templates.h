@@ -14,7 +14,8 @@
 #include <stdio.h>
 #include<stdlib.h>  
 #include<string.h>
-#include <QtCore/qlist.h>
+//#include <QtCore/qlist.h>
+#include "qtbase.h"
 #include "cpeds-common.h"
 
 

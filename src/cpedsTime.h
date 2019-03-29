@@ -17,8 +17,9 @@
 /* STANDALONE HEADERS */
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <QtCore/QList>
-#include <QtCore/QMap>
+//#include <QtCore/QList>
+//#include <QtCore/QMap>
+#include "qtbase.h"
 /* INTERDEPENDENT HEADERS */
 
 /* FORWARD DECLARATIONS */

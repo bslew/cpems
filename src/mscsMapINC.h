@@ -12,7 +12,7 @@
 
 
 /* STANDALONE HEADERS */
-#include <QtCore/QList>
+//#include <QtCore/QList>
 #include <string>
 #include "Mscs-map.h"
 /* INTERDEPENDENT HEADERS */

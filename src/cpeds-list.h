@@ -18,7 +18,8 @@
 #include<string.h>
 #include <iomanip>
 #include <complex>
-#include <QtCore/QList>
+//#include <QtCore/QList>
+#include "qtbase.h"
 #include "cpeds-math.h"
 #include "Mscs-alm.h"
 #include "mscsVector.h"

@@ -9,7 +9,8 @@
 /* STANDALONE HEADERS */
 #include <libnova/refraction.h>
 #include <libnova/precession.h>
-#include <QtCore/QPointF>
+//#include <QtCore/QPointF>
+#include "qtbase.h"
 #include "cpeds-common.h"
 #include "cpeds-consts.h"
 #include "cpeds-math.h"

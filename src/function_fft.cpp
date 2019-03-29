@@ -16,9 +16,9 @@
 #include "Mscs-function2dreg.h"
 #include "Mscs-function3dregc.h"
 #include "Mscs-map-window_function.h"
-#include <QtCore/QList>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+//#include <QtCore/QList>
+//#include <QtCore/QString>
+//#include <QtCore/QStringList>
 #include <assert.h>
 #include "cpedsTime.h"
 #include "cpeds-list.h"
