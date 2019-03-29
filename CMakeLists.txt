@@ -144,8 +144,12 @@ find_path(QTCORE_HEADERS QList
     /usr/include/qt5/QtCore
 )
 
-find_path(STL_INCLUDE_DIR stl_iterator.h 
-	/usr/include/c++/7/bits 
+find_path(STL_INCLUDE_DIR NAMES 
+#	/usr/include/c++/7/bits 
+	stl_iterator.h 
+	c++/7/bits/stl_iterator.h 
+	c++/8/bits/stl_iterator.h 
+#	*/c++/7/bits/stl_iterator.h 
 	)
 
 ################################################################
