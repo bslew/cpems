@@ -71,7 +71,8 @@ mscsFunction mscsMap::calculate_minkowski_v0(long thres_num, double min, double 
 	
 	for (i=0;i<thres_num;i++) { 
 		vnu = (u.Ngrmu(nu,0.0,0));///(double)(pix_num-masked_pix_num);
-		if (vnu>0) mink_v0.newPoint(nu,vnu);
+//		if (vnu>0) 
+		mink_v0.newPoint(nu,vnu);
 		nu=nu+dnu; 
 	}
 
@@ -188,7 +189,7 @@ mscsFunction mscsMap::calculate_minkowski_v2(long thres_num, double min, double 
 	mscsMap u, uth, uphi, uphith, uthth, uphiphi, tmp;
 	
 	// make a new minkowski object
-	minkowski_f mink_v2("v2",thres_num);
+	minkowski_f mink_v2("v2");
 	
 	// copy info into u object where calculations will be done
 	int minkowski_level_num_genus = thres_num;
@@ -251,7 +252,8 @@ mscsFunction mscsMap::calculate_minkowski_v2(long thres_num, double min, double 
 
 	
 	// calculate f.mink. (I = u = 1/4 * d(u-nu) * sqrt( u;phi^2 + u;th^2 ) * k)  k = (2u;th u;phi u;th,phi - u^2;th u;phi,phi - u^2;phi u;th,th)/(grad u)^3/2
-	dnu = (max-min)/(double)thres_num; nu=min+dnu/2; 
+	dnu = (max-min)/(double)thres_num; 
+	nu=min+dnu/2; 
 	nu_min = nu-dnu/2; nu_max = nu+dnu/2;
 	
 	for (j=0;j<thres_num;j++) { 
