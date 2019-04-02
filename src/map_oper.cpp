@@ -291,7 +291,7 @@ void convolveSH(mscsMap& map, mscsFunction b) {
 //	map.setVerbosityLevel(High);
 	printf("analysis\n");
 	mscsAlms alm=map.SH_analysis(lmax,wf,wf);
-	alm.savetxtAlms("alms","RI");
+//	alm.savetxtAlms("alms","RI");
 	printf("synthesis\n");
 	map.SH_synthesis(alm,lmax,bl,wf);
 	
@@ -307,7 +307,7 @@ void smooth_gaussian(mscsMap& map, double fwhm) {
 //	map.setVerbosityLevel(High);
 	printf("analysis\n");
 	mscsAlms alm=map.SH_analysis(lmax,wf,wf);
-	alm.savetxtAlms("alms","RI");
+//	alm.savetxtAlms("alms","RI");
 	printf("synthesis\n");
 	map.SH_synthesis(alm,lmax,bl,wf);
 }
