@@ -32,8 +32,10 @@ int main(int argc, char** argv) {
 
 	msgs.say("generting points",High);
 	long Npoints=0;
+	long NminPart=25;
 	if (argc==1) { 
-		printf("\n *** NOTE: if you want to generate N randon points then the usage is: test-domain-decomposition N\n\n\n");
+		printf("\n *** NOTE: if you want to generate N randon points then the usage is: test-domain-decomposition N\n"
+				"if you want to specify the maximal number of particles in cell then use: test-domain-decomposition N Nmax\n\n");
 		v.push_back(cpedsPoint3D(1,1,5));
 		v.push_back(cpedsPoint3D(2,2,5));
 		v.push_back(cpedsPoint3D(7,1,5));
@@ -51,6 +53,9 @@ int main(int argc, char** argv) {
 	}
 	else {
 		Npoints=strtol(argv[1],NULL,10);
+		if (argc>2) {
+			NminPart=strtol(argv[2],NULL,10);
+		}
 		srand(time(0));
 		double *x=cpeds_random_uniform_numbers(domainMIN,domainMAX,Npoints);
 		double *y=cpeds_random_uniform_numbers(domainMIN,domainMAX,Npoints);
@@ -77,7 +82,7 @@ int main(int argc, char** argv) {
 	r.zmin=domainMIN;
 	r.zmax=domainMAX;
 
-	subDomain D(&v,&r,25);
+	subDomain D(&v,&r,NminPart);
 	
 	msgs.say("doing tree",High);
 	D.tree();
