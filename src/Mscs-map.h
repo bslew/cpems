@@ -25,6 +25,7 @@
 #include "cpeds-direction_set.h"
 #include "Mscs-common.h"
 #include "Mscs-map-window_function.h"
+#include "Mscs-function3dregc.h"
 //#include "Mscs-minkowski-f.h"
 /* #include "Mscs-power_spectrum.h" */
 #include "Mscs-correlation_function.h"
@@ -1006,7 +1007,8 @@ class mscsMap : public mscsObject {
   mscsFunction calculate_minkowski_v1(long thres_num, double min, double max);
   mscsFunction calculate_minkowski_v2(long thres_num, double min, double max);
 /*   minkowski_fs* calculate_minkowski_v0v1v2(long thres_num, double min, double max); */
-  vector<mscsFunction> calculate_minkowski_v0v1v2(long thres_num, double min, double max);
+//  vector<mscsFunction> calculate_minkowski_v0v1v2(long thres_num, double min, double max);
+  mscsFunction3dregc calculate_minkowski_v0v1v2(long thres_num, double min, double max);
 
 /*   void test_minkowski_circ(); */
 

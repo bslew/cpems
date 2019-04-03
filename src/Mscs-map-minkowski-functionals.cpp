@@ -142,6 +142,8 @@ mscsFunction mscsMap::calculate_minkowski_v1(long thres_num, double min, double 
 	u.check_mask();  
 	u.calculate_map_stats(1);
 	
+
+
 	/*   Absgrad_u = uth; // uth - is a confusing name for this map (object) so let's use Imap */
 	/*   // calculate the  sqrt( u;phi^2 + u;th^2 ) */
 	/*   for (i=0;i<pix_num;i++) {    (*Absgrad_u).map[i].T = sqrt(pow((*uphi).map[i].T,2) + pow((*uth).map[i].T,2));  } */
@@ -177,7 +179,9 @@ mscsFunction mscsMap::calculate_minkowski_v1(long thres_num, double min, double 
 //		mink_v1.set_nu(j,nu);    
 //		mink_v1.set_vnu(j,vnu);
 		mink_v1.newPoint(nu,vnu);
-		nu+=dnu;   nu_min = nu-dnu/2; nu_max = nu+dnu/2;
+		nu+=dnu;   
+		nu_min = nu-dnu/2; 
+		nu_max = nu+dnu/2;
 	}
 	return mink_v1;
 }
@@ -203,24 +207,20 @@ mscsFunction mscsMap::calculate_minkowski_v2(long thres_num, double min, double 
 	u.calculate_map_stats(1);
 	u.mask_map_merge();
 
-	//	printf("  -- Npix = %li, imin=%li, imax=%li, Tmin=%f, Tmax=%f\n\n",u.maskedPixNum(),u.iminT,u.imaxT,(*u).minT,(*u).maxT);
 	
 	u.conv_nest2ring();
-	/* **********EXPERIMENTALL************ */
-	/*   tmp.set_map_nside((*u).nside); tmp.makekill_space_manager("make","T",1); */
-	/* **********EXPERIMENTALL************ */
 	
 	//
 	// calculate differential maps
 	//
 	
 	// calculate u;phi = 1/sin(th) * u,phi
-	uphi = cov_derivative_phi();  
+	uphi = u.cov_derivative_phi();  
 	/*   (*uphi).savebinT("uphi1003",0); */
 	/*   (*uphi).savebinT("uphi",0); */
 	
 	// calculate u;th = u,th
-	uth = cov_derivative_th();  
+	uth = u.cov_derivative_th();  
 	/*   (*uth).savebinT("uth1003",0); */
 	/*   (*uth).savebinT("uth",0); */
 	// calculate u;phi,th
@@ -304,282 +304,187 @@ mscsFunction mscsMap::calculate_minkowski_v2(long thres_num, double min, double 
 }
 //************************************************************************
 
+mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double min, double max) {
+	double nu,vnu,dnu,nu_min,nu_max;
+	double absgradi,ki;
+	long i,j;
+	mscsMap u, uth, uphi, uphith, uthth, uphiphi, tmp;
+	
+	// make a new minkowski object
+	minkowski_f mink_v0("v0");
+	minkowski_f mink_v1("v1");
+	minkowski_f mink_v2("v2");
+	
+	// copy info into u object where calculations will be done
+	if (not coordLoaded()) { set_map_coord(0,0); }
+	u = (*this);
+	u.calculate_map_stats(1);
+	u.norm_by_stddev();
+	u.check_mask();  
+	u.calculate_map_stats(1);
+	u.mask_map_merge();
+	u.conv_nest2ring();
+	
+	//
+	// calculate derivatives
+	//
+	
+	// calculate u;phi = 1/sin(th) * u,phi
+	uphi = u.cov_derivative_phi();  
+	
+	// calculate u;th = u,th
+	uth = u.cov_derivative_th();  
+	// calculate u;phi,th
+	uphith = uphi.cov_derivative_th();   
+	
+	// calculate u;phi,phi
+	uphiphi = uphi.cov_derivative_phi(); //(*uphiphi).savebinT("uphiphi",0);
+	
+	// calculate u;th,th
+	uthth = uth.cov_derivative_th(); //(*uthth).savebinT("uthth",0);
+	
 
-// This routine calculates the v0,v1,v2 as above but is faster than calling individual routines since 
-// less derivatives is calculated.
-// This routine can also be used with multimask defined and kept on the mask structure.
-// It will return an object with the minkowski functionals for each region of the multimask
-// For a regular (usual) mask only one set of functionals is returned.
-// The thresholds are defined uniformly in the t array in this routine
-// 
 
-// calc_derivs/grads = true: calculates the derivatives/gradiends(thresholds)
-// calc_derivs/grads = false: doesn't
-// if derivs/grads==NULL derivs/grads are not returned
-// else are returned (for further use etc)
+	dnu = (max-min)/(double)thres_num; 
+	
+	// calculate v0
+	nu=min+dnu/2.0; 
+	
+	for (i=0;i<thres_num;i++) { 
+		vnu = (u.Ngrmu(nu,0.0,0));///(double)(pix_num-masked_pix_num);
+		mink_v0.newPoint(nu,vnu);
+		nu=nu+dnu; 
+	}
 
-//vector<mscsFunction> mscsMap::calculate_minkowski_v0v1v2(long thres_num, double min, double max) {
-//	vector<mscsFunction> minkv;
-//	double nu,dnu;
-//	long i,j,reg_num=0;
-//	long **counts=NULL, *mm_pix_num;
-//	double **countsd=NULL;
-//	double *absgrad,*absgrad2;
-//	mscsMap *u=NULL, *uth=NULL, *uphi=NULL, *uphith=NULL, *uthth=NULL, *uphiphi=NULL, tmp;
-//	minkowski_fs* mkfs=NULL;
-//	double *t;
-//	double thr, tmpd;
-//	bool return_derivs;
-//	bool return_grads;
-//		
-//	printf("|%s>  * calculating minkowski functional v0 v1 and v2 on the map at %li thresholds \n",object_name.c_str(),thres_num);
-//	
-//	
-//	//
-//	// check if there is some (multi)mask and prepare the space for the outputs
-//	//
-//	
-//	if (maskLoaded()) { 
-//		reg_num=multi_mask_reg_num; 
-//	}
-//	else {
-//		makekill_space_manager("make","m",1); clean_mask(); reg_num=1; 
-//	}
-//	
-//	printf("|%s>  -- there are %li regions defined\n",object_name.c_str(),reg_num);
-//	printf("|%s>  -- multi_mask_reg_num: %li\n",object_name.c_str(),multi_mask_reg_num);
-//	
-//	// initiating the objects for storing the minkowski functionals
-//	mkfs = new minkowski_fs(reg_num,thres_num);
-//	
-//	// copy info into u object where calculations will be done
-//	if (calc_derivs) { 
-//		u = new mscsMap("u",*this); // clone the object
-//	}
-//	else {
-//		u=derivs[0];
-//		(*u).import_map_data(*this,"m",1);
-//	}
-//	(*u).norm_by_stddev(); 
-//	(*u).check_mask();  
-//	(*u).calculate_map_stats(1);
-//	
-//	//
-//	// initiate array of thresholds and counts
-//	//
-//	if (calc_grads) { t = new double[thres_num]; }
-//	dnu = (max-min)/(double)thres_num; nu=min+dnu/2.0; 
-//	counts = new long*[thres_num];
-//	for (i=0;i<thres_num;i++) { counts[i] = new long[reg_num]; }
-//	
-//	// define array of thresholds and zero the array with counts
-//	if (calc_grads) { 
-//		for (j=0;j<thres_num;j++) { 
-//			t[j]=nu;     nu+=dnu; 
-//			printf("thresholds: %li %lE\n",j,t[j]);
-//			for (i=0;i<reg_num;i++) { counts[j][i]=0; }
-//		}
-//	} 
-//	else {
-//		t=grads[0];
-//		for (j=0;j<thres_num;j++) { 
-//			for (i=0;i<reg_num;i++) { counts[j][i]=0; }
-//		}
-//	}
-//	
-//	//***************
-//	//------------ v0
-//	//***************
-//	
-//	// count the number of pixels exceeding threshold nu in all defined regions
-//	(*u).Ngrmu(t,thres_num,counts); 
-//	
-//	// store that information into the Minkowski functionals object.
-//	for (i=0;i<thres_num;i++) {
-//		for (j=0;j<reg_num;j++) { 
-//			(*mkfs).mfs[j].v0->set_nu(i,t[i]);
-//			(*mkfs).mfs[j].v0->set_vnu(i,(double)counts[i][j]);
-//			/*       printf("--------->>> ith %li jreg %li %li\n",i,j,counts[i][j]); */
-//		}
-//	}
-//	
-//	
-//	// normalize the outputs
-//	//(*mkfs).normalize_V0s();
-//	
-//	
-//	// free memory
-//	for (i=0;i<thres_num;i++) { delete [] counts[i]; }
-//	delete [] counts;
-//	
-//	
-//	
-//	//***************
-//	//------------ v1
-//	//***************
-//	
-//	//
-//	// calculate differential maps
-//	//
-//	
-//	// calculate u;phi = 1/sin(th) * u,phi
-//	if (calc_derivs) { uphi = cov_derivative_phi("u;phi",u); }  // (*uphi).savebinT("uphi",0);
-//	else { uphi = derivs[1]; }
-//	
-//	// calculate u;th = u,th
-//	if (calc_derivs) { uth = cov_derivative_th("u;th",u); }    // (*uth).savebinT("uth",0);
-//	else { uth = derivs[2]; }
-//	
-//	// calulate absgrad = sqrt( u;phi^2 + u;th^2 )
-//	if (calc_grads) {
-//		absgrad = new double[(*u).pix_num];
-//		for (i=0;i<pix_num;i++) {
-//			if (u.map.m[i] != 0 && uth.map.m[i] != 0 && uphi.map.m[i] != 0) { // we don't calculate on mask
-//				absgrad[i] = sqrt( uphi.map.T[i]*uphi.map.T[i] + uth.map.T[i]*uth.map.T[i] );    } 
-//			else { absgrad[i]=0; }
-//		}
-//	}
-//	else { absgrad = grads[1]; }
-//	
-//	
-//	// initiate array  counts
-//	countsd = new double*[thres_num];
-//	for (i=0;i<thres_num;i++) { countsd[i] = new double[reg_num]; }
-//	
-//	// zero the array with counts
-//	for (j=0;j<thres_num;j++) { 
-//		for (i=0;i<reg_num;i++) { countsd[j][i]=0; }
-//	}
-//	
-//	//unmasked_pix_num = (*u).pix_num-(*u).masked_pix_num;
-//	
-//	//
-//	// count the pixels in regions of multi-mask
-//	//
-//	mm_pix_num = count_multi_mask_pix_num(); // this must be corrected for the extended mask from uth and uphi !!!!!!!!!!!!!!!!!!!!!!!!
-//	
-//	//
-//	// store that information in the minkowski functionals object
-//	//
-//	for (j=0;j<reg_num;j++) { (*mkfs).mfs[j].size = mm_pix_num[j]; (*mkfs).mfs[j].regid = j+1; }
-//	
-//	//
-//	// calculate f.mink. V_1 = 4pi/Npix Sum_i=0^{Npix-1} ( 1/4 * delta(u-nu) * sqrt ( u;theta^2 + u;phi^2 ) ) 
-//	//                       = 4pi/Npix Sum_i=0^{Npix-1} ( 1/4 I )
-//	//
-//	(*u).Ninthresmu(absgrad,t,thres_num,countsd); // this calculates the sum over I inside all thresholds and all regions and returns the result in counts array
-//	
-//	//
-//	// store that information into the Minkowski functionals object.
-//	//
-//	tmpd=PI/(double)pix_num;
-//	for (i=0;i<thres_num;i++) {
-//		for (j=0;j<reg_num;j++) { 
-//			(*mkfs).mfs[j].v1->set_nu(i,t[i]);
-//			(*mkfs).mfs[j].v1->set_vnu(i,(double)countsd[i][j] * tmpd ); // if you want to normalize by the area of the region then you can divide by the mm_pix_num[j]
-//		}
-//	}
-//	
-//	
-//	//**********
-//	//------- v2
-//	//**********
-//	
-//	//
-//	// calculate differential maps
-//	//
-//	
-//	// calculate u;phi;th
-//	if (calc_derivs) { uphith = cov_derivative_th("u;phith",uphi);  } 
-//	else {    uphith = derivs[3];  }
-//	
-//	// calculate u;phi;phi
-//	if (calc_derivs) { uphiphi = cov_derivative_phi("u;phiphi",uphi); } //(*uphiphi).savebinT("uphiphi",0);
-//	else {    uphiphi = derivs[4];  }
-//	
-//	// calculate u;th;th
-//	if (calc_derivs) { uthth = cov_derivative_th("u;thth",uth); } //(*uthth).savebinT("uthth",0);
-//	else {    uthth = derivs[5];  }
-//	
-//	// calulate K = (2u;th u;phi u;th,phi - u^2;th u;phi;phi - u^2;phi u;th;th)/ ( u;theta^2 + u;phi^2 )
-//	// note: absgrd is used for K here 
-//	if (calc_grads) {
-//		absgrad2 = new double[(*u).pix_num];
-//		for (i=0;i<pix_num;i++) {
-//			if (u.map.m[i] != 0 && uth.map.m[i] != 0 && uphi.map.m[i] != 0 && (*uphith).map->m[i] != 0 && (*uphiphi).map->m[i] != 0 && (*uthth).map->m[i] != 0) { // we don't calculate on mask
-//				absgrad2[i] =  ( 2.0 * uth.map.T[i] * uphi.map.T[i] * (*uphith).map->T[i] - uth.map.T[i]*uth.map.T[i]*(*uphiphi).map->T[i] - uphi.map.T[i]*uphi.map.T[i]*(*uthth).map->T[i])  /  absgrad[i];     } 
-//			else { absgrad2[i] = 0; }
-//		}
-//	}
-//	else { absgrad2=grads[2];  }
-//	
-//	
-//	// zero the array with counts
-//	for (j=0;j<thres_num;j++) { 
-//		for (i=0;i<reg_num;i++) { countsd[j][i]=0; }
-//	}
-//	
-//	
-//	//
-//	// calculate f.mink. V_2 = 4pi/Npix Sum_i=0^{Npix-1} 1/(2pi) delta(u-nu) * K = 
-//	//                       = 4pi/Npix Sum_i=0^{Npix-1} ( I_2 )
-//	//                                  I_2 = 1/(2pi) delta(u-nu) * K
-//	//                                  K = (2u;th u;phi u;th,phi - u^2;th u;phi,phi - u^2;phi u;th,th)/(grad u)^2
-//	//
-//	(*u).Ninthresmu(absgrad2,t,thres_num,countsd); // this calculates the sum over I inside all thresholds and all regions and returns the result in counts array
-//	
-//	//
-//	// store that information into the Minkowski functionals object.
-//	//
-//	tmpd=2.0/(double)pix_num;
-//	for (i=0;i<thres_num;i++) {
-//		for (j=0;j<reg_num;j++) { 
-//			(*mkfs).mfs[j].v2->set_nu(i,t[i]);
-//			(*mkfs).mfs[j].v2->set_vnu(i,(double)countsd[i][j] * tmpd ); // if you want to normalize by the area of the region then you can divide by the mm_pix_num[j]
-//		}
-//	}
-//	
-//	
-//	//
-//	// return derivs and grads if requested or free memory
-//	//
-//	if (return_derivs && derivs !=NULL) {
-//		derivs[0] = u;
-//		derivs[1] = uphi;
-//		derivs[2] = uth;
-//		derivs[3] = uphith;
-//		derivs[4] = uphiphi;
-//		derivs[5] = uthth;
-//	}
-//	else {
-//		delete u; 
-//		delete uphi; 
-//		delete uth; 
-//		delete uphith; 
-//		delete uphiphi; 
-//		delete uthth;
-//	}
-//	
-//	if (return_grads && grads !=NULL) {
-//		grads[0] = t;
-//		grads[1] = absgrad;
-//		grads[2] = absgrad2;
-//	}
-//	else {
-//		delete [] t;
-//		delete [] absgrad;
-//		delete [] absgrad2;
-//	}
-//	
-//	
-//	// free the rest
-//	for (i=0;i<thres_num;i++) { delete [] countsd[i]; }
-//	delete [] countsd;
-//	delete [] mm_pix_num;
-//	
-//	return mkfs;
-//}
-//
+	if (pixNum()-maskedPixNum() > 0) mink_v0/=double(pixNum()-maskedPixNum());
+	
+
+	//
+	// calculate v1
+	//
+	u = (*this);
+	u.calculate_map_stats(1);
+	u.norm_by_stddev();
+	u.check_mask();  
+	u.calculate_map_stats(1);
+	u.mask_map_merge();
+	u.conv_nest2ring();
+
+	// combine masks
+	u.map.m*=uphi.map.m;
+	u.map.m*=uth.map.m;
+	u.check_mask();  
+	u.calculate_map_stats(1);
+
+	dnu = (max-min)/(double)thres_num; 
+	nu=min+dnu/2; 
+	nu_min = nu-dnu/2; 
+	nu_max = nu+dnu/2;
+
+
+	// calculate f.mink. (I = u = 1/4 * d(u-nu) * sqrt( u;phi^2 + u;th^2 ))
+	for (j=0;j<thres_num;j++) { 
+		vnu = 0;
+		if (maskLoaded()) 
+			for (i=0;i<pixNum();i++) { 
+				if (u.map.m[i] != 0) { // we don't calculate on mask
+					if ((u.map.T[i] >= nu_min) && (u.map.T[i] < nu_max)) { /* d = ((*u).map[i].T-nu)/dnu;  */ // we calculate only in a layer
+						absgradi = sqrt(uphi.map.T[i]*uphi.map.T[i] + uth.map.T[i]*uth.map.T[i]); 
+						vnu += absgradi;
+					}
+				}
+			}
+		else 
+			for (i=0;i<pixNum();i++) { 
+				if ((u.map.T[i] >= nu_min) && (u.map.T[i] < nu_max)) { /* d = ((*u).map[i].T-nu)/dnu;  */ // we calculate only in a layer
+					absgradi = sqrt(uphi.map.T[i]*uphi.map.T[i] + uth.map.T[i]*uth.map.T[i]); 
+					vnu += absgradi;
+				}
+			}
+		vnu *= 0.25 / dnu * fourPI/(double)(u.pixNum()-u.maskedPixNum());
+		mink_v1.newPoint(nu,vnu);
+		nu+=dnu;   
+		nu_min = nu-dnu/2; 
+		nu_max = nu+dnu/2;
+	}
+	
+	
+	//
+	// calculate v2
+	//
+	
+	u = (*this);
+	u.calculate_map_stats(1);
+	u.norm_by_stddev();
+	u.check_mask();  
+	u.calculate_map_stats(1);
+	u.mask_map_merge();
+	u.conv_nest2ring();
+
+	// combine masks
+	u.map.m*=uphi.map.m;
+	u.map.m*=uth.map.m;
+	u.map.m*=uphiphi.map.m;
+	u.map.m*=uphith.map.m;
+	u.map.m*=uthth.map.m;
+	u.check_mask();  
+	u.calculate_map_stats(1);
+	
+	dnu = (max-min)/(double)thres_num; 
+	nu=min+dnu/2; 
+	nu_min = nu-dnu/2; 
+	nu_max = nu+dnu/2;
+
+	
+	// calculate f.mink. (I = u = 1/4 * d(u-nu) * sqrt( u;phi^2 + u;th^2 ) * k)  k = (2u;th u;phi u;th,phi - u^2;th u;phi,phi - u^2;phi u;th,th)/(grad u)^3/2
+	for (j=0;j<thres_num;j++) { 
+		vnu = 0;
+		if (maskLoaded()) 
+			for (i=0;i<pixNum();i++) { 
+				if (u.map.m[i] != 0) { // we don't calculate on mask
+					if ((u.map.T[i] >= nu_min) && (u.map.T[i] < nu_max)) { /* d = ((*u).map[i].T-nu)/dnu;  */ // we calculate only in a layer (nu-dnu/2,nu+dnu/2)
+						/* 	    absgradi = sqrt(pow(uphi.map.T[i],2) + pow(uth.map.T[i],2));  */
+						absgradi = uphi.map.T[i]*uphi.map.T[i] + uth.map.T[i]*uth.map.T[i]; // change on 2008-08-20; this line and following too !!!!
+						if (absgradi == 0) { ki = 0; } 
+						else  ki = (2* uth.map.T[i] * uphi.map.T[i] * uphith.map.T[i] - uth.map.T[i] * uth.map.T[i] * uphiphi.map.T[i] - uphi.map.T[i] * uphi.map.T[i] * uthth.map.T[i])/absgradi;
+						vnu += ki;
+					}
+				}
+			}
+		else
+			for (i=0;i<pixNum();i++) { 
+				if ((u.map.T[i] >= nu_min) && (u.map.T[i] < nu_max)) { /* d = ((*u).map[i].T-nu)/dnu;  */ // we calculate only in a layer (nu-dnu/2,nu+dnu/2)
+					absgradi = uphi.map.T[i]*uphi.map.T[i] + uth.map.T[i]*uth.map.T[i]; 
+					if (absgradi == 0) { ki = 0; } 
+					else  ki = (2* uth.map.T[i] * uphi.map.T[i] * uphith.map.T[i] - uth.map.T[i]*uth.map.T[i] * uphiphi.map.T[i] - uphi.map.T[i]*uphi.map.T[i] * uthth.map.T[i])/absgradi;
+					vnu += ki;
+				}
+			}
+		
+		vnu *= 1.0 / (twoPI*dnu) * fourPI/(double)(u.pixNum()-u.maskedPixNum());
+		mink_v2.newPoint(nu,vnu);
+		nu+=dnu;   
+		nu_min = nu-dnu/2; 
+		nu_max = nu+dnu/2;
+	}
+
+//	return mink_v2;
+	
+	// repack data for output
+	mscsFunction3dregc mink;
+	mink.setSize(4,thres_num);
+	mink.allocFunctionSpace();
+	
+	for (long j = 0; j < mink.Ny(); j++) {
+		mink(0,j)=mink_v2.getX(j);
+		mink(1,j)=mink_v0.getY(j);
+		mink(2,j)=mink_v1.getY(j);
+		mink(3,j)=mink_v2.getY(j);
+	}
+	
+	return mink;
+}
+
 
 
 

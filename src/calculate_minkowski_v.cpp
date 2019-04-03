@@ -121,7 +121,12 @@ int main(int argc, char **argv) {
 //    map.savetxtM(_output_file.c_str(),12);
   }
 
-  if ((_functype == "all") ) {
+  if (_functype == "all") {
+//	    mscsFunction v0=map.calculate_minkowski_v0(_mlevels,_nsigmaMin,_nsigmaMax);
+//	    mscsFunction v1=map.calculate_minkowski_v1(_mlevels,_nsigmaMin,_nsigmaMax);
+//	    mscsFunction v2=map.calculate_minkowski_v2(_mlevels,_nsigmaMin,_nsigmaMax);
+	    mscsFunction3dregc mink=map.calculate_minkowski_v0v1v2(_mlevels,_nsigmaMin,_nsigmaMax);
+	    mink.saveSlice(2,0,_output_file);
 //    mkfs=map.calculate_minkowski_v0v1v2(_mlevels,-_nsigma,_nsigma,true,true,NULL,NULL);
 /*     mkfs=map.calculate_minkowski_v0v1v2(_mlevels,map.minT,map.maxT,true,true,NULL,NULL); */
 
