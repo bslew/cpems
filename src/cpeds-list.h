@@ -1,6 +1,6 @@
 /*!
   \file extends the QList for operations and IO methods
-*/
+ */
 
 #ifndef CPEDSLIST
 #define CPEDSLIST
@@ -45,51 +45,51 @@ using namespace std;
 
   \date 2010/02/16 11:24:31
   \author Bartosz Lew
-*/
+ */
 template <typename T>
 class cpedsList : public QList<T> {
-
-
-/* ---------------------------------------------------------------------------------------------------- */
-/* CLASS PUBLIC MEMBERS */
-/* ---------------------------------------------------------------------------------------------------- */
- public:
-
-  using  QList<T>::append;
-  using  QList<T>::size;
-  using  QList<T>::count;
-  using  QList<T>::clear;
-  using  QList<T>::value;
-  using  QList<T>::at;
-  using  QList<T>::mid;
-  using  QList<T>::first;
-  using  QList<T>::last;
-  using  QList<T>::operator[];
-  using  QList<T>::operator<<;
-  using  QList<T>::takeFirst;
-  using  QList<T>::takeLast;
-
-/* ------------- */
-/* CLASS FRIENDS */
-/* ------------- */
-
-
-/* ---------------------------- */
-/* CONSTRUCTORS AND DESTRUCTORS */
-/* ---------------------------- */
- cpedsList() : QList<T>() {}
- cpedsList(T * tab, long N) : QList<T>() { fromCarray(tab,N); }
- cpedsList(const QList<T>& q) : QList<T>(q) {}
- cpedsList(const mscsVector<T>& v);
- ~cpedsList() {}
-
-
-
-/* ---------------------------- */
-/* PUBLIC METHODS */
-/* ---------------------------- */
-
- /*!
+		
+		
+		/* ---------------------------------------------------------------------------------------------------- */
+		/* CLASS PUBLIC MEMBERS */
+		/* ---------------------------------------------------------------------------------------------------- */
+	public:
+		
+		using  QList<T>::append;
+		using  QList<T>::size;
+		using  QList<T>::count;
+		using  QList<T>::clear;
+		using  QList<T>::value;
+		using  QList<T>::at;
+		using  QList<T>::mid;
+		using  QList<T>::first;
+		using  QList<T>::last;
+		using  QList<T>::operator[];
+		using  QList<T>::operator<<;
+		using  QList<T>::takeFirst;
+		using  QList<T>::takeLast;
+		
+		/* ------------- */
+		/* CLASS FRIENDS */
+		/* ------------- */
+		
+		
+		/* ---------------------------- */
+		/* CONSTRUCTORS AND DESTRUCTORS */
+		/* ---------------------------- */
+		cpedsList() : QList<T>() {}
+		cpedsList(T * tab, long N) : QList<T>() { fromCarray(tab,N); }
+		cpedsList(const QList<T>& q) : QList<T>(q) {}
+		cpedsList(const mscsVector<T>& v);
+		~cpedsList() {}
+		
+		
+		
+		/* ---------------------------- */
+		/* PUBLIC METHODS */
+		/* ---------------------------- */
+		
+		/*!
    \brief makes the list to have N cells.
    \details
    @param N - requested number of cells in the list
@@ -101,15 +101,15 @@ class cpedsList : public QList<T> {
    added to the end of the list.
 
    If N is negaitve then nothing will happen
- */
- void makeLength(long N) {
-   if (N<0) return;
-   if (N==0) { QList<T>::clear(); return; }
-   if (count() < N) { while (count() < N) { QList<T>::append(0); }   }
-   if (count() > N) { while (count() > N) { QList<T>::pop_front();  }   }
- }
-
- /*!
+		 */
+		void makeLength(long N) {
+			if (N<0) return;
+			if (N==0) { QList<T>::clear(); return; }
+			if (count() < N) { while (count() < N) { QList<T>::append(0); }   }
+			if (count() > N) { while (count() > N) { QList<T>::pop_front();  }   }
+		}
+		
+		/*!
    \brief derives the extreme values in the list and their positions in the list
    \details
    @param min - pointer pointing where to store the minimal value
@@ -119,157 +119,165 @@ class cpedsList : public QList<T> {
 
    For complex type the extreme values are selected by their abs() value
    and the returned complex numbers have that value stored in the real parts
+   
+   If the list is of size 0 then mini and maxi are set to -1 and the function
+   returns.
    \date 2010/02/18 12:52:51
    \author Bartosz Lew
- */
- void getMinMaxValues(T* min, T* max, long* mini, long* maxi) const {
-   T *t=toCarray();
-   cpeds_find_minmax_value(t,QList<T>::size(),min,max,mini,maxi);
-   delete t;
- }
-
- //! calculates the mininal value of the list
- T max() const { T* t=toCarray(); T m=(T)cpeds_find_max_value(t,(long)size(),0); delete t; return m; }
- //! calculates the mininal value of the list
- T min() const { T* t=toCarray(); T m=(T)cpeds_find_min_value(t,(long)size(),0); delete t; return m; }
- //! calculates the mean value of the list
- T mean() const { T* t=toCarray(); T m=(T)cpeds_mean_value(t,(long)size()); delete t; return m; }
- //! calculates the variance of the list
- T variance() const { T* t=toCarray(); T v=(T)cpeds_variance(t,size()); delete t; return v; }
- //! calculates the rms of the list
- T rms() const { T* t=toCarray(); T v=(T)cpeds_rms(t,size()); delete t; return v; }
- //! calculates the sum of the list
- T sum() const { T* t=toCarray(); T m=(T)cpeds_sum(t,size(),false); delete t; return m; }
- //! calculates the skewness of the list
- T skewness() const { T* t=toCarray(); T v=(T)cpeds_skewness(t,size()); delete t; return v; }
- //! calculates the kurtosis of the list
- T kurtosis() const { T* t=toCarray(); T v=(T)cpeds_kurtosis(t,size()); delete t; return v; }
-
- //! calculates the mean value of the list
- T median() const { 
-	 T* t=toCarray(); 
-	 T m=(T)cpeds_median_value(t,(long)size()); 
-	 delete t; 
-	 return m; 
- }
-
- 
- cpedsList<T>& sort(int dir=12) { 
-	 T* a= toCarray();
-	 long n=size();
-	 cpeds_sort_data(n,a,dir); 
-	 clear();
-	 fromCarray(a,n);
-	 delete [] a;
-	 return *this; 
- }
-
-
- cpedsList<T>& add(T v) { for (long i=0;i<count();i++) { (*this)[i]+=v; } return *this; }
- cpedsList<T>& subtract(T v) { for (long i=0;i<count();i++) { (*this)[i]-=v; } return *this; }
- cpedsList<T>& multiply(T v) { for (long i=0;i<count();i++) { (*this)[i]*=v; } return *this; }
- cpedsList<T>& divide(T v) { for (long i=0;i<count();i++) { (*this)[i]/=v; } return *this; }
-
- /* cpedsList<T>& add(long v) { for (long i=0;i<count();i++) { at(i)+=v; } return *this; } */
- /* cpedsList<T>& subtract(long v) { for (long i=0;i<count();i++) { at(i)-=v; } return *this; } */
- /* cpedsList<T>& multiply(long v) { for (long i=0;i<count();i++) { at(i)*=v; } return *this; } */
- /* cpedsList<T>& divide(long v) { for (long i=0;i<count();i++) { at(i)/=v; } return *this; } */
-
- cpedsList<T>& add(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]+=cl[i]; } return *this; }
- cpedsList<T>& subtract(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]-=cl[i]; } return *this; }
- cpedsList<T>& multiply(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]*=cl[i]; } return *this; }
- cpedsList<T>& divide(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]/=cl[i]; } return *this; }
-
- cpedsList<T>& invert() { for (long i=0;i<count();i++) { (*this)[i]=1.0/(*this)[i]; } return *this; }
-
-
- cpedsList<T>& operator+=(const cpedsList<T>& cl) { add(cl); return *this; }
- cpedsList<T>& operator-=(const cpedsList<T>& cl) { subtract(cl); return *this; }
- cpedsList<T>& operator*=(const cpedsList<T>& cl) { multiply(cl); return *this; }
- cpedsList<T>& operator/=(const cpedsList<T>& cl) { divide(cl); return *this; }
-
- cpedsList<T>& operator+=(T v) { add(v); return *this; }
- cpedsList<T>& operator-=(T v) { subtract(v); return *this; }
- cpedsList<T>& operator*=(T v) { multiply(v); return *this; }
- cpedsList<T>& operator/=(T v) { divide(v); return *this; }
-
- cpedsList<T>& operator=(const cpedsList<T>& cl) { if (this!=&cl) { QList<T>::operator=(cl); }  return *this; }
- cpedsList<T>& operator=(T v) { for (long i=0;i<count();i++) { (*this)[i]=v; } return *this; }
- /* cpedsList<T>& operator=(const cpedsList& cl) {  (QList<T>::this); return *this; } */
- cpedsList<T>& operator==(const cpedsList<T>& cl) { if (count()!=cl.count()) return false; for (long i=0;i<cl.count();i++) { if (at(i)!=cl[i]) return false; } return true; }
-
- cpedsList<T> operator+(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.add(cl); return tmp; }
- cpedsList<T> operator-(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.subtract(cl); return tmp; }
- cpedsList<T> operator*(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.multiply(cl); return tmp; }
- cpedsList<T> operator/(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.divide(cl); return tmp; }
-
- cpedsList<T> operator+(T v) const { cpedsList<T> tmp(*this); tmp.add(v); return tmp; }
- cpedsList<T> operator-(T v) const { cpedsList<T> tmp(*this); tmp.subtract(v); return tmp; }
- cpedsList<T> operator*(T v) const { cpedsList<T> tmp(*this); tmp.multiply(v); return tmp; }
- cpedsList<T> operator/(T v) const { cpedsList<T> tmp(*this); tmp.divide(v); return tmp; }
-
- bool operator>(T v) { for (long i=0;i<count();i++) { if (value(i)<=v) return false; } return true; }
- bool operator<(T v) { for (long i=0;i<count();i++) { if (value(i)>=v) return false; } return true; }
- bool operator>=(T v) { for (long i=0;i<count();i++) { if (value(i)<v) return false; } return true; }
- bool operator<=(T v) { for (long i=0;i<count();i++) { if (value(i)>v) return false; } return true; }
-
-
-
- long save(string file, bool binary=false, string type="double", long precision=10, bool append=false) const;
- long load(string file, bool binary=false, string type="double", bool Append=false);
-
- void print() const { long i,N=size();  for (i=0;i<N;i++) { cout <<value(i)<<endl; } }
-
- cpedsList<T>& fromMscsVector(const mscsVector<T>& t);
- mscsVector<T> toMscsVector();
-
- void fromCarray(T* t, long N) {
-   for (long i=0;i<N;i++) { QList<T>::append(t[i]); }
- }
-
- T* toCarray() const {
-   T * t = new T[size()];
-   for (long i=0;i<size();i++) { t[i]=value(i); }
-   return t;
- }
-
- T* toArray() const {
-   return toCarray();
- }
-
-/* ---------------------------------------------------------------------------------------------------- */
-/* CLASS PROTECTED MEMBERS */
-/* ---------------------------------------------------------------------------------------------------- */
- protected:
-
-
-/* ---------------------------- */
-/* PROTECTED METHODS */
-/* ---------------------------- */
-
-
-/* ---------------------------- */
-/* PROTECTED STRUCTURES */
-/* ---------------------------- */
-
-
-/* ---------------------------------------------------------------------------------------------------- */
-/* CLASS PRIVATE MEMBERS */
-/* ---------------------------------------------------------------------------------------------------- */
- private:
-
-
-/* ---------------------------- */
-/* PRIVATE METHODS */
-/* ---------------------------- */
-
-
-/* ---------------------------- */
-/* PRIVATE STRUCTURES */
-/* ---------------------------- */
-
-
- };
+		 */
+		void getMinMaxValues(T* min, T* max, long* mini, long* maxi) const {
+			if (size()==0) {
+				*mini=-1;
+				*maxi=-1;
+				return;
+			}
+			T *t=toCarray();
+			cpeds_find_minmax_value(t,QList<T>::size(),min,max,mini,maxi);
+			delete t;
+		}
+		
+		//! calculates the mininal value of the list
+		T max() const { T* t=toCarray(); T m=(T)cpeds_find_max_value(t,(long)size(),0); delete t; return m; }
+		//! calculates the mininal value of the list
+		T min() const { T* t=toCarray(); T m=(T)cpeds_find_min_value(t,(long)size(),0); delete t; return m; }
+		//! calculates the mean value of the list
+		T mean() const { T* t=toCarray(); T m=(T)cpeds_mean_value(t,(long)size()); delete t; return m; }
+		//! calculates the variance of the list
+		T variance() const { T* t=toCarray(); T v=(T)cpeds_variance(t,size()); delete t; return v; }
+		//! calculates the rms of the list
+		T rms() const { T* t=toCarray(); T v=(T)cpeds_rms(t,size()); delete t; return v; }
+		//! calculates the sum of the list
+		T sum() const { T* t=toCarray(); T m=(T)cpeds_sum(t,size(),false); delete t; return m; }
+		//! calculates the skewness of the list
+		T skewness() const { T* t=toCarray(); T v=(T)cpeds_skewness(t,size()); delete t; return v; }
+		//! calculates the kurtosis of the list
+		T kurtosis() const { T* t=toCarray(); T v=(T)cpeds_kurtosis(t,size()); delete t; return v; }
+		
+		//! calculates the mean value of the list
+		T median() const { 
+			T* t=toCarray(); 
+			T m=(T)cpeds_median_value(t,(long)size()); 
+			delete t; 
+			return m; 
+		}
+		
+		
+		cpedsList<T>& sort(int dir=12) { 
+			T* a= toCarray();
+			long n=size();
+			cpeds_sort_data(n,a,dir); 
+			clear();
+			fromCarray(a,n);
+			delete [] a;
+			return *this; 
+		}
+		
+		
+		cpedsList<T>& add(T v) { for (long i=0;i<count();i++) { (*this)[i]+=v; } return *this; }
+		cpedsList<T>& subtract(T v) { for (long i=0;i<count();i++) { (*this)[i]-=v; } return *this; }
+		cpedsList<T>& multiply(T v) { for (long i=0;i<count();i++) { (*this)[i]*=v; } return *this; }
+		cpedsList<T>& divide(T v) { for (long i=0;i<count();i++) { (*this)[i]/=v; } return *this; }
+		
+		/* cpedsList<T>& add(long v) { for (long i=0;i<count();i++) { at(i)+=v; } return *this; } */
+		/* cpedsList<T>& subtract(long v) { for (long i=0;i<count();i++) { at(i)-=v; } return *this; } */
+		/* cpedsList<T>& multiply(long v) { for (long i=0;i<count();i++) { at(i)*=v; } return *this; } */
+		/* cpedsList<T>& divide(long v) { for (long i=0;i<count();i++) { at(i)/=v; } return *this; } */
+		
+		cpedsList<T>& add(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]+=cl[i]; } return *this; }
+		cpedsList<T>& subtract(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]-=cl[i]; } return *this; }
+		cpedsList<T>& multiply(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]*=cl[i]; } return *this; }
+		cpedsList<T>& divide(const cpedsList<T>& cl) { for (long i=0;i<count();i++) { (*this)[i]/=cl[i]; } return *this; }
+		
+		cpedsList<T>& invert() { for (long i=0;i<count();i++) { (*this)[i]=1.0/(*this)[i]; } return *this; }
+		
+		
+		cpedsList<T>& operator+=(const cpedsList<T>& cl) { add(cl); return *this; }
+		cpedsList<T>& operator-=(const cpedsList<T>& cl) { subtract(cl); return *this; }
+		cpedsList<T>& operator*=(const cpedsList<T>& cl) { multiply(cl); return *this; }
+		cpedsList<T>& operator/=(const cpedsList<T>& cl) { divide(cl); return *this; }
+		
+		cpedsList<T>& operator+=(T v) { add(v); return *this; }
+		cpedsList<T>& operator-=(T v) { subtract(v); return *this; }
+		cpedsList<T>& operator*=(T v) { multiply(v); return *this; }
+		cpedsList<T>& operator/=(T v) { divide(v); return *this; }
+		
+		cpedsList<T>& operator=(const cpedsList<T>& cl) { if (this!=&cl) { QList<T>::operator=(cl); }  return *this; }
+		cpedsList<T>& operator=(T v) { for (long i=0;i<count();i++) { (*this)[i]=v; } return *this; }
+		/* cpedsList<T>& operator=(const cpedsList& cl) {  (QList<T>::this); return *this; } */
+		cpedsList<T>& operator==(const cpedsList<T>& cl) { if (count()!=cl.count()) return false; for (long i=0;i<cl.count();i++) { if (at(i)!=cl[i]) return false; } return true; }
+		
+		cpedsList<T> operator+(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.add(cl); return tmp; }
+		cpedsList<T> operator-(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.subtract(cl); return tmp; }
+		cpedsList<T> operator*(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.multiply(cl); return tmp; }
+		cpedsList<T> operator/(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.divide(cl); return tmp; }
+		
+		cpedsList<T> operator+(T v) const { cpedsList<T> tmp(*this); tmp.add(v); return tmp; }
+		cpedsList<T> operator-(T v) const { cpedsList<T> tmp(*this); tmp.subtract(v); return tmp; }
+		cpedsList<T> operator*(T v) const { cpedsList<T> tmp(*this); tmp.multiply(v); return tmp; }
+		cpedsList<T> operator/(T v) const { cpedsList<T> tmp(*this); tmp.divide(v); return tmp; }
+		
+		bool operator>(T v) { for (long i=0;i<count();i++) { if (value(i)<=v) return false; } return true; }
+		bool operator<(T v) { for (long i=0;i<count();i++) { if (value(i)>=v) return false; } return true; }
+		bool operator>=(T v) { for (long i=0;i<count();i++) { if (value(i)<v) return false; } return true; }
+		bool operator<=(T v) { for (long i=0;i<count();i++) { if (value(i)>v) return false; } return true; }
+		
+		
+		
+		long save(string file, bool binary=false, string type="double", long precision=10, bool append=false) const;
+		long load(string file, bool binary=false, string type="double", bool Append=false);
+		
+		void print() const { long i,N=size();  for (i=0;i<N;i++) { cout <<value(i)<<endl; } }
+		
+		cpedsList<T>& fromMscsVector(const mscsVector<T>& t);
+		mscsVector<T> toMscsVector();
+		
+		void fromCarray(T* t, long N) {
+			for (long i=0;i<N;i++) { QList<T>::append(t[i]); }
+		}
+		
+		T* toCarray() const {
+			T * t = new T[size()];
+			for (long i=0;i<size();i++) { t[i]=value(i); }
+			return t;
+		}
+		
+		T* toArray() const {
+			return toCarray();
+		}
+		
+		/* ---------------------------------------------------------------------------------------------------- */
+		/* CLASS PROTECTED MEMBERS */
+		/* ---------------------------------------------------------------------------------------------------- */
+	protected:
+		
+		
+		/* ---------------------------- */
+		/* PROTECTED METHODS */
+		/* ---------------------------- */
+		
+		
+		/* ---------------------------- */
+		/* PROTECTED STRUCTURES */
+		/* ---------------------------- */
+		
+		
+		/* ---------------------------------------------------------------------------------------------------- */
+		/* CLASS PRIVATE MEMBERS */
+		/* ---------------------------------------------------------------------------------------------------- */
+	private:
+		
+		
+		/* ---------------------------- */
+		/* PRIVATE METHODS */
+		/* ---------------------------- */
+		
+		
+		/* ---------------------------- */
+		/* PRIVATE STRUCTURES */
+		/* ---------------------------- */
+		
+		
+};
 
 
 
@@ -279,7 +287,7 @@ class cpedsList : public QList<T> {
 /* **************************************************************************************************** */
 template <typename T> cpedsList<T>::cpedsList(const mscsVector<T>& v) {
 	long i,N=v.size();
-//	printf("v size: %li\n",N);
+	//	printf("v size: %li\n",N);
 	for (i=0;i<N;i++) { append(v[i]);  }
 }
 
@@ -306,18 +314,18 @@ template <typename T> long cpedsList<T>::save(string file, bool binary, string t
 	if (binary) {
 		if (append) F.open(file.c_str(),ios_base::out | ios_base::binary | ios_base::app);	
 		else F.open(file.c_str(),ios_base::out | ios_base::binary);	
-
+		
 		if (F.is_open()==false) return -1;
 		
 		T v;
-//		for (i=0;i<N;i++) { v=value(i); F << v;  }
+		//		for (i=0;i<N;i++) { v=value(i); F << v;  }
 		for (i=0;i<N;i++) { v=value(i); F.write((char*)(&v),sizeof(v));  }
-		  
+		
 	}
 	else {
 		if (append) F.open(file.c_str(),ios::out  | ios::app);
 		else F.open(file.c_str(),ios::out);	
-
+		
 		if (F.is_open()==false) return -1;
 		
 		T v;
@@ -325,7 +333,7 @@ template <typename T> long cpedsList<T>::save(string file, bool binary, string t
 		
 	}
 	
-//	print();
+	//	print();
 	
 	F.close();
 	return 0;
@@ -425,10 +433,10 @@ template <typename T> long cpedsList<T>::load(string file, bool binary, string t
 			fread(v,sizeof(T),N,F);
 			fromCarray(v,N);
 			delete [] v;
-//			printf("size of T is : %i\n",int(sizeof(T)));
-//			T tmp;
-//			while (fread(&tmp,sizeof(T),1,F)>0) {				append(tmp);			printf("read: %lf\n",tmp); }
-						
+			//			printf("size of T is : %i\n",int(sizeof(T)));
+			//			T tmp;
+			//			while (fread(&tmp,sizeof(T),1,F)>0) {				append(tmp);			printf("read: %lf\n",tmp); }
+			
 		}
 		fclose(F);
 	}

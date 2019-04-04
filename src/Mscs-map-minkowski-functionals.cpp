@@ -304,7 +304,7 @@ mscsFunction mscsMap::calculate_minkowski_v2(long thres_num, double min, double 
 }
 //************************************************************************
 
-mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double min, double max) {
+mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double min, double max, bool normalize_by_std) {
 	double nu,vnu,dnu,nu_min,nu_max;
 	double absgradi,ki;
 	long i,j;
@@ -314,16 +314,32 @@ mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double mi
 	minkowski_f mink_v0("v0");
 	minkowski_f mink_v1("v1");
 	minkowski_f mink_v2("v2");
-	
+	mscsFunction3dregc mink;
+	mink.setSize(4,thres_num);
+	mink.allocFunctionSpace();
+
+
 	// copy info into u object where calculations will be done
 	if (not coordLoaded()) { set_map_coord(0,0); }
 	u = (*this);
 	u.calculate_map_stats(1);
-	u.norm_by_stddev();
+	if (normalize_by_std) u.norm_by_stddev();
 	u.check_mask();  
 	u.calculate_map_stats(1);
 	u.mask_map_merge();
 	u.conv_nest2ring();
+
+	
+	if (u.maskedPixNum()== u.pixNum()) {
+		dnu = (max-min)/(double)thres_num; 
+		nu=min+dnu/2; 
+		for (i=0;i<thres_num;i++) { 
+			mink(0,i)=nu;
+			nu=nu+dnu; 
+		}
+		
+		return mink;
+	}
 	
 	//
 	// calculate derivatives
@@ -364,7 +380,7 @@ mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double mi
 	//
 	u = (*this);
 	u.calculate_map_stats(1);
-	u.norm_by_stddev();
+	if (normalize_by_std) u.norm_by_stddev();
 	u.check_mask();  
 	u.calculate_map_stats(1);
 	u.mask_map_merge();
@@ -415,7 +431,7 @@ mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double mi
 	
 	u = (*this);
 	u.calculate_map_stats(1);
-	u.norm_by_stddev();
+	if (normalize_by_std) u.norm_by_stddev();
 	u.check_mask();  
 	u.calculate_map_stats(1);
 	u.mask_map_merge();
@@ -471,9 +487,6 @@ mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double mi
 //	return mink_v2;
 	
 	// repack data for output
-	mscsFunction3dregc mink;
-	mink.setSize(4,thres_num);
-	mink.allocFunctionSpace();
 	
 	for (long j = 0; j < mink.Ny(); j++) {
 		mink(0,j)=mink_v2.getX(j);
@@ -481,6 +494,9 @@ mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double mi
 		mink(2,j)=mink_v1.getY(j);
 		mink(3,j)=mink_v2.getY(j);
 	}
+//	mink_v0.save("v0");
+//	mink_v1.save("v1");
+//	mink_v2.save("v2");
 	
 	return mink;
 }

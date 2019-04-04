@@ -30,7 +30,7 @@ filenamestr _input_file_my;
 string _input_file,_output_file,_mask_file,_ft,_ord,_functype;
 double _nsigmaMin,_nsigmaMax;
 long _mlevels;
-bool _col_ord;
+bool _col_ord, _no_normdev;
 bool masked=false,_mink=false;
 //-----------------------------------
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 //	    mscsFunction v0=map.calculate_minkowski_v0(_mlevels,_nsigmaMin,_nsigmaMax);
 //	    mscsFunction v1=map.calculate_minkowski_v1(_mlevels,_nsigmaMin,_nsigmaMax);
 //	    mscsFunction v2=map.calculate_minkowski_v2(_mlevels,_nsigmaMin,_nsigmaMax);
-	    mscsFunction3dregc mink=map.calculate_minkowski_v0v1v2(_mlevels,_nsigmaMin,_nsigmaMax);
+	    mscsFunction3dregc mink=map.calculate_minkowski_v0v1v2(_mlevels,_nsigmaMin,_nsigmaMax,!_no_normdev);
 	    mink.saveSlice(2,0,_output_file);
 //    mkfs=map.calculate_minkowski_v0v1v2(_mlevels,-_nsigma,_nsigma,true,true,NULL,NULL);
 /*     mkfs=map.calculate_minkowski_v0v1v2(_mlevels,map.minT,map.maxT,true,true,NULL,NULL); */
@@ -177,7 +177,7 @@ void parseOptions(int argc, char** argv) {
 	ValueArg<string> mask("m","mask","wheather to mask the file before doing statistics (prefix)",false,"","string"); cmd.add(mask);
 	ValueArg<string> ft("f","ft","input file type [bin, txt] (default: bin)",false,"bin","string"); cmd.add(ft);
 	ValueArg<string> ord("","ord","ordering of the map [ring, nest] default: nest",false,"nest","string"); cmd.add(ord);
-/* 	SwitchArg mink("M","Mink", "plot also the minkowski functionals for the map", false);	cmd.add( mink ); */
+ 	SwitchArg no_normdev("","nonormdev", "normalize the map by standard deviation before calculating the functionals (false)", false);	cmd.add( no_normdev); 
 	ValueArg<long> mlevels("l", "mlev", "number of levels to calculate the minkowski functionals (default: 100)", false,100,"long");	cmd.add( mlevels );
 	ValueArg<double> nsigmaMin("", "nsigMin", "number of std.dev. to calculate the minkowski functionals from (default: -4)", false,-4.0,"double");	cmd.add( nsigmaMin );
 	ValueArg<double> nsigmaMax("", "nsigMax", "number of std.dev. to calculate the minkowski functionals to (default: 4)", false,4.0,"double");	cmd.add( nsigmaMax );
@@ -198,7 +198,7 @@ void parseOptions(int argc, char** argv) {
 	_output_file = output.getValue(); if (_output_file=="") { _output_file=_input_file+"mink"; }
 	_ft = ft.getValue();
 	_ord = ord.getValue();
-/* 	_mink = mink.getValue(); */
+ 	_no_normdev = no_normdev.getValue(); 
 	_mlevels = mlevels.getValue();
 	_nsigmaMin = nsigmaMin.getValue();
 	_nsigmaMax = nsigmaMax.getValue();

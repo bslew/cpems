@@ -1008,7 +1008,21 @@ class mscsMap : public mscsObject {
   mscsFunction calculate_minkowski_v2(long thres_num, double min, double max);
 /*   minkowski_fs* calculate_minkowski_v0v1v2(long thres_num, double min, double max); */
 //  vector<mscsFunction> calculate_minkowski_v0v1v2(long thres_num, double min, double max);
-  mscsFunction3dregc calculate_minkowski_v0v1v2(long thres_num, double min, double max);
+  /*!
+	\brief calculate Minkowski functionals on a map
+	\details 
+	@param thres_num - number of threaholds
+	@param min - minimal threshold given in number of map standard deviations
+	@param max - maximal threshold given in number of map standard deviations
+	@param normalize_by_std - (default true) - whether the map should be normed by standard deviation 
+		before calculating minkowski functionals. If false, then min and max values are interpreted
+		in map units.
+	@return matrix of 4 columns x thres_num rows with first column specifying thresholds and the remaining
+	ones Minkowski 0,1,2 functionals.
+
+	\date Apr 3, 2019, 9:12:46 PM
+   */
+  mscsFunction3dregc calculate_minkowski_v0v1v2(long thres_num, double min, double max, bool normalize_by_std=true);
 
 /*   void test_minkowski_circ(); */
 

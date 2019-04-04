@@ -1873,12 +1873,14 @@ void mscsMap::calculate_map_stats(int output) {
 				idx.append(i);
 			}
 		} //exit(0);
-		tmp.getMinMaxValues(&mapInfo.minT, &mapInfo.maxT, &mapInfo.iminT,
-				&mapInfo.imaxT);
-		mapInfo.iminT = idx[mapInfo.iminT];
-		mapInfo.imaxT = idx[mapInfo.imaxT];
-		get_moments_of_distribution(tmp, &mapInfo.meanT, &mapInfo.varianceT,
-				&mapInfo.skewnessT, &mapInfo.kurtosisT);
+		if (idx.size()>0) {
+			tmp.getMinMaxValues(&mapInfo.minT, &mapInfo.maxT, &mapInfo.iminT,
+					&mapInfo.imaxT);
+			mapInfo.iminT = idx[mapInfo.iminT];
+			mapInfo.imaxT = idx[mapInfo.imaxT];
+			get_moments_of_distribution(tmp, &mapInfo.meanT, &mapInfo.varianceT,
+					&mapInfo.skewnessT, &mapInfo.kurtosisT);
+		}
 		mask.masked_pix_num = pix_num - idx.size();
 		mask.f_sky = (double) mask.masked_pix_num / (double) pix_num;
 		
@@ -2763,6 +2765,8 @@ void mscsMap::norm_by_maxT() {
 	long i;
 	long pix_num = pixNum();
 	double max;
+	
+	if (pix_num==maskedPixNum()) return;
 	
 	msgs->say("normalizing the temperature map by maximal value", Medium);
 	max = calculate_maxT();
