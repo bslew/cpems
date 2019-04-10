@@ -119,7 +119,7 @@ add_dependencies(external extdir Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
 # Find required packages
 #
 
-find_package(CFITSIO REQUIRED)
+find_package(CFITSIO)
 #  CFITSIO_INCLUDE_DIR - the CFITSIO include directory
 #  CFITSIO_LIBRARIES - Link these to use CFITSIO
 if (CFITSIO_FOUND)
@@ -127,7 +127,7 @@ if (CFITSIO_FOUND)
 	MESSAGE(STATUS "CFITSIO_LIBRARIES: " ${CFITSIO_LIBRARIES})
 endif()
 
-FIND_PACKAGE(GSL 2 REQUIRED)
+FIND_PACKAGE(GSL 2 )
 # GSL_INCLUDE_DIR      = where to find headers 
 # GSL_LIBRARIES   = full path to the libraries
 if (GSL_FOUND)
@@ -137,7 +137,7 @@ if (GSL_FOUND)
 endif()
 
 
-find_package(HDF5 1.8 REQUIRED)
+find_package(HDF5 1.8 )
 # defines HDF5_INCLUDE_DIRS HDF5_LIBRARIES
 if (HDF5_FOUND)
 	MESSAGE(STATUS "HDF5_INCLUDE_DIRS: " ${HDF5_INCLUDE_DIRS})
@@ -145,11 +145,11 @@ if (HDF5_FOUND)
 endif()
 
 #find_package(Qt5 COMPONENTS OpenGL Gui Core Script ScriptTools QUIET)
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt5 COMPONENTS Core )
 # the recommended use of Qt5 is different than other packages found see:
 # https://doc.qt.io/qt-5/cmake-manual.html
 
-find_package(NOVA REQUIRED)
+find_package(NOVA )
 #  NOVA_INCLUDE_DIR - the NOVA include directory
 #  NOVA_LIBRARIES - Link these to use NOVA
 
@@ -159,7 +159,7 @@ find_package(PROJ)
 #    PROJ_INCLUDE_DIR
 #    PROJ_LIBRARY
 
-find_package(FFTW 3 REQUIRED)
+find_package(FFTW 3 )
 #   FFTW_LIBRARIES           ... full path to fftw library
 #   FFTW_INCLUDES            ... fftw include directory
 
@@ -173,8 +173,38 @@ endif()
 find_package(GMP )
 # GMP_INCLUDES
 # GMP_LIBRARIES
+# GMP library
+if (NOT GMP_FOUND)
+	MESSAGE(STATUS "GMP_FOUND: " ${GMP_FOUND} )
+	MESSAGE(STATUS "GMP_INCLUDES: " ${GMP_INCLUDES})
+	MESSAGE(STATUS "GMP_LIBRARIES: " ${GMP_LIBRARIES})
 
-find_package(CGAL REQUIRED)
+	find_path(GMP_INCLUDES gmp.h
+		PATHS
+		$ENV{HOME}/anaconda3
+		$ENV{HOME}/local
+		/usr
+		/local
+		PATH_SUFFIXES include
+		)
+
+	find_library (GMP_LIBRARIES gmp
+		PATHS
+		$ENV{HOME}/anaconda3
+		/usr
+		/local
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
+		NO_DEFAULT_PATH
+	)
+	MESSAGE(STATUS "GMP: " )
+	MESSAGE(STATUS "GMP_INCLUDES: " ${GMP_INCLUDES})
+	MESSAGE(STATUS "GMP_LIBRARIES: " ${GMP_LIBRARIES})
+endif()
+
+
+
+find_package(CGAL )
 # CGAL_INCLUDE_DIRS
 # CGAL_LIBRARIES_DIR
 # CGAL_MODULES_DIR
@@ -184,13 +214,13 @@ if (CGAL_FOUND)
 	MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
 endif()
 
-find_package(PGPLOT REQUIRED)
+find_package(PGPLOT)
 #  PGPLOT_INCLUDES    = Path to the PGPLOT header files
 #  PGPLOT_LIBRARIES   = Path to all parts of the PGPLOT library
 #  PGPLOT_LIBRARY_DIR = Path to the directory containing the PGPLOT libraries
 
 
-find_package(Armadillo REQUIRED)
+find_package(Armadillo)
 # ARMADILLO_INCLUDE_DIRS - list of required include directories
 # ARMADILLO_LIBRARIES - list of libraries to be linked
 
@@ -205,11 +235,18 @@ find_package(Armadillo REQUIRED)
 #	)
 
 if (NOT CFITSIO_FOUND)
-	find_path(FITSIO_INCLUDE_DIR fitsio.h 
+	find_path(CFITSIO_INCLUDE_DIR fitsio.h 
 		/usr/include/cfitsio 
 		/usr/local/include/cfitsio 
 		$ENV{HOME}/local/include
 		)
+		
+	find_library (CFITSIO_LIBRARIES cfitsio
+		PATHS
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
+	)
+		
 endif()
 
 if (NOT GSL_FOUND)
@@ -236,12 +273,22 @@ endif()
 
 # proj library
 if (NOT PROJ_FOUND)
-	find_library (PROJ_LIB proj
+	find_path(PROJ_INCLUDE_DIR proj.h
+		PATHS
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		PATH_SUFFIXES include
+		)
+
+	find_library (PROJ_LIBRARY proj
 		PATHS
 		$ENV{HOME}/local
 		$ENV{HOME}/anaconda3
 		PATH_SUFFIXES lib lib64
 	)
+	MESSAGE(STATUS "FOUND PROJ: " )
+	MESSAGE(STATUS "PROJ_INCLUDE_DIR: " ${PROJ_INCLUDE_DIR})
+	MESSAGE(STATUS "PROJ_LIBRARY: " ${PROJ_LIBRARY})
 endif()
 
 # QtCore library
@@ -300,27 +347,9 @@ if (NOT CGAL_FOUND)
 endif()
 
 
-# GMP library
-if (NOT GMP_FOUND)
-	find_library (GMP_LIBRARIES gmp
-		PATHS
-		/usr
-		/local
-		$ENV{HOME}/local
-		$ENV{HOME}/anaconda3
-		PATH_SUFFIXES lib lib64
-	)
-endif()
 
 
-# fitsio library
-if (NOT FITSIO_FOUND)
-	find_library (FITSIO_LIB cfitsio
-		PATHS
-		$ENV{HOME}/local
-		PATH_SUFFIXES lib lib64
-	)
-endif()
+
 
 
 # PGPLOT library

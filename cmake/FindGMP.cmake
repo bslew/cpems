@@ -9,6 +9,7 @@ find_path(GMP_INCLUDES
   NAMES
   gmp.h
   PATHS
+  $ENV{gmp_root}
   $ENV{GMPDIR}
   ${INCLUDE_INSTALL_DIR}
 )
