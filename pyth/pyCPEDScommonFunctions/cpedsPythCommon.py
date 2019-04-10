@@ -83,7 +83,7 @@ def executeCommandStr(cmd, printOutput=False):
 #        proc = Popen([os.environ["MSCS_PROGRAM_DIR"]+'/bin/'+cmd, ''], stdout=PIPE, shell='/bin/bash')
         proc = Popen([cmd, ''], stdout=PIPE, shell='/bin/bash')
 #    output = Popen([os.environ["MSCS_PROGRAM_DIR"]+'/bin/'+cmd, ''], stdout=PIPE, shell='/bin/bash')
-        print proc.stdout.read()
+        print(proc.stdout.read())
 #    output = proc.communicate()[0]
 #        print output
 #    return output
@@ -97,14 +97,14 @@ def fileExists(fname):
     return os.path.isfile(fname)
 
 def sayAndExecute(msg,cmd='',execute=0, quiet=False):
-    print "----------------------------------"
-    print " * "+msg
+    print("----------------------------------")
+    print(" * "+msg)
     print
     ret=0
     if cmd!='':
-        print " executing command: "
-        print cmd
-        print
+        print(" executing command: ")
+        print(cmd)
+        print()
     if quiet:
         cmd+=' > /dev/null'
     if execute==1:
@@ -121,7 +121,7 @@ def sayAndExecute(msg,cmd='',execute=0, quiet=False):
             cmdout = subprocess.check_call(cmd, shell=True)
             
         except subprocess.CalledProcessError as cmdexc:
-            print cmdexc.returncode
+            print(cmdexc.returncode)
             return cmdexc.returncode  
 #         except KeyboardInterrupt:
 #             return -1
@@ -196,8 +196,8 @@ def readUserValue(queryStr, inputType, defaultAnswer, timeoutTime=0):
         ansOut=0
     if inputType=='string':
         ansOut=''
-    print
-    print 'DEFAULT ANSWER: ',defaultAnswer
+    print()
+    print('DEFAULT ANSWER: ',defaultAnswer)
     
     if timeoutTime>0:
         queryStr=queryStr+'(The DEFAULT ANSWER  will fire in %i seconds).\nYour answer' % ( timeoutTime)
@@ -210,7 +210,7 @@ def readUserValue(queryStr, inputType, defaultAnswer, timeoutTime=0):
     except AlarmException: 
         # timeout
 #         print 'AlarmException, continuing...'
-        print "using default answer:", defaultAnswer
+        print("using default answer:", defaultAnswer)
         return defaultAnswer,0
     except EOFError: 
         # exception for script mode executions
@@ -240,8 +240,8 @@ def QsaveParameter(paramName,paramValue, quiet=False):
     from PySide.QtCore import QSettings
 
     if quiet==False:
-        print 'saving Qparameter: %s' % paramName
-        print '    parameter value: ',paramValue
+        print('saving Qparameter: %s' % paramName)
+        print('    parameter value: ',paramValue)
     settings = QSettings("TCfA", "CPEDS")
     settings.setValue(paramName, paramValue)
 
@@ -251,8 +251,8 @@ def QloadParameter(paramName, quiet=False):
     paramValue=settings.value(paramName)
     
     if quiet==False:
-        print 'loading Qparameter: %s' % paramName
-        print '    parameter value: ',paramValue
+        print( 'loading Qparameter: %s' % paramName)
+        print('    parameter value: ',paramValue)
     return paramValue
 
 def saveParameter(fname,paramName,paramValue):
@@ -268,9 +268,9 @@ def loadParameter(fname,paramName):
 
 def chdir(dirName):
     os.chdir(dirName)
-    print
-    print 'Changing working directory to: ',dirName
-    print
+    print()
+    print('Changing working directory to: ',dirName)
+    print()
 
 
 
@@ -302,7 +302,7 @@ def get_ij_min2Darray(a):
 
 def verifyZeroExitStatusCode(code):
     if code!=0:
-        print 'last command exit status code was non-zero, will exit now'
+        print('last command exit status code was non-zero, will exit now')
         sys.exit(code)
 
 
@@ -338,9 +338,9 @@ def h5f_node_exists(f,node):
 
 def say(text,verbocity=0):
     if verbocity==0:
-        print '-----------------------------------------'
-        print '* ',text.upper()
-        print '-----------------------------------------'
+        print('-----------------------------------------')
+        print('* ',text.upper())
+        print('-----------------------------------------')
 
 
 def getUDPdatagram(ip,port,N, multicast=False):
@@ -361,7 +361,7 @@ def getUDPdatagram(ip,port,N, multicast=False):
         s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 #         s.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(host))
 #         s.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP, socket.inet_aton(MCAST_GRP) + socket.inet_aton(host))
-    print "waiting on port:", port
+    print("waiting on port:", port)
     i=0
     allData=list()
     while 1:
@@ -422,7 +422,7 @@ def cal2jd(date_time_str, offset=0.0, DT_FMT='iso'):
         try:
             dt = [datetime.strptime(x, DT_FMT) for x in date_time_str]
         except:
-            print 'cannot convert: ',x
+            print('cannot convert: ',x)
         # convert that string to iso format
         dtiso=[x.strftime("%Y-%m-%d %H:%M:%S.%f") for x in dt]
     else:

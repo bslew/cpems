@@ -2,16 +2,17 @@ Required dependencies:
 
 - pgplot pgplot-devel
 - proj proj-devel
+- lapack-3.6
 - libnova libnova-devel
 - cfitsio cfitsio-devel
 - gmp
-- CGAL CGAL-devel
+- CGAL-4.10 CGAL-devel
 - hdf5 hdf5-devel
-- fftw fftw-devel
+- fftw3 fftw3l fftw3-devel
 - tclap
-- Qt 4.8.6
+- Qt >5 (QtCore)
 - armadillo armadillo-devel
-- gsl
+- gsl >2.1
 
 
 To install this package you will also need to compile some external packages

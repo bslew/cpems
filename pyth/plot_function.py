@@ -303,6 +303,7 @@ parser.add_option("", "--nestedGridDset", dest="nestedGridDset", default=-1, typ
 parser.add_option("", "--saveData", action="store_true", dest="saveData", default=False, help="triggers saving input data to plot_function.dumpFile. Usefult for single file plotting eg. saved in fits format ")
 parser.add_option("", "--mk11line", action="store_true", dest="mk11line", default=False, help="triggers generating a=1 line data to plot. The dataset plot details will be taked as last... expplain this better ")
 parser.add_option("", "--equalAspect", action="store_true", dest="equalAspect", default=False, help="triggers equal aspect ratio axes ")
+parser.add_option("", "--shareX", action="store_true", dest="shareX", default=False, help="triggers sharing X axis in multi-subplot plots")
 parser.add_option("", "--show", action="store_true", dest="show", default=False, help="triggers showing the plot even if it is saved to file. ")
 
 parser.add_option("", "--cont", action="store_true", dest="continuousPotting", default=False, help="triggers continuous data load/plot sequence")
@@ -835,6 +836,8 @@ lastBinnedSpectra = []
 saveWidgetMain = None
 saveWidget = None
 plotAxes = None
+plotAxesList = []
+shareX=None
 plotFig = None
 continuousPottingFirstTime = True
 saveToFile = None
@@ -2012,7 +2015,9 @@ def formatXaxisDates(figIdx):
 #                yearsFmt = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
 
     ax = gca()
-    yearsFmt = mdates.DateFormatter(option.dateFmtPlot)
+    print(option.dateFmtPlot)
+#     yearsFmt = mdates.DateFormatter("%Y-%m-%d\n%H:%M:%S")
+    yearsFmt = mdates.DateFormatter(option.dateFmtPlot.decode("unicode_escape"))
     ax.xaxis.set_major_formatter(yearsFmt)
     # format the ticks
     ax.xaxis.set_major_locator(days)
@@ -2480,6 +2485,7 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
         loadingDataTimeWithSpace = 0
         if option.plotType[globalPlotTypeIdx] == 'ts' or " " in option.dateFmt:
             loadingDataTimeWithSpace = option.dateFmt.count(' ')
+            dateFmt=option.dateFmt.split()
             print 'Loading time sequence data with space[s] in format - will load %i columns (%i:%i and %i)' % (loadingDataTimeWithSpace + 1, colx, colx + loadingDataTimeWithSpace, coly)
             
         print 'loading data from file using y-column: %i and x column: %li' % (coly, colx)
@@ -2502,6 +2508,7 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
                             readRows = readRows + 1
                 lineNo = lineNo + 1
         else:
+            dtstr=lambda fmt,dt: str(float(dt)) if '.' in fmt else str(int(float(dt)))
             for line in infile:
                 if lineNo >= startFrom:
                     if not re.match('#', line):
@@ -2512,7 +2519,8 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
                                 l.append([lineNo, sline[coly]])
                             else:
                                 if loadingDataTimeWithSpace > 0:
-                                    dt = [ str(int(float(tmp))) for tmp in sline[colx:colx + loadingDataTimeWithSpace + 1] ]
+#                                     dt = [ str(int(float(tmp))) for tmp in sline[colx:colx + loadingDataTimeWithSpace + 1] ]
+                                    dt = [ dtstr(dateFmt[f],tmp) for f,tmp in enumerate(sline[colx:colx + loadingDataTimeWithSpace + 1]) ]
                                     sline[colx] = ' '.join(dt)
                                 l.append([sline[colx], sline[coly]])
                             readRows = readRows + 1
@@ -3018,7 +3026,10 @@ def makeFunctionPlot(inFile):
                 else:
                     isLastDsInSubplot = False
 
-            
+        global shareX
+        if option.shareX and len(plotAxesList)>0:
+            shareX=plotAxesList[0]
+
         print "figure plot number: ", figPlotNum
         print "first dataset in this subplot: ", newSubplot
         print "lsat dataset in this subplot: ", isLastDsInSubplot
@@ -3032,17 +3043,19 @@ def makeFunctionPlot(inFile):
             if type(option.figCols) == type(list()) and type(option.figRows) == type(list()):
                 if newSubplot:
 #                     if ax==None:
-                    ax = subplot(globalSubPlotGridSpec[figIdx])
+                    ax = subplot(globalSubPlotGridSpec[figIdx], sharex=shareX)
 #                     else:
 #                         ax = subplot(globalSubPlotGridSpec[figIdx],sharex=ax)
             else:
                 if type(figPlotNum) == type(list()):    
 #                     if ax==None:
-                    ax = subplot(figPlotNum[0], figPlotNum[1], figPlotNum[2])
+                    ax = subplot(figPlotNum[0], figPlotNum[1], figPlotNum[2], sharex=shareX)
 #                     else:
 #                         ax = subplot(figPlotNum[0],figPlotNum[1],figPlotNum[2],sharex=ax)
                 else:
-                    ax = subplot(figPlotNum)
+                    ax = subplot(figPlotNum, sharex=shareX)
+                
+        plotAxesList.append(ax)
         plotAxes = ax
         globalAxes = ax
         
@@ -3071,7 +3084,8 @@ def makeFunctionPlot(inFile):
                 else:            
                     data = array(inFile[i], dtype='float')
     #            data=array(inFile[i])
-#                print data
+#                 print data
+#                 sys.exit()
 
 #                 if option.big or len(option.rows)>0:
                 if option.big > 0:
@@ -3776,6 +3790,7 @@ def makeFunctionPlot(inFile):
                 import time
                 datex = list()
 #                [ datex.append(datetime.datetime.strptime(tmpdate, '%M/%d/%Y')) for tmpdate in datax ]
+                print(datax)
                 [ datex.append(datetime.datetime.strptime(str(tmpdate), option.dateFmt)) for tmpdate in datax ]
 #                print 'date X'
 #                print datex

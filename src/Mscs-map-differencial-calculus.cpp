@@ -20,7 +20,7 @@ mscsMap mscsMap::partial_derivative_phi() {
 	long i,j,k,l,m,ring_num,pixinring_num,kr_beg,pixinring_numle1;
 	mscsMap::mapOrderings orig_ordering;
 	
-	printf(" * calculating partial derivative of the map with respect to phi\n");
+//	printf(" * calculating partial derivative of the map with respect to phi\n");
 	
 	//
 	//check and prepare the maps
@@ -75,7 +75,7 @@ mscsMap mscsMap::partial_derivative_phi() {
 	// restore the original ordering
 	if (orig_ordering == mscsMap::nested) { uphi.conv_ring2nest(); conv_ring2nest(); }
 	
-	printf(" * derivative ,phi done\n");
+//	printf(" * derivative ,phi done\n");
 	
 	/*   (*uphi).savebinT("derivative-uphi",1); exit(0); */
 	return uphi;
@@ -89,7 +89,7 @@ mscsMap mscsMap::cov_derivative_phi() {
 	mscsMap uphi;
 	long i;
 	
-	printf(" * calculating covariant derivative of the map with respect to phi\n");
+//	printf(" * calculating covariant derivative of the map with respect to phi\n");
 	uphi = partial_derivative_phi();
 	
 	for (i=0;i<pixNum();i++) {
@@ -124,7 +124,7 @@ mscsMap mscsMap::partial_derivative_th() {
 	long nsle1=nside()-1;
 	long ns3le2=ns3-2;
 	
-	printf(" * calculating partial derivative of the map with respect to theta\n");
+//	printf(" * calculating partial derivative of the map with respect to theta\n");
 	
 	// check and store the ordering of the u map
 	orig_ordering = ordering();
@@ -279,7 +279,7 @@ mscsMap mscsMap::partial_derivative_th() {
 	// get back to original ordering
 	if (orig_ordering == mscsMap::nested) { uth.conv_ring2nest(); conv_ring2nest();}
 	
-	printf(" * derivarive ,th done\n");
+//	printf(" * derivarive ,th done\n");
 	
 	/*   (*uth).savebinT("derivative-uth",1); // save the derivative map as nested  */
 	/*   exit(0); */
@@ -403,7 +403,7 @@ mscsMap mscsMap::partial_derivative_th() {
 // the differentiation is performed directly on the map; not in the SH domain
 mscsMap mscsMap::cov_derivative_th() {
 	mscsMap uth;
-	printf("  * calculating covariant derivative of the map with respect to theta\n");
+//	printf("  * calculating covariant derivative of the map with respect to theta\n");
 	uth = partial_derivative_th();
 	
 	return uth;

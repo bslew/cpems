@@ -5,7 +5,8 @@ cmake_minimum_required (VERSION 2.6)
 ################################################################
 # Set project name
 #
-project (cpems CXX)
+project (cpems CXX C)
+#enable_language(<lang> [OPTIONAL] )
 
 ################################################################
 ################################################################
@@ -13,6 +14,12 @@ project (cpems CXX)
 # Set version number
 #
 set (CPEMS_VERSION "0.2")
+
+# Set build type
+
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
 
 ################################################################
 ################################################################
@@ -24,7 +31,11 @@ set (CPEMS_VERSION "0.2")
 #  "${PROJECT_BINARY_DIR}/PGEEJ_config.h"
 #  )
 
-
+set (CMAKE_MODULE_PATH 
+#	${CMAKE_ROOT}/Modules
+	${PROJECT_SOURCE_DIR}/cmake
+	${CMAKE_MODULE_PATH}
+	)
 
 
 ################################################################
@@ -107,50 +118,255 @@ add_dependencies(external extdir Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
 ################################################################
 # Find required packages
 #
-#find_package(Qt4 4.8 REQUIRED)
-#find_package(Qt5  REQUIRED)
-#FIND_PACKAGE(GSL 2 REQUIRED)
-#find_package(libnova REQUIRED)
+
+find_package(CFITSIO REQUIRED)
+#  CFITSIO_INCLUDE_DIR - the CFITSIO include directory
+#  CFITSIO_LIBRARIES - Link these to use CFITSIO
+if (CFITSIO_FOUND)
+	MESSAGE(STATUS "CFITSIO_INCLUDE_DIR: " ${CFITSIO_INCLUDE_DIR})
+	MESSAGE(STATUS "CFITSIO_LIBRARIES: " ${CFITSIO_LIBRARIES})
+endif()
+
+FIND_PACKAGE(GSL 2 REQUIRED)
+# GSL_INCLUDE_DIR      = where to find headers 
+# GSL_LIBRARIES   = full path to the libraries
+if (GSL_FOUND)
+	MESSAGE(STATUS "GSL_INCLUDE_DIR: " ${GSL_INCLUDE_DIR})
+	MESSAGE(STATUS "GSL_INCLUDES: " ${GSL_INCLUDES})
+	MESSAGE(STATUS "GSL_LIBRARIES: " ${GSL_LIBRARIES})
+endif()
+
+
+find_package(HDF5 1.8 REQUIRED)
+# defines HDF5_INCLUDE_DIRS HDF5_LIBRARIES
+if (HDF5_FOUND)
+	MESSAGE(STATUS "HDF5_INCLUDE_DIRS: " ${HDF5_INCLUDE_DIRS})
+	MESSAGE(STATUS "HDF5_LIBRARIES: " ${HDF5_LIBRARIES})
+endif()
+
+#find_package(Qt5 COMPONENTS OpenGL Gui Core Script ScriptTools QUIET)
+find_package(Qt5 COMPONENTS Core REQUIRED)
+# the recommended use of Qt5 is different than other packages found see:
+# https://doc.qt.io/qt-5/cmake-manual.html
+
+find_package(NOVA REQUIRED)
+#  NOVA_INCLUDE_DIR - the NOVA include directory
+#  NOVA_LIBRARIES - Link these to use NOVA
+
 #find_package(m REQUIRED)
-#find_package(proj REQUIRED)
-#find_package(fftw 3 REQUIRED)
-#find_package(hdf5 1.8 REQUIRED)
-#find_package(CGAL REQUIRED)
-#find_package(gmp REQUIRED)
-#find_package(cfitsio REQUIRED)
-#find_package(CGAL REQUIRED)
-#find_package(pgplot REQUIRED)
+
+find_package(PROJ REQUIRED)
+#    PROJ_INCLUDE_DIR
+#    PROJ_LIBRARY
+
+find_package(FFTW 3 REQUIRED)
+#   FFTW_LIBRARIES           ... full path to fftw library
+#   FFTW_INCLUDES            ... fftw include directory
+
+if (FFTW_FOUND)
+	MESSAGE(STATUS "FFTW_INCLUDE_DIR: " ${FFTW_INCLUDE_DIR})
+	MESSAGE(STATUS "FFTW_INCLUDES: " ${FFTW_INCLUDES})
+	MESSAGE(STATUS "FFTW_LIBRARIES: " ${FFTW_LIBRARIES})
+endif()
 
 
+find_package(GMP REQUIRED)
+# GMP_INCLUDES
+# GMP_LIBRARIES
+
+find_package(CGAL REQUIRED)
+# CGAL_INCLUDE_DIRS
+# CGAL_LIBRARIES_DIR
+# CGAL_MODULES_DIR
+if (CGAL_FOUND)
+	MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
+	MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
+	MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
+endif()
+
+find_package(PGPLOT REQUIRED)
+#  PGPLOT_INCLUDES    = Path to the PGPLOT header files
+#  PGPLOT_LIBRARIES   = Path to all parts of the PGPLOT library
+#  PGPLOT_LIBRARY_DIR = Path to the directory containing the PGPLOT libraries
+
+
+find_package(Armadillo REQUIRED)
+# ARMADILLO_INCLUDE_DIRS - list of required include directories
+# ARMADILLO_LIBRARIES - list of libraries to be linked
+
 ################################################################
 ################################################################
 ################################################################
-# Find required headers
+# Find required headers and libraries
 #
 #find_path(CPEDS_INCLUDE_DIR cpeds-msgs.h 
 #	$ENV{CPEDS_DIR}/include 
 #	/usr/local/lib
 #	)
-find_path(FITSIO_INCLUDE_DIR fitsio.h 
-	/usr/include/cfitsio 
+
+if (NOT CFITSIO_FOUND)
+	find_path(FITSIO_INCLUDE_DIR fitsio.h 
+		/usr/include/cfitsio 
+		/usr/local/include/cfitsio 
+		$ENV{HOME}/local/include
+		)
+endif()
+
+if (NOT GSL_FOUND)
+	find_path(GSL_INCLUDE_DIR gsl_multifit.h
+		$ENV{HOME}/local/include/gsl
+		/usr/local/include/gsl 
+		/usr/include/gsl
+		)
+
+	find_library (GSL_LIBRARIES gsl gslcblas m)
+		
+endif()
+
+
+# nova library
+if (NOT NOVA_FOUND)
+	find_library (NOVA_LIBRARIES nova
+		PATHS
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		PATH_SUFFIXES lib lib64
+	)
+endif()
+
+# proj library
+if (NOT PROJ_FOUND)
+	find_library (PROJ_LIB proj
+		PATHS
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		PATH_SUFFIXES lib lib64
+	)
+endif()
+
+# QtCore library
+if (NOT Qt5Core_FOUND)
+	find_library (QTCORE_LIBRARY Qt5Core
+		PATHS
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		PATH_SUFFIXES lib lib64
+	)
+endif()
+
+
+# FFTW library
+if (NOT FFTW_FOUND)
+	find_library (FFTW_LIBRARIES fftw3 fftw3l
+		PATHS
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		PATH_SUFFIXES lib lib64
+	)
+#	find_library (FFTWL3_LIB fftw3l
+#		PATHS
+#		$ENV{HOME}/local/lib
+#		$ENV{HOME}/anaconda3/lib
+#	)
+endif()
+
+
+# HDF5 library
+if (NOT HDF5_FOUND)
+	find_path(HDF_INCLUDE_DIR hdf5.h
+		$ENV{HOME}/anaconda3/include
+		$ENV{HOME}/local/include
+		/usr/local/include/gsl 
+		/usr/include/gsl
+		)
+
+	find_library (HDF5_LIBRARIES hdf5 z dl m
+		PATHS
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		PATH_SUFFIXES lib lib64
 	)
 
-find_path(OLDGSL_INCLUDE_DIR gsl_multifit.h
-	/usr/local/include/gsl 
-	/usr/include/gsl
+endif()
+
+
+# CGAL library
+if (NOT CGAL_FOUND)
+	find_library (CGAL_LIBRARIES_DIR CGAL
+		PATHS
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
 	)
+endif()
 
-find_path(QTCORE_HEADERS QList
-    /usr/include/qt5/QtCore
-)
 
-find_path(STL_INCLUDE_DIR NAMES 
-#	/usr/include/c++/7/bits 
+# GMP library
+if (NOT GMP_FOUND)
+	find_library (GMP_LIBRARIES gmp
+		PATHS
+		/usr
+		/local
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		PATH_SUFFIXES lib lib64
+	)
+endif()
+
+
+# fitsio library
+if (NOT FITSIO_FOUND)
+	find_library (FITSIO_LIB cfitsio
+		PATHS
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
+	)
+endif()
+
+
+# PGPLOT library
+if (NOT PGPLOT_FOUND)
+	find_library (PGPLOT_LIBRARIES pgplot cpgplot 
+		PATHS
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
+	)
+endif()
+
+
+# armadillo library
+if (NOT Armadillo_FOUND)
+	find_library (ARMADILLO_LIB armadillo
+		PATHS
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
+	)
+endif()
+
+#find_path(QTCORE_HEADERS QList
+#	$ENV{HOME}/anaconda3/include/qt
+#	$ENV{HOME}/anaconda3/include/qt/QtCore
+#    /usr/include/qt5/QtCore
+#)
+
+find_path (STL_INCLUDE_DIR NAMES 
 	stl_iterator.h 
-	c++/7/bits/stl_iterator.h 
-	c++/8/bits/stl_iterator.h 
+#	c++/7/bits/ 
+#	c++/8/bits/stl_iterator.h 
+	PATHS
+	/
+	ENV{GCC_COMPILER_DEFAULTS_PATH}/include/c++/8.2.0/bits
+	gcc/8.2.0
+#	/opt/exp_soft/local/generic/gcc/8.2.0/include/c++/8.2.0
+#	/opt/exp_soft/local/generic/gcc/8.2.0/include/c++/8.2.0/bits	
 #	*/c++/7/bits/stl_iterator.h 
+	/usr/include/c++/7/bits 
+	PATH_SUFFIXES bits
 	)
+
+#execute_process(
+#  COMMAND "which c++"
+#  OUTPUT_VARIABLE PYTHON_SITE
+#  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 ################################################################
 ################################################################
@@ -182,10 +398,11 @@ include_directories(
     src
 	external_packages/novas
 	external_packages/ccSHT3/include
-	${FITSIO_INCLUDE_DIR}
-	${OLDGSL_INCLUDE_DIR}
-	${QTCORE_HEADERS}
-	${QTCORE_HEADERS}/..
+	${CFITSIO_INCLUDE_DIR}
+	${GSL_INCLUDE_DIR}
+#	${QTCORE_HEADERS}
+#	${QTCORE_HEADERS}/..
+	${HDF_INCLUDE_DIRS}
 	${STL_INCLUDE_DIR}
 #	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
 #	${CPEDS_INCLUDE_DIR}
@@ -649,68 +866,6 @@ add_executable(test-hdf-openMP tests/test-hdf-openMP.cpp)
 # Define locations of libraries required for linking
 #
 
-
-# CPEDS library
-#find_library (CPEDS_LIB
-#	NAMES CPEDS 
-#	PATHS $ENV{CPEDS_DIR}/lib
-#	)
-	
-# Mscscore library
-#find_library (MSCSCORE_LIB
-#	NAMES Mscscore
-#	PATHS $ENV{MSCS_PROGRAM_DIR}/lib
-#	)
-	
-# Mscsfn library
-#find_library (MSCSFN_LIB
-#	NAMES Mscsfn
-#	PATHS $ENV{MSCS_PROGRAM_DIR}/lib
-#	)
-
-# nova library
-find_library (NOVA_LIB nova)
-
-# GSL library
-find_library (GSL_LIB gsl)
-
-# GSLCBLAS library
-find_library (GSLCBLAS_LIB gslcblas)
-
-# m library
-find_library (M_LIB m)
-
-# proj library
-find_library (PROJ_LIB proj)
-
-# QtCore library
-find_library (QTCORE_LIB Qt5Core)
-
-# FFTW library
-find_library (FFTW3_LIB fftw3)
-find_library (FFTWL3_LIB fftw3l)
-
-# HDF5 library
-find_library (HDF5_LIB hdf5)
-
-# CGAL library
-find_library (CGAL_LIB CGAL)
-
-# GMP library
-find_library (GMP_LIB gmp)
-
-# fitsio library
-find_library (FITSIO_LIB cfitsio)
-
-# PGPLOT library
-find_library (PGPLOT_LIB cpgplot)
-
-# armadillo library
-find_library (ARMADILLO_LIB armadillo)
-
-# ccSHT3 library
-#find_library (CCSHT3_LIB ccSHT3 PATHS external_packages/ccSHT3/lib)
-
 # provided external libraries
 set (VELKB_LIB velKB)
 set (SLAREFR_LIB slaRefr)
@@ -718,11 +873,6 @@ set (NOVAS_LIB novas)
 set (CCSHT3_LIB ccSHT3)
 
     
-#find_library (VELKB_LIB velKB PATHS external_packages/velKB)
-#find_library (SLAREFR_LIB slaRefr PATHS external_packages/sla-refr)
-# novas library
-#find_library (NOVAS_LIB novas PATHS external_packages/novas)
-#MESSAGE( STATUS "NOVAS_LIB: " ${NOVAS_LIB} )
 
 
 #	
@@ -788,29 +938,21 @@ set (CPEMS_HEADERS
 
 set (LIBRARIES 
 	${CPEMS_LIBS}
-	${NOVA_LIB}
 	${NOVAS_LIB}
 	${CCSHT3_LIB}
 	${VELKB_LIB}
 	${SLAREFR_LIB}
-	${GSL_LIB}
-	${GSLCBLAS_LIB}
-	${M_LIB}
-	${PROJ_LIB}
-	${QTCORE_LIB}
-	${FFTW3_LIB}
-	${FFTWL3_LIB}
-	${HDF5_LIB}
-	${CGAL_LIB}
-	${GMP_LIB}
-	${FITSIO_LIB}
-	${CPEMS_LIBS}
-	${CPEMS_LIBS}
-	${NOVAS_LIB}
-	${SLAREFR_LIB}
-	${PGPLOT_LIB}
-	${ARMADILLO_LIB}
-	${CCSHT3_LIB}
+	${NOVA_LIB}
+	${GSL_LIBRARIES}
+	${CGAL_LIBRARIES} CGAL
+	QtCore
+	${FFTW_LIBRARIES}
+	${PGPLOT_LIBRARIES}
+	${HDF5_LIBRARIES}
+	${CFITSIO_LIBRARIES}
+	${NOVA_LIBRARIES}
+	${PROJ_LIBRARY}
+	${ARMADILLO_LIBRARIES}
 	)
 
 ################################################################
