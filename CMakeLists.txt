@@ -155,7 +155,7 @@ find_package(NOVA REQUIRED)
 
 #find_package(m REQUIRED)
 
-find_package(PROJ REQUIRED)
+find_package(PROJ)
 #    PROJ_INCLUDE_DIR
 #    PROJ_LIBRARY
 
@@ -170,7 +170,7 @@ if (FFTW_FOUND)
 endif()
 
 
-find_package(GMP REQUIRED)
+find_package(GMP )
 # GMP_INCLUDES
 # GMP_LIBRARIES
 
