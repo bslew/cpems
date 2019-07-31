@@ -3027,10 +3027,12 @@ def makeFunctionPlot(inFile):
                     isLastDsInSubplot = False
 
         global shareX
-        if option.shareX and len(plotAxesList)>0:
+        if option.shareX and len(plotAxesList)>0 and figIdx>0:
             shareX=plotAxesList[0]
 
+
         print "figure plot number: ", figPlotNum
+        print('shareX: ',shareX)
         print "first dataset in this subplot: ", newSubplot
         print "lsat dataset in this subplot: ", isLastDsInSubplot
         print "dataset idx in this subplot: ", dsIdxInSubplot
@@ -3082,8 +3084,8 @@ def makeFunctionPlot(inFile):
                     data = np.vstack([np.arange(len(data)), data]).T
                     print data
                 else:            
-                    data = array(inFile[i], dtype='float')
-    #            data=array(inFile[i])
+#                     data = array(inFile[i], dtype='float')
+                    data=array(inFile[i])
 #                 print data
 #                 sys.exit()
 
@@ -3129,7 +3131,8 @@ def makeFunctionPlot(inFile):
                     dt_ncols = option.dateFmt.count(' ')
                     dt = list()
                     for sline in data:
-                        dt.append(' '.join([ str(int(float(tmp))) for tmp in sline[colx:colx + dt_ncols + 1] ]))
+#                         dt.append(' '.join([ str(int(float(tmp))) for tmp in sline[colx:colx + dt_ncols + 1] ]))
+                        dt.append(sline[colx])
                     datex = list()
                     [ datex.append(datetime.datetime.strptime(str(tmpdate), option.dateFmt)) for tmpdate in dt ]
                     datax = datex
@@ -3191,7 +3194,8 @@ def makeFunctionPlot(inFile):
                 if option.shift0X:
                     datax = datax - datax[0]
                 if option.shift0:
-                    datay = datay - mean(datay)
+                    datay=np.asanyarray(datay,dtype=float)
+                    datay = datay - np.mean(datay)
                 if option.polar:
                     print datax
                     datax = datax * np.pi / 180.0  # conversion to radians
@@ -3791,7 +3795,12 @@ def makeFunctionPlot(inFile):
                 datex = list()
 #                [ datex.append(datetime.datetime.strptime(tmpdate, '%M/%d/%Y')) for tmpdate in datax ]
                 print(datax)
-                [ datex.append(datetime.datetime.strptime(str(tmpdate), option.dateFmt)) for tmpdate in datax ]
+                try:
+                    [ datex.append(datetime.datetime.strptime(str(tmpdate), option.dateFmt)) for tmpdate in datax ]
+                except ValueError,msg:
+                    print(tmpdate)
+                    print(msg)
+                    raise(ValueError)
 #                print 'date X'
 #                print datex
                 print len(datex)
