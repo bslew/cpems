@@ -38,6 +38,14 @@ set (CMAKE_MODULE_PATH
 	)
 
 
+set (CPEMS_SEARCH_PATHS
+		$ENV{HOME}/local
+		$ENV{HOME}/anaconda3
+		/usr
+		/usr/local
+		/opt
+	)
+
 ################################################################
 ################################################################
 ################################################################
@@ -148,6 +156,10 @@ endif()
 find_package(Qt5 COMPONENTS Core )
 # the recommended use of Qt5 is different than other packages found see:
 # https://doc.qt.io/qt-5/cmake-manual.html
+if (Qt5Core_FOUND)
+	MESSAGE(STATUS "Qt5Core_INCLUDE_DIRS: " ${Qt5Core_INCLUDE_DIRS})
+	MESSAGE(STATUS "Qt5Core_LIBRARIES: " ${Qt5Core_LIBRARIES})
+endif()
 
 find_package(NOVA )
 #  NOVA_INCLUDE_DIR - the NOVA include directory
@@ -181,19 +193,13 @@ if (NOT GMP_FOUND)
 
 	find_path(GMP_INCLUDES gmp.h
 		PATHS
-		$ENV{HOME}/anaconda3
-		$ENV{HOME}/local
-		/usr
-		/local
+		${CPEMS_SEARCH_PATHS}
 		PATH_SUFFIXES include
 		)
 
 	find_library (GMP_LIBRARIES gmp
 		PATHS
-		$ENV{HOME}/anaconda3
-		/usr
-		/local
-		$ENV{HOME}/local
+		${CPEMS_SEARCH_PATHS}
 		PATH_SUFFIXES lib lib64
 		NO_DEFAULT_PATH
 	)
@@ -208,7 +214,13 @@ find_package(CGAL )
 # CGAL_INCLUDE_DIRS
 # CGAL_LIBRARIES_DIR
 # CGAL_MODULES_DIR
-if (CGAL_FOUND)
+if (NOT CGAL_FOUND)
+	find_library (CGAL_LIBRARIES_DIR CGAL
+		PATHS
+		${CPEMS_SEARCH_PATHS}
+		PATH_SUFFIXES lib lib64
+	)
+
 	MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
 	MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
 	MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
@@ -293,7 +305,7 @@ endif()
 
 # QtCore library
 if (NOT Qt5Core_FOUND)
-	find_library (QTCORE_LIBRARY Qt5Core
+	find_library (Qt5Core_LIBRARIES Qt5Core
 		PATHS
 		$ENV{HOME}/local
 		$ENV{HOME}/anaconda3
@@ -329,22 +341,13 @@ if (NOT HDF5_FOUND)
 
 	find_library (HDF5_LIBRARIES hdf5 z dl m
 		PATHS
-		$ENV{HOME}/local
-		$ENV{HOME}/anaconda3
+		${CPEMS_SEARCH_PATHS}
 		PATH_SUFFIXES lib lib64
 	)
 
 endif()
 
 
-# CGAL library
-if (NOT CGAL_FOUND)
-	find_library (CGAL_LIBRARIES_DIR CGAL
-		PATHS
-		$ENV{HOME}/local
-		PATH_SUFFIXES lib lib64
-	)
-endif()
 
 
 
@@ -429,7 +432,7 @@ include_directories(
 	external_packages/ccSHT3/include
 	${CFITSIO_INCLUDE_DIR}
 	${GSL_INCLUDE_DIR}
-#	${QTCORE_HEADERS}
+	${Qt5Core_INCLUDE_DIRS}
 #	${QTCORE_HEADERS}/..
 	${HDF_INCLUDE_DIRS}
 #	${STL_INCLUDE_DIR}
@@ -452,6 +455,8 @@ link_directories(
     ${PROJECT_BINARY_DIR}/external_packages/sla-refr
     ${PROJECT_BINARY_DIR}/external_packages/ccSHT3/lib
     ${PROJECT_BINARY_DIR}/external_packages/novas
+#    ${Qt5Core_LIBRARIES}
+#	get_target_property(QtCore_location Qt5::Core LOCATION)
     )
 
 
@@ -496,6 +501,7 @@ set (CPEDSLIB_HEADERS
 	src/MscsDateTimeData.h
 	src/RT32pointing_models.h
 	src/cpeds_angular_correlation_fn.h
+	src/Cthwisdom.h
 	)
 
 set (CPEDSLIB_SOURCES 
@@ -528,6 +534,7 @@ set (CPEDSLIB_SOURCES
 	src/MscsDateTimeData.cpp
 	src/RT32pointing_models.cpp
 	src/cpeds_angular_correlation_fn.cpp
+	src/Cthwisdom.cpp
 	)
 #	${CPEDS_INCLUDE_DIR}/cpeds-msgs.h
 
@@ -564,6 +571,7 @@ set (MSCSCORELIB_SOURCES
 	src/Mscs-minkowski-f.cpp
 	src/Mscs-map-minkowski-functionals.cpp
 	src/Mscs-map-differencial-calculus.cpp 
+	src/Mscs-map-correlation_function.cpp
 	)		
 
 
@@ -974,7 +982,7 @@ set (LIBRARIES
 	${NOVA_LIB}
 	${GSL_LIBRARIES}
 	${CGAL_LIBRARIES} CGAL
-	QtCore
+	Qt5::Core
 	${FFTW_LIBRARIES}
 	${PGPLOT_LIBRARIES}
 	${HDF5_LIBRARIES}

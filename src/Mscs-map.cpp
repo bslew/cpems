@@ -18,6 +18,7 @@
 #include <proj_api.h>
 //#include "mpspecfun.h" // BLcomment (Apr 14, 2011, 6:33:46 PM): the usage of W3J symbols will be done in SH space or in individual programs; this functionality is not yet restored in this version of Mscs
 #include <complex>
+#include <iostream>
 #include "matrix.h"
 
 #include "Mscs-map.h"
@@ -2436,10 +2437,12 @@ double mscsMap::get_integralT() {
 // angles are given in degrees.
 // calculates the correlation function on a map with requested resolution
 mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
-		double theta_max, double resolution) {
-	theta_min *= PI180;
-	theta_max *= PI180;
-	resolution *= PI180;
+		double theta_max, double resolution, double useWisdom) {
+
+	msgs->say(
+			"calculating C_th from theta=" + msgs->toStr(theta_min)
+					+ ", to theta= " + msgs->toStr(theta_max), High);
+
 	
 	long int i, j, corr_i;
 	double ang;
@@ -2451,9 +2454,6 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 //	Cth.setPointsNum(point_num_C_th);
 //	separation_number.makeLength(point_num_C_th);
 	
-	msgs->say(
-			"calculating C_th from theta=" + msgs->toStr(theta_min)
-					+ ", to theta= " + msgs->toStr(theta_max), High);
 	if (!coordLoaded()) set_map_coord();
 	/* for (i=0;i<point_num_C_th;i++) { C_th[i][0] = C_th[i][1] = 0; separation_number[i] = 0;} // zeroing tables */
 
@@ -2497,15 +2497,69 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 
 	
 	
-	cpedsDirectionSet ds;
-	long pix_num = pixNum();
-	for (i = 0; i < pix_num; i++) {
-		if (get_m(i)!=0) {
-			ds.append(get_C(i));
-			ds.last().setVal(get_T(i));
+	if (useWisdom>0) {
+		long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
+		Cthwisdom cthwis(theta_min,theta_max,resolution,resolution);
+		string wisdom_file_name=cthwis.get_wisdom_file_name();
+//		wisss << std::getenv("HOME") << "/" << wisdom_default_base_name;
+		if (not cpeds_fileExists(wisdom_file_name)) {
+			cout << "Wisdom file not found, will create it\n";
+
+			/*
+			 * Create a list of non-masked directions and pixel values and healpix pixel indexes.
+			 * The initial mask for calculating wisdom should be conservative in order to 
+			 * allow as many direction as possible. At this stage we remove only the directions 
+			 * that we know are of no used in any of the maps that will be processed. This 
+			 * reduces the amount of calculations with the slow O(N*N) algorithm.
+			 * 
+			 * Then, when the wisdom is calculated and compiled, it can be used to calculate
+			 * correlation functions also on maps with different (more rigorous) masks.
+			 * 
+			 */
+			cpedsDirectionSet ds;
+			std::vector<long> hp_idx;
+			long pix_num = pixNum();
+			for (i = 0; i < pix_num; i++) {
+				if (get_m(i)!=0) {
+					ds.append(get_C(i));
+					ds.last().setVal(get_T(i));
+					hp_idx.push_back(i);
+				}
+			}
+			
+			cpeds_calculate_angular_correlation_fn_wisdom(ds,hp_idx,theta_min, theta_max, resolution, &cthwis); // this calculates wisdom 
+			cthwis.save(wisdom_file_name);
 		}
+		else {
+			cout << "Matching wisdom file found. Will load it\n";
+			cthwis.load(wisdom_file_name);
+		}
+
+		cthwis.setWisdomFraction(useWisdom);
+		// use something new and provide wisdom
+		Cth=calculate_angular_correlation_fn_wis(cthwis);
+		
+
+		
 	}
-	Cth=cpeds_calculate_angular_correlation_fn(ds,theta_min, theta_max, resolution);
+	else {
+		/*
+		 * Create a dataset of non-masked directions 
+		 */
+		theta_min *= PI180;
+		theta_max *= PI180;
+		resolution *= PI180;
+
+		cpedsDirectionSet ds;
+		long pix_num = pixNum();
+		for (i = 0; i < pix_num; i++) {
+			if (get_m(i)!=0) {
+				ds.append(get_C(i));
+				ds.last().setVal(get_T(i));
+			}
+		}
+		Cth=cpeds_calculate_angular_correlation_fn(ds,theta_min, theta_max, resolution);
+	}
 	
 	return Cth;
 }

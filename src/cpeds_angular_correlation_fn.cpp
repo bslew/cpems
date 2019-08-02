@@ -7,14 +7,15 @@
 
 #include "cpeds_angular_correlation_fn.h"
 #include <omp.h>
+#include <assert.h>
 
 mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double theta_min, double theta_max, double resolution) {
 
 	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"
 			"is smaller than the bin resolution.\n");
 	
-	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
-	
+	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution))+1;
+//	printf("size: %li\n",point_num_C_th);
 	cpedsList<double> separation_number;
 //	cpedsList<double> separation_vals;
 	
@@ -25,6 +26,7 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 
 	long i,j,Ndone=0;
 	long pix_num = ds.size();
+//	omp_set_num_threads(1);
 #pragma omp parallel 
 	{
 		double ang=0;
@@ -38,9 +40,11 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 			for (long j = i+1; j < pix_num; j++) {
 				cpedsDirection d2=ds[j];
 				ang=d1.angle(d2);
+//				printf("i: %li j: %li, ang: %lf\n",i,j,ang*PI180inv);
 				
 				if ((ang >= theta_min) && (ang <= theta_max)) {
 					corr_i = (long) round((ang - theta_min) / resolution);
+//					printf("corr_i: %li \n",corr_i);
 					separation_number_priv[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
 					//				separation_vals[corr_i].append()++; // this stores the number of given separations on a sky ( for normalization purposes)
 					Cth_priv[corr_i].rx() += ang;
@@ -105,6 +109,68 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 	return Cth;
 }
 
+/* ******************************************************************************************** */
+void cpeds_calculate_angular_correlation_fn_wisdom(cpedsDirectionSet ds, std::vector<long> hp_idx, double theta_min, double theta_max, double resolution, Cthwisdom* wisdom) {
+
+	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"
+			"is smaller than the bin resolution.\n");
+	
+//	long point_num_C_th = 
+	long point_num_C_th = 0;
+	if (wisdom==0) { (int) (ceil((theta_max - theta_min) / resolution)); }
+	else { point_num_C_th = wisdom->size();	}
+	
+	assert(point_num_C_th>0);
+	
+//	cpedsList<double> separation_number;
+	
+//	mscsFunction Cth;
+//	Cth.setPointsNum(point_num_C_th);
+//	separation_number.makeLength(point_num_C_th);
+//	separation_vals.makeLength(point_num_C_th);
+
+	long i,j,Ndone=0;
+	long ndir = ds.size();
+//#pragma omp parallel 
+	{
+//		mscsFunction Cth_priv=Cth;
+//		cpedsList<double> separation_number_priv=separation_number;
+		
+//#pragma omp for schedule(dynamic)
+		for (long i = 0; i < ndir-1; i++) {
+			cpedsDirection d1=ds[i];
+			
+			for (long j = i+1; j < ndir; j++) {
+				cpedsDirection d2=ds[j];
+				double ang=d1.angle(d2)*PI180inv;
+				wisdom->add_wisdom(ang,hp_idx[i],hp_idx[j]);
+			}
+//#pragma omp critical
+			{
+			Ndone=Ndone+1;
+			if (Ndone%10==0) {
+				printf("calculating: %li of %li\r", Ndone, ndir);
+			}
+			}
+		}
+//#pragma omp single
+//		printf("\ndone\ncombining results\n");
+		
+//#pragma omp critical
+//		{
+//			for (long k=0; k<point_num_C_th; k++) {
+//				Cth[k].rx()+=Cth_priv[k].rx();
+//				Cth[k].ry()+=Cth_priv[k].ry();
+//				separation_number[k]+=separation_number_priv[k];
+//			}
+//		}
+	}
+
+	wisdom->compile();
+	
+//	return Cth;
+//	return wisdom;
+}
 
 /* ******************************************************************************************** */
 mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet ds, double theta_min, double theta_max, double resolution) {

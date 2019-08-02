@@ -35,6 +35,7 @@
 /* #include "Mscs-colormap.h" */
 #include "Mscs-alms.h"
 #include "ccSHT3.h"
+#include "Cthwisdom.h"
 #include <vector>
 
 
@@ -787,7 +788,11 @@ class mscsMap : public mscsObject {
     \date 2009/06/03 16:51:29
     \author Bartosz Lew
   */
-  mscsCorrelationFunction calculate_C_th(double theta_min, double theta_max, double resolution); // calculates the correlation function on a map // if resolution is -1 then it's taken from values set by read_binC_th_parameters (or txt of course too :)
+  mscsCorrelationFunction calculate_C_th(double theta_min, double theta_max, double resolution, 
+		  double useWisdom=0); 
+
+  mscsCorrelationFunction calculate_angular_correlation_fn_wis(Cthwisdom& wisdom);
+  // calculates the correlation function on a map // if resolution is -1 then it's taken from values set by read_binC_th_parameters (or txt of course too :)
 
   /*!
 	\brief calculate S correlation statistic on the map
