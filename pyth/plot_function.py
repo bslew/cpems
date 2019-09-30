@@ -2615,10 +2615,10 @@ def ZTicksFormatter(x, pos):
 
 def removeNans3(datax, datay, datac):
     print "removing nans3"
-    tmp = np.concatenate([[datax], [datay], [datac]], axis=0).T
+    tmp = np.array(np.concatenate([[datax], [datay], [datac]], axis=0).T,dtype=np.float64)
     print "data length before nan removal: %li" % len(datax)
 #    print tmp
-    tmp = tmp[~np.isnan(tmp).any(1)]
+    tmp = tmp[~np.isnan(tmp).any(axis=1)]
 #    print tmp
     datax = tmp[:, 0]
     datay = tmp[:, 1]
@@ -2629,9 +2629,9 @@ def removeNans3(datax, datay, datac):
 def removeNans2(datax, datay):
     print "removing nans2"
     print "data length before nan removal: %li" % len(datax)
-    tmp = np.concatenate([[datax], [datay]], axis=0).T
+    tmp = np.array(np.concatenate([[datax], [datay]], axis=0).T,dtype=np.float64)
 #    print tmp
-    tmp = tmp[~np.isnan(tmp).any(1)]
+    tmp = tmp[~np.isnan(tmp).any(axis=1)]
 #    print tmp
     datax = tmp[:, 0]
     datay = tmp[:, 1]
@@ -2642,7 +2642,7 @@ def removeNans1(datax):
     print "removing nans1"
     print "data length before nan removal: %li" % len(datax)
     tmp = np.asarray([datax], dtype='float').T
-    tmp = tmp[~np.isnan(tmp).any(1)]
+    tmp = tmp[~np.isnan(tmp).any(axis=1)]
     datax = tmp
     print "data length after nan removal: %li" % len(datax)
     return datax

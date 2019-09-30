@@ -78,6 +78,12 @@ class cpedsPoint2D {
     return sqrt(dx*dx+dy*dy);
   }
   
+  double dist() const { 
+    double dx=x();  
+    double dy=y();
+    return sqrt(dx*dx+dy*dy);
+  }
+
   //! true is the point p lies within radius r from *this point.
   bool withinRadius(double r, const cpedsPoint2D &p) {
     if (dist(p)<=r) return true;

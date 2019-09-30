@@ -16,7 +16,7 @@ from pyCPEDScommonFunctions import cpedsPythCommon
 from pyCPEDScommonFunctions import OutliersMinVar
 
 #from pylab import *
-
+import pandas as pd
 import numpy as np
 import scipy
 #import itertools
@@ -47,7 +47,7 @@ parser = OptionParser(description=programDescription)
 #options
 # parser.add_option("", "--data", dest="data", default="", type="string", help='name of the data file: if gauss3000 then 3000 gaussian samples is generated internally', metavar="STRING")
 parser.add_option("-c", "--col", dest="col", default=0, type="int", help='column in data file to look for date. ', metavar="VAL")
-parser.add_option("-o", "", dest="outfile", default="out", type="string", help='output file name', metavar="STRING")
+parser.add_option("-o", "", dest="outfile", default="", type="string", help='output file name', metavar="STRING")
 parser.add_option("", "--offset", dest="offset", default=0, type="float", help='time offset to apply to the converted times [JD]', metavar="VALUE")
 parser.add_option("", "--fmt", dest="fmt", default="iso", type="string", help='''input file time 
     format (default: %Y-%m-%d %H:%M:%S). To read time with fraction of seconds you can used eg.
@@ -55,6 +55,7 @@ parser.add_option("", "--fmt", dest="fmt", default="iso", type="string", help=''
 
 
 # switches
+parser.add_option("", "--MJD", action="store_true", default=False, help="triggers conversion to MJD")
 parser.add_option("", "--test", action="store_true", dest="test", default=False, help="triggers test mode")
 parser.add_option("", "--testFmt", action="store_true", dest="testFmt", default=False, help="triggers test mode")
 
@@ -122,16 +123,38 @@ dt=[' '.join(str(x) for x in row[0:]) for row in dt]
 # print dt
 # sys.exit()
 # jd=cpedsPythCommon.cal2jd(dt).astype("|S30")
-jd=np.array(['%.15f' % JD for JD in cpedsPythCommon.cal2jd(date_time_str=dt, offset=option.offset,DT_FMT=option.fmt)]).reshape([len(dt),1])
+# jd=np.array(['%.15f' % JD for JD in cpedsPythCommon.cal2jd(date_time_str=dt, offset=option.offset,DT_FMT=option.fmt)]).reshape([len(dt),1])
+jd=np.array(['%.15f' % JD for JD in cpedsPythCommon.cal2jd(date_time_str=dt, offset=option.offset,DT_FMT=option.fmt)], dtype=float)
+if option.MJD:
+    jd=jd-2400000.5 
+
+df=pd.DataFrame(data=data)
+# df['jd'].from_numpy(jd)
 # print jd
-# data[:,option.col]=jd #.astype("|S20")
+# data[:,option.col]=jd
+df.iloc[:,option.col]=jd
+# print(df)
+# print data
 # data=scipy.delete(data,option.col+1,1)
 # print np.shape(data[:,range(option.col+Nspaces,len(data[0]),1)])
 # print np.shape(jd)
-data=np.hstack([jd,data[:,range(option.col+Nspaces,len(data[0]),1)]])
+# data=np.hstack([jd,data[:,range(0,option.col+Nspaces,1)],data[:,range(option.col+Nspaces,len(data[0]),1)]])
+# data[:,option.col]=jd
+# data=np.hstack([data[:,range(option.col+1)],data[:,range(option.col+Nspaces+1,len(data[0]),1)]])
+drop=np.arange(option.col+1,option.col+Nspaces)
+if len(drop)>0:
+    df=df.drop(drop, axis=1)
+
+# print(df)
+# print(drop)
 # data=np.array(data,dtype="float")
 # print data
-np.savetxt(option.outfile, data, fmt="%s")
+if option.outfile == "":
+    print(data)
+else:
+#     np.savetxt(option.outfile, data, fmt="%s")
+    df.to_csv(option.outfile,index=False,header=False,sep=' ')
+
 # print data
 
 # data1=None

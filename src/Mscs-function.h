@@ -1398,7 +1398,8 @@ class mscsFunction : public mscsObject {
 	so, the FFT definition is with and (a,b) = (-1,-1) where the general forward DFT is defined as 
 	y_j = 1/(N^[(1-a)/2]) sum_i (x_i exp(2pi b sqrt(-1) ij/N)
 	
-	This is a bit unusual convention but it is useful because the zero'th mode carries the value of the mean real signal and 
+	This is a bit unusual convention but it is useful because the zero'th mode 
+	carries the value of the mean real signal and 
 	the sum of the spectra is the RMS^2 of the real signal.
 	
 	For this definition of the FT the parseval's theorem is:
@@ -1406,9 +1407,11 @@ class mscsFunction : public mscsObject {
 	1/N sum_i (x_i)^2 = sum_j |y_j|^2 
 	
 	
-	With this definition the unit of the power spectra is V^2 if the input signal is a time series of voltage measurements 
+	With this definition the unit of the power spectra is V^2 if the input signal 
+	is a time series of voltage measurements 
 	
-	If the input signal is a time series in time units then N -> T=N*dt where T is the total sampling period. -- not sure this is valid after the change of FT definition
+	If the input signal is a time series in time units then N -> T=N*dt where T is 
+	the total sampling period. -- not sure this is valid after the change of FT definition
 
 
 	\date Jul 22, 2010, 7:16:54 PM
