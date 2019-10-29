@@ -9,6 +9,11 @@
 #include <omp.h>
 #include <assert.h>
 
+
+mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, cpedsList<double> th) {
+	mscsFunction Cth;
+	return Cth;
+}
 mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double theta_min, double theta_max, double resolution) {
 
 	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"

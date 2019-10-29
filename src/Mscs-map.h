@@ -460,6 +460,15 @@ class mscsMap : public mscsObject {
   cpedsList<double> get_nonMasked(string what);
   cpedsDirectionSet get_nonMaskedDirs();
   cpedsDirectionSet get_maskedDirs();
+  /*!
+	\brief return a list of non-masked directions with values set with temperature
+	\details 
+	@return cpedsDirectionSet with directions and temperatures.
+	The method does not check whether the coordinates or temperatures are populated.
+
+	\date Oct 9, 2019, 3:16:29 PM
+   */
+  cpedsDirectionSet get_nonMaskedDirsT();
 
 
   void set_m(long num,double m) { map.m[num]=m; } //!< sets mask at pixel num to value m
@@ -790,6 +799,8 @@ class mscsMap : public mscsObject {
   */
   mscsCorrelationFunction calculate_C_th(double theta_min, double theta_max, double resolution, 
 		  double useWisdom=0); 
+
+  mscsCorrelationFunction calculate_C_th(cpedsList<double>, double wisdomLvl=0); 
 
   mscsCorrelationFunction calculate_angular_correlation_fn_wis(Cthwisdom& wisdom);
   // calculates the correlation function on a map // if resolution is -1 then it's taken from values set by read_binC_th_parameters (or txt of course too :)

@@ -25,14 +25,24 @@ using namespace TCLAP;
 //declaration of the global variables
 void parseOptions(int argc, char** argv);
 filenamestr mask_file;
-string _input_file,_mask_file,_outfile, _CthType;
+string _input_file,_mask_file,_outfile, _CthType,_thetaStr;
 double _minang,_maxang,_res, _wisdom_frac;
 int _Nthreads,_mapres;
 /* long _bin_num; */
 bool _masked=false,_plot, _hisamplingathires;
-bool _useWisdom,_test_wisdom;
+bool _wisdomLvl,_test_wisdom;
 //-----------------------------------
 
+
+cpedsList<double> csv_to_doubleVec(string S) {
+	cpedsList<double> vals;
+    istringstream f(S);
+    string s;    
+    while (getline(f, s, ',')) {
+        vals.append(atof(s.c_str()));
+    }
+    return vals;
+}
 
 int main(int argc, char **argv) {
 	long i;
@@ -58,7 +68,17 @@ int main(int argc, char **argv) {
 		
 		typedef std::chrono::high_resolution_clock Clock;
 		auto t1 = Clock::now();
-		Cth=map.calculate_C_th(_minang,_maxang,_res,1);
+		
+		if (_CthType=="Cth")  {
+			if (_thetaStr=="") {
+				Cth=map.calculate_C_th(_minang,_maxang,_res,1);
+			}
+			else {
+				Cth=map.calculate_C_th(csv_to_doubleVec(_thetaStr),_wisdomLvl);
+			}
+		}
+
+		
 		auto t2 = Clock::now();
 		double duration_wisdom=double(std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count())/1000;
 		cout << "Total calculation time (wisdom) [s]: " 
@@ -109,13 +129,34 @@ int main(int argc, char **argv) {
 	if (_Nthreads>0) omp_set_num_threads(_Nthreads);
 	
 	if (_CthType=="Cth")  {
-		Cth=map.calculate_C_th(_minang,_maxang,_res,_useWisdom);
+		if (_thetaStr=="") {
+			Cth=map.calculate_C_th(_minang,_maxang,_res,_wisdomLvl);
+		}
+		else {
+			cpedsList<double> th=csv_to_doubleVec(_thetaStr);
+			Cth=map.calculate_C_th(th,_wisdomLvl);
+			
+		}
 	}
 	if (_CthType=="CthNormVar")  {
-		Cth=map.calculate_C_th(_minang,_maxang,_res);
-		Cth/=map.get_varianceT();
+		if (_thetaStr=="") {
+			Cth=map.calculate_C_th(_minang,_maxang,_res);
+			Cth/=map.get_varianceT();
+		}
+		else {
+			cpedsList<double> th=csv_to_doubleVec(_thetaStr);
+			throw "Not implemented";
+		}
 	}
-	if (_CthType=="Sth") Cth=map.calculate_Sth(_minang,_maxang,_res);
+	if (_CthType=="Sth") {
+		if (_thetaStr=="") {
+			Cth=map.calculate_Sth(_minang,_maxang,_res);
+		}
+		else {
+			cpedsList<double> th=csv_to_doubleVec(_thetaStr);
+			throw "Not implemented";			
+		}
+	}
 	//  outfile = _input_file+_outfile;
 	Cth.save(_outfile);
 	
@@ -143,12 +184,17 @@ void parseOptions(int argc, char** argv) {
 		ValueArg<double> res("r","res","resolution [deg] (5)",false,5,"double"); cmd.add(res);
 		ValueArg<double> minang("f","from","minimal angular scale [deg] (0)",false,0,"double"); cmd.add(minang);
 		ValueArg<double> maxang("t","to","maximal angular scale [deg] (180)",false,180,"double"); cmd.add(maxang);
+		ValueArg<string> angles("","th","coma-separated list of angles for which "
+				"a given statistic (e.g. C(th)) should be calculated."
+				"This option can be provided instead of -r -f and -t.",false,"","string"); cmd.add(angles);
 		/* 	ValueArg<long> nsigma("o","output","",false,4,"long"); cmd.add(nsigma); */
 		SwitchArg test_wisdom("","test_wisdom","test wisdom (default: false)",false); cmd.add(test_wisdom);
 		ValueArg<double> wisdom_frac("","wisdom_frac","use wisdom fraction",false,1,"double"); cmd.add(wisdom_frac);
 		ValueArg<int> mapres("","mapres","healpix map resolution (test_wisdom option)",false,8,"int"); cmd.add(mapres);
-		SwitchArg record("","record","record and store the map pixel idexes for "
-				"faster calculation of multiple maps of the same format (default: false)",false); cmd.add(record);
+		ValueArg<double> wisdom("","wisdom","record and store the map pixel indexes for "
+				"faster calculation of multiple maps of the same format."
+				"If the wisdom is not available it will be precomputed and "
+				"stored for subsequent uses (default: 0 = don't use.)",false,0,"double"); cmd.add(wisdom);
 		
 		//
 		// Parse the command line.
@@ -169,10 +215,11 @@ void parseOptions(int argc, char** argv) {
 		/* 	_nsigma = nsigma.getValue(); */
 		/* 	_show_plots = show_plots.getValue(); */
 		_CthType=CthType.getValue();
-		_useWisdom=record.getValue();
+		_wisdomLvl=wisdom.getValue();
 		_test_wisdom=test_wisdom.getValue();
 		_mapres=mapres.getValue();
 		_wisdom_frac=wisdom_frac.getValue();
+		_thetaStr=angles.getValue();
 		
 	} catch ( ArgException& e )
 	{ cout << "ERROR: " << e.error() << " " << e.argId() << endl; }

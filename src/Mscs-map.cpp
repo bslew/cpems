@@ -2432,6 +2432,48 @@ double mscsMap::get_integralT() {
 	return get_nonMasked("T").sum() * fourPI / (double) pixNum();
 }
 
+/* ******************************************************************************************** */
+mscsCorrelationFunction mscsMap::calculate_C_th(cpedsList<double> th, double wisdomLvl) {
+	msgs->say("calculating C_th", High);
+
+	
+	long int i, j, corr_i;
+	double ang;
+//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
+	
+//	cpedsList<double> separation_number;
+	mscsCorrelationFunction Cth;
+	
+//	Cth.setPointsNum(point_num_C_th);
+//	separation_number.makeLength(point_num_C_th);
+	
+	if (!coordLoaded()) set_map_coord();
+	/* for (i=0;i<point_num_C_th;i++) { C_th[i][0] = C_th[i][1] = 0; separation_number[i] = 0;} // zeroing tables */
+
+	if (maskLoaded()==false) {
+		makekill_space_manager("make","m");
+		m()=1;
+	}
+	
+	
+	cpedsDirectionSet ds=get_nonMaskedDirsT();
+	
+	if (wisdomLvl>0) {
+		
+	}
+	else {
+		/*
+		 * Create a dataset of non-masked directions 
+		 */
+		
+		// convert to radians
+		th*=PI180;
+		Cth=cpeds_calculate_angular_correlation_fn(ds,th);
+	}
+	
+	return Cth;
+
+}
 //************************************************************************
 // the resolution parameter defines how wide is the binning of theta range, thus defines the number of points that constitute C_th
 // angles are given in degrees.

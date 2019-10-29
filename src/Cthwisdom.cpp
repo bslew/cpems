@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iomanip>
 #include <chrono>
+#include <assert.h>
 #include "cpeds-list.h"
 
 #define DEBUG_LOAD 1
@@ -19,35 +20,62 @@
 typedef std::chrono::high_resolution_clock Clock;
 #endif
 
-
+/* ******************************************************************************************** */
 Cthwisdom::Cthwisdom(double theta_min, double theta_max, double step, double bin) {
-//	std::vector<long> j;
+	cpedsList<double> th;
+	cpedsList<double> bins;
+	
+	double ang=theta_min;
+	long i=0;
+	while (ang<theta_max) {
+		ang=theta_min+i*step;
+		th.append(ang);
+		bins.append(bin);
+		i++;
+	}
+	initialize(th,bins);
+}
+/* ******************************************************************************************** */
+Cthwisdom::Cthwisdom(cpedsList<double> th, cpedsList<double> bin) {
+	initialize(th,bin);
+}
+
+Cthwisdom::~Cthwisdom() {
+}
+/* ******************************************************************************************** */
+void Cthwisdom::initialize(cpedsList<double> th, cpedsList<double> bin) {
+	//	std::vector<long> j;
 	Cthwisdom::element_t el;
 	std::vector<element_t> dummy;
-//	dummy.resize(Npix,el);
-
-	long size=get_size(theta_min,theta_max,step);
+	//	dummy.resize(Npix,el);
+	
+	//	long size=get_size(theta_min,theta_max,step);
+	long size=th.size();
+	double step=0;
+	assert(size>0);
+	assert(bin.size()>0);
 	wisdom.idx.resize(size,el);
 	wisdom.ang.resize(size);
 	wisdom.hits.resize(size);
 	
+	if (size>1) step=th[1]-th[0]; // temporary
 	wisdom.res=step;
-	wisdom.bin=bin;
-	wisdom.halfbin=bin/2;
-
-	wisdom.min=theta_min; //-wisdom.halfbin;
-//	wisdom.max=theta_max;
-	wisdom.max=theta_min+(size-1)*step; //+wisdom.halfbin;
+	wisdom.bin=bin[0];
+	wisdom.halfbin=bin[0]/2;
+	
+	wisdom.min=th.min(); //-wisdom.halfbin;
+	//	wisdom.max=theta_max;
+	//	wisdom.max=theta_min+(size-1)*step; //+wisdom.halfbin;
+	wisdom.max=th.max();
 	wisdom.Npix=0;
-
+	
 	for (long i = 0; i < size; i++) {
-//		wisdom.idx[i].resize(Npix-1,el);
-		wisdom.ang[i]=theta_min+i*step;
+		//		wisdom.idx[i].resize(Npix-1,el);
+		//		wisdom.ang[i]=wisdom.min+i*step;
+		wisdom.ang[i]=th[i];
 		wisdom.hits[i]=0;
 	}
-}
-
-Cthwisdom::~Cthwisdom() {
+	
 }
 /* ******************************************************************************************** */
 long Cthwisdom::get_size(double theta_min, double theta_max, double step) {
@@ -57,7 +85,7 @@ long Cthwisdom::get_size(double theta_min, double theta_max, double step) {
 /* ******************************************************************************************** */
 void Cthwisdom::saveHDF(std::string fname) {
 	if (fname=="") {	fname=get_wisdom_file_name();	}
-
+	
 }
 /* ******************************************************************************************** */
 void Cthwisdom::save(std::string fname) {
@@ -79,13 +107,13 @@ void Cthwisdom::save(std::string fname) {
 		ofile << ang << " ";
 	}
 	ofile << "\n";
-
+	
 	// in the 3rf row we save the number of pairs in bin
 	for (auto& hits : wisdom.hits) {
 		ofile << hits << " ";
 	}
 	ofile << "\n";
-
+	
 	// in each next row save all pairs of indexes that contribute to a single angle
 	// (one angle per row)
 	for (auto& idx : wisdom.idx) {
@@ -94,7 +122,7 @@ void Cthwisdom::save(std::string fname) {
 			ofile << iit->first << " ";
 			
 			std::vector<long>::iterator jit=iit->second.begin();
-//			for (auto& j : iit->second) {
+			//			for (auto& j : iit->second) {
 			while (jit!=iit->second.end()) {
 				ofile << (*jit);
 				jit++;
@@ -117,7 +145,7 @@ int Cthwisdom::load(std::string fname) {
 	
 	std::ifstream ifile(fname);
 	std::string line;
-
+	
 	
 	if (fname=="") {	fname=get_wisdom_file_name();	}
 	
@@ -125,16 +153,16 @@ int Cthwisdom::load(std::string fname) {
 		throw "Cannot open file: "+fname+"\n";
 	}
 	// read 1st row
-//	long dummyl;
+	//	long dummyl;
 	getline(ifile,line);
 	std::istringstream fst(line);
-//	fst >> dummyl;
+	//	fst >> dummyl;
 	fst >> wisdom.min;
 	fst >> wisdom.max;
 	fst >> wisdom.res;
 	fst >> wisdom.bin;
 	fst >> wisdom.Npix;
-
+	
 	
 	// read 2nd row
 	getline(ifile,line);
@@ -146,7 +174,7 @@ int Cthwisdom::load(std::string fname) {
 		iss >> ang;
 		wisdom.ang.push_back(ang);
 	}
-
+	
 	
 	// read 3rd row
 	getline(ifile,line);
@@ -158,7 +186,7 @@ int Cthwisdom::load(std::string fname) {
 		iss >> hits;
 		wisdom.hits.push_back(hits);
 	}
-
+	
 	
 	// remaining rows
 #ifdef DEBUG_LOAD
@@ -170,15 +198,15 @@ int Cthwisdom::load(std::string fname) {
 	
 	while (getline(ifile,line)) {
 		std::istringstream line_stream(line);
-
+		
 #ifdef DEBUG_LOAD
 		auto t2=Clock::now();
 		double load_time=double(std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count())/1.e6;
-//		std::cout << "Load line time [s]: " << load_time << std::endl;
+		//		std::cout << "Load line time [s]: " << load_time << std::endl;
 		load_time_rows.append(load_time);
 #endif
 		
-
+		
 #ifdef DEBUG_LOAD
 		auto proc_row_t1=Clock::now();
 		double wis_time=0;
@@ -187,7 +215,7 @@ int Cthwisdom::load(std::string fname) {
 		element_t el;
 		while (getline(line_stream,pairs,',')) {
 			std::istringstream pair_ss(pairs);
-//			std::string jidx;
+			//			std::string jidx;
 			long i=0;
 			pair_ss >> i;
 			long j;
@@ -195,7 +223,7 @@ int Cthwisdom::load(std::string fname) {
 #ifdef DEBUG_LOAD
 			auto mkwis_t1=Clock::now();
 #endif
-
+			
 			while (pair_ss >> j) {
 				el.pairs[i].push_back(j);
 			}
@@ -209,22 +237,22 @@ int Cthwisdom::load(std::string fname) {
 		wisdom.idx.push_back(el);
 #ifdef DEBUG_LOAD
 		mkwis_time_rows.append(wis_time);
-//		std::cout << "make wisdom time [s]: " << wis_time << std::endl;
-
+		//		std::cout << "make wisdom time [s]: " << wis_time << std::endl;
+		
 		auto proc_row_t2=Clock::now();
 		double process_time=double(std::chrono::duration_cast<std::chrono::microseconds>(proc_row_t2 - proc_row_t1).count())/1.e6;
-//		std::cout << "Process line time [s]: " << process_time << std::endl;
+		//		std::cout << "Process line time [s]: " << process_time << std::endl;
 		process_time_rows.append(process_time);
 #endif
 		
 #ifdef DEBUG_LOAD
 		t1=Clock::now();
-//		std::cout << "\n\n";
+		//		std::cout << "\n\n";
 #endif
 	}
 	ifile.close();	
 	
-
+	
 #ifdef DEBUG_LOAD
 	auto t_fin=Clock::now();
 	std::cout << "Load time total [s]: " 
@@ -248,7 +276,7 @@ int Cthwisdom::load(std::string fname) {
 
 std::string Cthwisdom::get_wisdom_file_name() {
 	std::stringstream wisss;
-//	wisss << "wisdom-" << wisdom.Npix << "_" << std::setprecision(2) << wisdom.min << "_" << wisdom.max << "_" << wisdom.res << ".txt";
+	//	wisss << "wisdom-" << wisdom.Npix << "_" << std::setprecision(2) << wisdom.min << "_" << wisdom.max << "_" << wisdom.res << ".txt";
 	wisss << "wisdom-" 
 			<< std::setprecision(2) << std::fixed 
 			<< wisdom.min << "_" 
@@ -256,7 +284,7 @@ std::string Cthwisdom::get_wisdom_file_name() {
 			<< wisdom.res << "_" 
 			<< wisdom.bin << ".txt";
 	return wisss.str();
-
+	
 }
 
 void Cthwisdom::compile() {
@@ -278,10 +306,10 @@ void Cthwisdom::add_wisdom(double angle, long i, long j) {
 long Cthwisdom::get_ang_idx(double angle) {
 	if (angle<wisdom.min) return -1;
 	if (angle>wisdom.max) return -1;
-//	long n=static_cast<long>((angle-wisdom.min+wisdom.halfbin)/wisdom.res);
+	//	long n=static_cast<long>((angle-wisdom.min+wisdom.halfbin)/wisdom.res);
 	long n=(angle-wisdom.min+wisdom.halfbin)/wisdom.res;
 	double offset=angle-(wisdom.min+n*wisdom.res);
 	if (fabs(offset)>wisdom.halfbin) return -1;
-//	if (offset>0)
+	//	if (offset>0)
 	return n;
 }

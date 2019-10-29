@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <cpeds-list.h>
 #include <unordered_map>
 
 
@@ -21,6 +22,7 @@
  \date created: Apr 29, 2019, 2:53:02 PM 
  \author Bartosz Lew
  */
+
 class Cthwisdom {
 		
 		/* ---------------------------------------------------------------------------------------------------- */
@@ -77,12 +79,16 @@ class Cthwisdom {
 			\date May 9, 2019, 1:51:16 PM
 		*/
 		Cthwisdom(double theta_min=1, double theta_max=180, double step=1, double bin=1);
+		
+		Cthwisdom(cpedsList<double> th, cpedsList<double> bin);
+//		Cthwisdom(cpedsList<double> th=cpedsList<double>(), cpedsList<double> bin=cpedsList<double>());
 		~Cthwisdom();
 
 		/* ---------------------------- */
 		/* PUBLIC METHODS */
 		/* ---------------------------- */
-
+		void initialize(cpedsList<double> th, cpedsList<double> bin);
+		
 		/* ---------------------------- */
 		/* CLASS PROTECTED MEMBERS */
 		/* ---------------------------- */

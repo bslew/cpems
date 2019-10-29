@@ -10,6 +10,17 @@
 #include "Mscs-function.h"
 #include "Cthwisdom.h"
 
+/*!
+	\brief calculates 2-pt angular correlation function
+	\details 
+	@param ds - direction set object that holds directions and values used to calculate the correlation function
+	@param th - defines angles to calculate the correlation on.
+	@return Cth
+
+	\date Oct 8, 2019, 3:28:22 PM
+*/
+mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, cpedsList<double> th);
+
 mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double theta_min, double theta_max, double resolution);
 /*!
 	\brief calculates 2-pt angular correclation function and wisdom (if given)

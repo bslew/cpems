@@ -60,6 +60,18 @@ cpedsDirectionSet mscsMap::get_nonMaskedDirs() {
 	}
 	return dirs;
 }
+/* ******************************************************************************************** */
+cpedsDirectionSet mscsMap::get_nonMaskedDirsT() {
+	long i,pix_num=pixNum();
+	cpedsDirectionSet dirs;
+	if (maskLoaded()) {
+		for (i=0; i<pix_num;i++) { if (!isMasked(i)) { dirs.append(get_C(i)); dirs.last().setVal(get_T(i)); } }
+	}
+	else {
+		return this->get_n();
+	}
+	return dirs;	
+}
 /***************************************************************************************/
 cpedsDirectionSet mscsMap::get_maskedDirs() {
 	long i,pix_num=pixNum();
