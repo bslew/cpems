@@ -4,10 +4,7 @@ import sys
 import os
 import re
 from optparse import OptionParser
-from pylab import *
 import numpy as np
-import h5py
-import pyfits
 
 
 
@@ -171,6 +168,9 @@ if option.scriptMode:
     import matplotlib
     matplotlib.use('Agg')
 
+from pylab import *
+import h5py
+import pyfits
 
 import matplotlib.pyplot as plt
 import matplotlib.mlab
