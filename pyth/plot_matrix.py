@@ -1,27 +1,10 @@
 #!/usr/bin/env python2.7
 #!/usr/bin/env python
 import sys
-from pylab import *
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.mlab
 import os
 import re
-from matplotlib.ticker import FuncFormatter
-
-import matplotlib.pyplot as plt
-import matplotlib.path as mpath
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
-
-#from matplotlib.collections import PatchCollection
-#import matplotlib.path as mpath
-#import matplotlib.patches as mpatches
-import h5py
-import pyfits
 from optparse import OptionParser
-from pyCPEDScommonFunctions import cpedsPythCommon
+
 
 
 
@@ -144,6 +127,7 @@ parser.add_option("", "--grid", action="store_true", dest="grid", default=False,
 #parser.add_option("", "--CMbone", action="store_true", dest="CMbone", default=False, help="triggers showing the plot with bone colormap")
 #parser.add_option("", "--CMnone", action="store_true", dest="CMnone", default=False, help="triggers showing the plot with without colormap")
 parser.add_option("", "--save", action="store_true", dest="save", default=False, help="triggers saving the plot a image")
+parser.add_option("", "--scriptMode", action="store_true", dest="scriptMode", default=False, help="flag to indicate that we are working in script mode for generating pictures and without GUI.")
 parser.add_option("", "--colorbar", action="store_true", dest="colorbar", default=False, help="triggers showing a color bar")
 parser.add_option("", "--zrangeSym", action="store_true", dest="zrangeSym", default=False, help="triggers showing z-range to be within the -max(abs(zmin),abs(zmax)) and +max(abs(zmin),abs(zmax)) ")
 parser.add_option("", "--enumSlices", action="store_true", dest="enumSlices", default=False, help="triggers enumerating slices in the plot title by the slice number")
@@ -177,9 +161,36 @@ parser.add_option("", "--en", dest="en", default=0, type="int", help='last slice
 parser.add_option("", "--fps", dest="fps", default=10, type="int", help='frames per second', metavar="NUM")
 
 
+(option, args) = parser.parse_args()
+
+if option.scriptMode:
+    import matplotlib
+    matplotlib.use('Agg')
+
+
+from pylab import *
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.mlab
+from matplotlib.ticker import FuncFormatter
+
+import matplotlib.pyplot as plt
+import matplotlib.path as mpath
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
+from matplotlib.collections import PatchCollection
+
+#from matplotlib.collections import PatchCollection
+#import matplotlib.path as mpath
+#import matplotlib.patches as mpatches
+import h5py
+import pyfits
+from pyCPEDScommonFunctions import cpedsPythCommon
+
+
+
 cpedsPythCommon.saveHowWeWereCalled()
 
-(option, args) = parser.parse_args()
 if option.enumSlices and option.title=="":
     print "WARNING: title was not given, enumeration will take no effect.\nUse space for title if you want to enforce single number enumeration."
 
