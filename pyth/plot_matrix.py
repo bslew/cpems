@@ -4,6 +4,10 @@ import sys
 import os
 import re
 from optparse import OptionParser
+from pylab import *
+import numpy as np
+import h5py
+import pyfits
 
 
 
@@ -168,8 +172,6 @@ if option.scriptMode:
     matplotlib.use('Agg')
 
 
-from pylab import *
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab
 from matplotlib.ticker import FuncFormatter
@@ -183,8 +185,6 @@ from matplotlib.collections import PatchCollection
 #from matplotlib.collections import PatchCollection
 #import matplotlib.path as mpath
 #import matplotlib.patches as mpatches
-import h5py
-import pyfits
 from pyCPEDScommonFunctions import cpedsPythCommon
 
 
