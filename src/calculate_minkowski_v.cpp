@@ -28,7 +28,7 @@ using namespace TCLAP;
 void parseOptions(int argc, char** argv);
 filenamestr _input_file_my;
 string _input_file,_output_file,_mask_file,_ft,_ord,_functype;
-double _nsigmaMin,_nsigmaMax;
+double _nsigmaMin,_nsigmaMax,_maxFskyMask;
 long _mlevels;
 bool _col_ord, _no_normdev;
 bool masked=false,_mink=false;
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
     map.import_map_data(map2,"m",2);    
 //    map.m()=map2.m();
     map2.killAll();
-    map.check_mask();    
+    map.check_mask();
 //    map.multimask_map_merge();
   }
 
@@ -184,6 +184,10 @@ void parseOptions(int argc, char** argv) {
 	ValueArg<string> functype("t","type","which functional to calculate [v0,v1,v2,all]",false,"all","string"); cmd.add(functype);
 	ValueArg<string> output("o","out","outfile name (prefix), by default input file name",false,"","string"); cmd.add(output);
 //	SwitchArg plotMF("p","plot", "plot the functional", false);	cmd.add( plotMF );
+	ValueArg<double> maxFskyMask("", "maxFskyMask", "Maximal allowed masked sky fraction."
+			"If the provided sky mask contains fraction of pixels masked equal or above this threshold"
+			"then the program will return zeros. By default (1) the program will return"
+			"zeros only when whole sky is masked.", false,1.0,"double");	cmd.add( maxFskyMask );
 
 	//
 	// Parse the command line.
@@ -203,6 +207,7 @@ void parseOptions(int argc, char** argv) {
 	_nsigmaMin = nsigmaMin.getValue();
 	_nsigmaMax = nsigmaMax.getValue();
 	_functype = functype.getValue();
+	_maxFskyMask = maxFskyMask.getValue();
 //	_plotMF = plotMF.getValue();
 
 

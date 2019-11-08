@@ -1899,10 +1899,15 @@ void mscsMap::calculate_map_stats(int output) {
 	if (output != 0) {
 		msgs->say(
 				"map stats: nside: " + msgs->toStr(nside())
-						+ " masked_pix_num: "
-						+ msgs->toStr(mask.masked_pix_num)
+						+ " masked_pix_num: "+ msgs->toStr(mask.masked_pix_num)
+						+ " nonmasked_pix_num: "+ msgs->toStr(pix_num-mask.masked_pix_num)
+						+ " f_sky: " + msgs->toStr(mask.f_sky),
+						High);
+		msgs->say(
+				string("map stats: ")
 						+ " mask_loaded is: " + msgs->toStr(loaded.m)
-						+ " merged: " + msgs->toStr(mask.merged), High);
+						+ " merged: " + msgs->toStr(mask.merged)
+						, High);
 		msgs->say(
 				"appriximated pixel size [deg]: " + msgs->toStr(
 						PI180inv * cpeds_pix_size_healpix(nside())), Medium);

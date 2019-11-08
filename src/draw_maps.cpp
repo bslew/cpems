@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
   mscsAlms a("alms");
   parseOptions(argc,argv);
   map.setVerbosityLevel(High);
+  mask.setVerbosityLevel(High);
   //----------------------------------------------------------------------------------------------------
   srand((long)time(NULL)-cpeds_seed_offset);
 
