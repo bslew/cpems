@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
 		printf("58 - test MscsDataTimeData\n");
 		printf("59 - mscsFunction3dregc: test hdf5 string attribute\n");
 		printf("60 - shiftYwrtX\n");
+		printf("61 - binFunction with provided edges\n");
 		exit(0);
 	}
 	long testNo=strtol(argv[1],NULL,10);
@@ -129,6 +130,7 @@ int main(int argc, char** argv) {
 	cpedsList<double> err;
 	cpedsList<double> alpha,weight;
 	cpedsList<long> binsize;
+	cpedsList<double> binEdges;
 	vector< cpedsList<double> > stats;
 	double fwhm,sigma,nu,T0;
 	cpedsMsgs msgs;
@@ -1286,6 +1288,53 @@ int main(int argc, char** argv) {
 			f.save("inf.shift1.shift-1");
 
 			break;
+			
+		case 61:
+			f.newPoint(-10,-10);
+			f.newPoint(1,1);
+			f.newPoint(1.1,1);
+			f.newPoint(1.2,1);
+			f.newPoint(2,2);
+			f.newPoint(2.1,2);
+			f.newPoint(11,11);
+			f.save("data");
+
+			binsize.clear();
+			binEdges.clear();
+			binEdges << 0 << 1 << 2 << 3 << 4;
+
+			f2=f.binFunction(binEdges,binsize,"mean","mean");
+			f2.print();
+			binsize.print();
+			printf("-------------\n");
+
+			binEdges.clear();
+			binsize.clear();
+			binEdges << 11 << 12;
+			f2=f.binFunction(binEdges,binsize,"mean","mean");
+			f2.print();
+			binsize.print();
+			printf("-------------\n");
+
+			binEdges.clear();
+			binsize.clear();
+			binEdges << -12 << -11;
+			f2=f.binFunction(binEdges,binsize,"mean","mean");
+			f2.print();
+			binsize.print();
+			printf("-------------\n");
+
+			binEdges.clear();
+			binsize.clear();
+			binEdges << -12 << 11;
+			f2=f.binFunction(binEdges,binsize,"mean","mean");
+			f2.print();
+			binsize.print();
+
+			
+			break;
+			
+			
 		default:
 			break;
 	}

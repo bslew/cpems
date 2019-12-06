@@ -1,7 +1,7 @@
 /*!
  * \file mkCMBfield.cpp
  *
- *  Project: ocraToolkit
+ *  Project: cpems
  *  Created on: Mar 18, 2013 3:50:26 PM
  *  Author: blew
  */

@@ -26,6 +26,8 @@ mkdir cpems-build
 cd cpems-build
 
 2) cmake ../cpems
+or for debug version
+cmake CMAKE_BUILD_TYPE=DEBUG [-DPG:STRING=-pg] ../cpems
 
 3) compile external packages
 make external

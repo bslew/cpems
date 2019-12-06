@@ -929,8 +929,9 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# PG - profiler variable that is set during cmake configuration
 SET( CMAKE_CXX_FLAGS  
-	"${CMAKE_CXX_FLAGS} -fopenmp -fPIC"  
+	"${CMAKE_CXX_FLAGS} -fopenmp -fPIC ${PG}"  
 	)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra") # -fPIC

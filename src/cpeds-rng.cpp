@@ -180,8 +180,9 @@ void cpedsRNG::setPDF2d(long sizeX, double* x, long sizeY, double *y, double *p)
 
 // ****************************************************************************************************
 const cpedsList<double> cpedsRNG::getRNs(long n) {
-	double *t=getRN(n);
 	cpedsList<double> cl;
+	if (n==0) return cl;
+	double *t=getRN(n);
 	for (long i=0;i<n;i++) { cl.append(t[i]); }
 	delete [] t;
 	return cl;

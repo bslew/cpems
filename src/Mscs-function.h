@@ -1275,6 +1275,8 @@ class mscsFunction : public mscsObject {
 	Object is not cleaned.
 	@param methodX - binning method for arguments
 	@param methodY - binning method for values
+    @param binSize - list containing the number of points to average into one bin starting from imin;
+    Each element indicates the number of points that should be averaged into a separate bin
 
 	Can be any of:
 	
@@ -1294,6 +1296,29 @@ class mscsFunction : public mscsObject {
 	\date May 25, 2017, 10:11:10 AM
    */
   mscsFunction binFunction(double dx, cpedsList<long>& binSize, string methodX="mean", string methodY="mean");
+
+  /*!
+	\brief bin function according to provided non-overlaping, continuous bins 
+	\details 
+	@param binEdge - list of bin edges
+	@param binCounts - output parameter containing number of data points in each bin.
+		The size is always binEdge-1 even if there is no data in a given bin.
+	@param methodX - as in
+		mscsFunction binFunction(double dx, cpedsList<long>& binSize, string methodX="mean", string methodY="mean")
+		
+	@param methodY - as in 
+		mscsFunction binFunction(double dx, cpedsList<long>& binSize, string methodX="mean", string methodY="mean")
+	
+	@return binned function. The number of binned function points count is size of binEdge-1 or less
+		depending on data population.
+
+
+	If there is no data within a given bin, that bin will not be present 
+	in the output function and in the 
+
+	\date Dec 5, 2019, 2:37:44 PM
+   */
+  mscsFunction binFunction(cpedsList<double>& binEdge, cpedsList<long>& binCounts, string methodX="mean", string methodY="mean");
 
   /*!
 	\brief bin function using space few * O(N)

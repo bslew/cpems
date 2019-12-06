@@ -1986,6 +1986,97 @@ mscsFunction mscsFunction::binFunction(double dx, cpedsList<long>& binSize, stri
 	
 	return fbinned;
 }
+/* ******************************************************************************************** */
+mscsFunction mscsFunction::binFunction(cpedsList<double>& binEdge, cpedsList<long>& binCounts, string methodX, string methodY) {
+	mscsFunction fbinned;
+	if (binEdge.size()<2) return fbinned; 
+	long i,ist, ien, binidx;
+	double x,binst,binen, binctr, xmin,xmax,binArg, binVal;
+	cpedsList<double> binX,binY;
+	
+	
+	checkRanges();
+	binidx=0;
+	ist=0;
+	ien=pointsCount();
+	x=getx(ist);
+	i=ist;
+
+	do {
+		binX.clear();
+		binY.clear();
+
+		binst=binEdge[binidx];
+		binen=binEdge[binidx+1];
+		binctr=(binst+binen)/2;
+		x=getx(i);
+		while (x>=binst and x<binen) {
+			binX.append(x);
+			binY.append(f(i));
+			i++;
+			if (i==pointsCount()) break; 
+			x=getx(i);
+//			printf("----------\n");
+//			binY.print();
+		}
+//		printf("----------\n");
+//		binY.print();
+		
+		if (binX.size()>0) {
+			if (methodX=="mean") binArg=binX.mean();
+			else {
+				if (methodX=="median") binArg=binX.median();
+				else {
+					if (methodX=="min") binArg=binX.min();
+					else {
+						if (methodX=="max") binArg=binX.max();
+						else {
+							if (methodX=="bin_center") binArg=binctr;
+							else {
+								if (methodX=="bin_max") binArg=binen;
+								else {
+									if (methodX=="bin_min") binArg=binst;
+									else {
+										cout << "Wrong methodX in binFunction\n"; exit(1);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+	
+			if (methodY=="mean") binVal=binY.mean();
+			else {
+				if (methodY=="median") binVal=binY.median();
+				else {
+					if (methodY=="min") binVal=binY.min();
+					else {
+						if (methodY=="max") binVal=binY.max();
+						else {
+							cout << "Wrong methodY in binFunction\n"; exit(1);
+						}
+					}
+				}
+			}
+//			binY.print();
+			binCounts.append(binX.size());
+			fbinned.newPoint(binArg,binVal);
+		}
+		else {
+			// make sure binCounts has the right size when there is no data in the bin
+			binCounts.append(0);
+		}
+		
+		if (x>=binen) binidx++;
+		if (x<binst) i++;
+		if (i==pointsCount()) break; 
+		
+	} while (binidx<binEdge.size()-1);
+	
+	return fbinned;
+	
+}
 /***************************************************************************************/
 mscsFunction& mscsFunction::binFunctionLin(long imin, cpedsList<long>& binSize, cpedsList<double>& w) {
 	
