@@ -41,10 +41,11 @@ void cpedsRNG::initiateRNG(string distr, string rn, const gsl_rng_type* generato
 // ****************************************************************************************************
 void cpedsRNG::clone(const cpedsRNG& parent) {
 	_generator_type=parent._generator_type;
-//	_seed=parent._seed;
 	seed(parent.seed());
 //	exit(0);
 	seedOffset(parent.seedOffset());
+//	printf("rng clone: rng: %li, state: %li, type: %li, seed:%li off: %li\n",_state,
+//			_state->state,_state->type,_seed,_seed_offset);
 	setState(parent.getState());
 	_rnDataType=parent._rnDataType;
 	_distr=parent._distr;
