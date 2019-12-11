@@ -335,13 +335,15 @@ if (NOT HDF5_FOUND)
 	find_path(HDF_INCLUDE_DIR hdf5.h
 		$ENV{HOME}/anaconda3/include
 		$ENV{HOME}/local/include
-		/usr/local/include/gsl 
-		/usr/include/gsl
+		/usr/local/include/hdf5
+		/usr/include/hdf5
+		/usr/include/hdf5/serial
 		)
 
 	find_library (HDF5_LIBRARIES hdf5 z dl m
 		PATHS
 		${CPEMS_SEARCH_PATHS}
+		/usr/lib/x86_64-linux-gnu/
 		PATH_SUFFIXES lib lib64
 	)
 
@@ -369,6 +371,7 @@ endif()
 if (NOT Armadillo_FOUND)
 	find_library (ARMADILLO_LIB armadillo
 		PATHS
+		/usr
 		$ENV{HOME}/local
 		PATH_SUFFIXES lib lib64
 	)
@@ -434,7 +437,8 @@ include_directories(
 	${GSL_INCLUDE_DIR}
 	${Qt5Core_INCLUDE_DIRS}
 #	${QTCORE_HEADERS}/..
-	${HDF_INCLUDE_DIRS}
+	${HDF5_INCLUDE_DIRS}
+	${HDF_INCLUDE_DIR}
 #	${STL_INCLUDE_DIR}
 #	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
 #	${CPEDS_INCLUDE_DIR}
@@ -451,12 +455,14 @@ include_directories(
 # Include project directories to search for libraries
 #
 link_directories(
+	${PROJECT_BINARY_DIR}
     ${PROJECT_BINARY_DIR}/external_packages/velKB
     ${PROJECT_BINARY_DIR}/external_packages/sla-refr
-    ${PROJECT_BINARY_DIR}/external_packages/ccSHT3/lib
+    ${PROJECT_BINARY_DIR}/external_packages/ccSHT3
     ${PROJECT_BINARY_DIR}/external_packages/novas
 #    ${Qt5Core_LIBRARIES}
 #	get_target_property(QtCore_location Qt5::Core LOCATION)
+	${HDF5_LIBRARIES}
     )
 
 
@@ -663,10 +669,10 @@ set (MSCSWMAPLIB_SOURCES
 #add_library(Mscsplot STATIC ${MSCSPLOTLIB_SOURCES} )
 #add_library(MscsWMAP STATIC ${MSCSWMAPLIB_SOURCES} )
 
-add_library(CPEDS SHARED  ${CPEDSLIB_SOURCES} )
+add_library(CPEDS STATIC  ${CPEDSLIB_SOURCES} )
 #add_library(cpedsRotation SHARED ${CPEDS_PYTHON_BINDINGS} )
-add_library(Mscsfn SHARED  ${MSCSFNLIB_SOURCES} )
-add_library(Mscscore SHARED ${MSCSCORELIB_SOURCES} )
+add_library(Mscsfn STATIC  ${MSCSFNLIB_SOURCES} )
+add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
 add_library(Mscsplot SHARED ${MSCSPLOTLIB_SOURCES} )
 add_library(MscsWMAP SHARED ${MSCSWMAPLIB_SOURCES} )
 
@@ -931,7 +937,7 @@ endif()
 
 # PG - profiler variable that is set during cmake configuration
 SET( CMAKE_CXX_FLAGS  
-	"${CMAKE_CXX_FLAGS} -fopenmp -fPIC ${PG}"  
+	"${CMAKE_CXX_FLAGS} -fopenmp  ${PG} -fPIC "  
 	)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra") # -fPIC
@@ -974,12 +980,17 @@ set (CPEMS_HEADERS
 	${MSCSWMAPLIB_HEADERS}
 	)
 
-set (LIBRARIES 
-	${CPEMS_LIBS}
-	${NOVAS_LIB}
+set (EXTERNAL_LIBRARIES
 	${CCSHT3_LIB}
+	${NOVAS_LIB}
 	${VELKB_LIB}
 	${SLAREFR_LIB}
+)	
+	
+set (LIBRARIES 
+	${CPEMS_LIBS}
+	${EXTERNAL_LIBRARIES}
+	${FFTW_LIBRARIES}
 	${NOVA_LIB}
 	${GSL_LIBRARIES}
 	${CGAL_LIBRARIES} CGAL
@@ -991,11 +1002,20 @@ set (LIBRARIES
 	${NOVA_LIBRARIES}
 	${PROJ_LIBRARY}
 	${ARMADILLO_LIBRARIES}
+	${GMP_LIBRARIES}
 	)
 
 ################################################################
 ################################################################
 ################################################################
+# Link CPEDS targets
+#
+target_link_libraries(CPEDS ${EXTERNAL_LIBRARIES} Mscsfn ${GSL_LIBRARIES})
+target_link_libraries(Mscscore ${EXTERNAL_LIBRARIES} CPEDS)
+target_link_libraries(Mscsfn ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+target_link_libraries(Mscsplot ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+target_link_libraries(MscsWMAP ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+
 # Link CPEDS targets
 #
 target_link_libraries(cosmocalc ${LIBRARIES})

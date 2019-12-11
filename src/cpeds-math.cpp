@@ -501,12 +501,12 @@ double cpeds_julian_local_time(long year, long month, long day, double hour, dou
 	
 	double tjd;
 	
-	jd12h = (long) day - 32075L + 1461L * ((long) year + 4800L
-			+ ((long) month - 14L) / 12L) / 4L
-			+ 367L * ((long) month - 2L - ((long) month - 14L) / 12L * 12L)
-			/ 12L - 3L * (((long) year + 4900L + ((long) month - 14L) / 12L)
+	jd12h = day - long(32075) + long(1461) * (long(year)+ long(4800)
+			+ (long(month)- long(14)) / long(12)) / long(4)
+			+ long(367) * (long(month) - long(2) - (long(month) - long(14)) / long(12) * long(12))
+			/ long(12) - long(3) * ((long(year)+ long(4900) + (month - long(14)) / long(12))
 					/ 100L) / 4L;
-	tjd = (double) jd12h - 0.5 + hour / 24.0;
+	tjd = double(jd12h) - 0.5 + hour / 24.0;
 	
 	
 	tjd+=longitude/360;

@@ -19,7 +19,10 @@ os.environ["CXX"] = "c++"
 cpedsRotation = Extension(
     'pyCPEDScommonFunctions/cpedsRotation',
     sources=['pyCPEDScommonFunctions/cpedsRotation.cpp'],
-    include_dirs=['/usr/local/include/cpems', '/usr/lib64/python2.7/site-packages/numpy/core/include/numpy'],
+    include_dirs=['/usr/local/include/cpems', 
+                  '/usr/lib64/python2.7/site-packages/numpy/core/include/numpy',
+                  '/usr/lib/python2.7/dist-packages/numpy/core/include/numpy/',
+                  ],
     library_dirs=['/usr/local/lib/cpems'],
     libraries=['nova',  'gsl', 'gslcblas', 'm', 'proj', 
                'QtCore', 'fftw3', 'fftw3l', 'hdf5', 'CGAL', 'gmp','cfitsio', 'CPEDS', 'Mscsfn', 
