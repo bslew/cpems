@@ -221,10 +221,10 @@ if (NOT CGAL_FOUND)
 		PATH_SUFFIXES lib lib64
 	)
 
-	MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
-	MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
-	MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
 endif()
+MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
+MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
+MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
 
 find_package(PGPLOT)
 #  PGPLOT_INCLUDES    = Path to the PGPLOT header files
@@ -663,18 +663,24 @@ set (MSCSWMAPLIB_SOURCES
 ################################################################
 # Add library targets
 #
-#add_library(CPEDS STATIC ${CPEDSLIB_SOURCES} )
-#add_library(Mscsfn STATIC ${MSCSFNLIB_SOURCES} )
-#add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
-#add_library(Mscsplot STATIC ${MSCSPLOTLIB_SOURCES} )
-#add_library(MscsWMAP STATIC ${MSCSWMAPLIB_SOURCES} )
 
+
+# depreciated - in future these targets will be removed
 add_library(CPEDS STATIC  ${CPEDSLIB_SOURCES} )
 #add_library(cpedsRotation SHARED ${CPEDS_PYTHON_BINDINGS} )
 add_library(Mscsfn STATIC  ${MSCSFNLIB_SOURCES} )
 add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
 add_library(Mscsplot SHARED ${MSCSPLOTLIB_SOURCES} )
 add_library(MscsWMAP SHARED ${MSCSWMAPLIB_SOURCES} )
+
+# current version
+add_library(cpems SHARED 
+	${CPEDSLIB_SOURCES} 
+	${MSCSFNLIB_SOURCES}
+	${MSCSCORELIB_SOURCES}
+	${MSCSPLOTLIB_SOURCES}
+	${MSCSWMAPLIB_SOURCES} 
+	)
 
 #add_library(${PROJECT_BINARY_DIR}/external_packages/
 #add_dependencies(CPEDS slaRefr novas ccSHT3 velKB)
@@ -965,11 +971,12 @@ add_definitions(
 #
 
 set (CPEMS_LIBS
-	CPEDS
-	Mscsfn
-	Mscscore
-	Mscsplot
-	MscsWMAP
+#	CPEDS
+#	Mscsfn
+#	Mscscore
+#	Mscsplot
+#	MscsWMAP
+	cpems
 	)
 
 set (CPEMS_HEADERS
@@ -985,11 +992,6 @@ set (EXTERNAL_LIBRARIES
 	${NOVAS_LIB}
 	${VELKB_LIB}
 	${SLAREFR_LIB}
-)	
-	
-set (LIBRARIES 
-	${CPEMS_LIBS}
-	${EXTERNAL_LIBRARIES}
 	${FFTW_LIBRARIES}
 	${NOVA_LIB}
 	${GSL_LIBRARIES}
@@ -1003,6 +1005,11 @@ set (LIBRARIES
 	${PROJ_LIBRARY}
 	${ARMADILLO_LIBRARIES}
 	${GMP_LIBRARIES}
+)	
+	
+set (LIBRARIES 
+	${CPEMS_LIBS}
+	${EXTERNAL_LIBRARIES}
 	)
 
 ################################################################
@@ -1010,11 +1017,15 @@ set (LIBRARIES
 ################################################################
 # Link CPEDS targets
 #
+# depreciated - 
+# generates interdependent libraries that cannot be compiled with appropriate depedencies as dynamic
 target_link_libraries(CPEDS ${EXTERNAL_LIBRARIES} Mscsfn ${GSL_LIBRARIES})
 target_link_libraries(Mscscore ${EXTERNAL_LIBRARIES} CPEDS)
 target_link_libraries(Mscsfn ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
 target_link_libraries(Mscsplot ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
 target_link_libraries(MscsWMAP ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+# new
+target_link_libraries(cpems ${EXTERNAL_LIBRARIES})
 
 # Link CPEDS targets
 #
@@ -1062,7 +1073,7 @@ target_link_libraries(test-cpedsMCMC-parabola_2param ${LIBRARIES})
 ################################################################
 # Install targets
 #
-install (TARGETS 
+set (CPEMS_EXECUTABLES
 	bin_function 
 	coco 
 	compute_CL_ranges 
@@ -1082,9 +1093,9 @@ install (TARGETS
 	smoothPoints
 	calculate_Cth
 	calculate_minkowski_v
-	DESTINATION bin)
+)
 
-install(TARGETS
+set (CPEMS_TEST_EXECUTABLES
     test-hdf-openMP2
     test-hdf-openMP
     test-mscsfn
@@ -1095,12 +1106,29 @@ install(TARGETS
     test-function-derivative
     test-fits-read
     test-cpedsMCMC-parabola_2param
+)
+
+install (TARGETS 
+	${CPEMS_EXECUTABLES}
+	DESTINATION bin)
+
+install(TARGETS
+	${CPEMS_TEST_EXECUTABLES}
     DESTINATION cpems/tests)
     
 
 install (TARGETS 
 	${CPEMS_LIBS}
+	EXPORT cpemsTargets
 	DESTINATION lib)
+
+install (FILES 
+	${CPEMS_HEADERS}
+	DESTINATION include/cpems)
+#install (TARGETS
+#	${CPEMS_HEADERS}
+#	DESTINATION "${INSTALL_INCLUDE_DIR}/cpems"
+#	COMPONENT dev)
 
 
 install (FILES
@@ -1112,9 +1140,6 @@ install (FILES
     DESTINATION lib)
 
 
-install (FILES 
-	${CPEMS_HEADERS}
-	DESTINATION include/cpems)
 
 #--prefix=${CMAKE_INSTALL_PREFIX} 
 install (CODE "execute_process(COMMAND sudo python setup.py install -f
@@ -1140,6 +1165,51 @@ install (FILES
 #install (TARGETS 
 #	${CPEMS_LIBS}
 #	DESTINATION lib)
+
+
+
+
+# Make relative paths absolute (needed later on)
+foreach(p LIB BIN INCLUDE CMAKE)
+  set(var INSTALL_${p}_DIR)
+  if(NOT IS_ABSOLUTE "${${var}}")
+    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif()
+endforeach()
+
+# Add all targets to the build-tree export set
+export(TARGETS ${CPEMS_LIBS}
+  FILE "${PROJECT_BINARY_DIR}/cpemsTargets.cmake")
+
+# Export the package for use from the build-tree
+# (this registers the build-tree with a global CMake-registry)
+#export(PACKAGE FooBar)
+
+# Create the cpemsConfig.cmake and cpemsConfigVersion files
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+   "${INSTALL_INCLUDE_DIR}")
+# ... for the build tree
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+configure_file(cpemsConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/cpemsConfig.cmake" @ONLY)
+# ... for the install tree
+set(CONF_INCLUDE_DIRS "\${cpems_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(cpemsConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cpemsConfig.cmake" @ONLY)
+# ... for both
+configure_file(cpemsConfigVersion.cmake.in
+  "${PROJECT_BINARY_DIR}/cpemsConfigVersion.cmake" @ONLY)
+
+# Install the cpemsConfig.cmake and cpemsConfigVersion.cmake
+install(FILES
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cpemsConfig.cmake"
+  "${PROJECT_BINARY_DIR}/cpemsConfigVersion.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+# Install the export set for use with the install-tree
+install(EXPORT cpemsTargets DESTINATION
+  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
 
 ################################################################
 ################################################################
