@@ -13,7 +13,13 @@ project (cpems CXX C)
 ################################################################
 # Set version number
 #
-set (CPEMS_VERSION "0.2")
+
+set(CPEMSLIB_VERSION_MAJOR 0)
+set(CPEMSLIB_VERSION_MINOR 2)
+set(CPEMSLIB_VERSION_PATCH 1)
+set(CPEMSLIB_VERSION_STRING ${CPEMSLIB_VERSION_MAJOR}.${CPEMSLIB_VERSION_MINOR}.${CPEMSLIB_VERSION_PATCH})
+
+set (CPEMS_VERSION ${CPEMSLIB_VERSION_STRING})
 
 # Set build type
 
@@ -680,6 +686,11 @@ add_library(cpems SHARED
 	${MSCSCORELIB_SOURCES}
 	${MSCSPLOTLIB_SOURCES}
 	${MSCSWMAPLIB_SOURCES} 
+	)
+
+set_target_properties(cpems PROPERTIES 
+	VERSION ${CPEMSLIB_VERSION_STRING} 
+	SOVERSION ${CPEMSLIB_VERSION_MAJOR}.${CPEMSLIB_VERSION_MINOR}
 	)
 
 #add_library(${PROJECT_BINARY_DIR}/external_packages/
