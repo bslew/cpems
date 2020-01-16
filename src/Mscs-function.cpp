@@ -80,8 +80,13 @@ double mscsFunction::getMaxValue() const { return range.ymax; }
 double mscsFunction::getMinArg() const { return range.xmin; }
 /* **************************************************************************************************** */
 double mscsFunction::getMaxArg() const { return range.xmax; }
+/* ******************************************************************************************** */
+std::pair<double,double> mscsFunction::getMinMaxValues() const {
+	return std::make_pair(getMinValue(),getMaxValue());
+}
+
 /* **************************************************************************************************** */
-void mscsFunction::checkRanges() {
+mscsFunction& mscsFunction::checkRanges() {
 	double* tmp;
 	clearRanges();
 	
@@ -98,6 +103,7 @@ void mscsFunction::checkRanges() {
 	}
 	else { range.ymin=range.ymax=0.0; range.iymin=range.iymax=0; }
 	
+	return *this;
 }
 
 void mscsFunction::clearRanges() {

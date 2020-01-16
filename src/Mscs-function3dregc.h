@@ -24,6 +24,7 @@ QLists
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_deriv.h>
 #include <vector>
+#include <tuple>
 #ifndef NO_HDF5
 #include <hdf5.h>
 #endif
@@ -40,6 +41,7 @@ QLists
 #include "cpeds-point3d.h"
 #include "cpeds-point_set.h"
 #include "subdomain.h"
+
 
 /* INTERDEPENDENT HEADERS */
 

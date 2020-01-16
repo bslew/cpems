@@ -12,6 +12,7 @@
 //#include <QtCore/QList>
 #include "qtbase.h"
 #include <string>
+#include <tuple>
 #include <iostream>
 #include <sstream>
 #ifndef NO_HDF5
@@ -172,6 +173,9 @@ class mscsFunction : public mscsObject {
   double getMaxArg() const;
   //! returns the maximal argument of the function
   double getMinArg() const;
+  //! returns a minimal, maximal values pair (check ranges before using this function)
+  std::pair<double,double> getMinMaxValues() const;
+
   //! returns index of the maximal value of the function
   long getMaxValueIdx() const { return range.iymax; }
   //! returns the index of the  minimal value of the function
@@ -1609,7 +1613,7 @@ class mscsFunction : public mscsObject {
   
   //! checks the ranges and updates the function ranges structure
   /*! The updated ranges are returned.   */
-  void checkRanges();
+  mscsFunction& checkRanges();
  
 
   /*!
