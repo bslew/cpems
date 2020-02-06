@@ -614,3 +614,31 @@ void Model6ar_DR2017(double AZ, double ZD, double *dAZ, double *dZD, double Tmet
 	*dAZ=MA;
 	*dZD=MZ;
 }
+/* ******************************************************************************************** */
+void aging_linear_driftZD(double AZ, double ZD, double *dAZ, double *dZD,double JD) {
+	// convert JD to years since 2015-01-01
+	double JDref = 2457023.5; // JulianDay(2015,1,1);
+	double t=(JD-JDref)/365.25;
+	
+	double A=19.15278693; // mdeg/yr
+	double B=-32.06389286; // mdeg
+	
+	double dzd=A*t+B;
+
+	*dZD+=dzd/1000; // convert to deg
+	
+}
+/* ******************************************************************************************** */
+void aging_linearT_driftZD(double AZ, double ZD, double *dAZ, double *dZD, double JD, double Tmeteo) {
+	// convert JD to years since 2015-01-01
+	double JDref = 2457023.5; // JulianDay(2015,1,1);
+	double t=(JD-JDref)/365.25;
+	
+	double A=18.7101907; // mdeg/yr
+	double B=-34.4520555; // mdeg
+	double C=0.283225502; // mdeg/K
+	
+	double dzd=A*t+B+C*Tmeteo;
+
+	*dZD+=dzd/1000; // convert to deg
+}

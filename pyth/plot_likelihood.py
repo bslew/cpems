@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 #!/usr/bin/env python
 import sys
 from pylab import *
@@ -107,6 +106,10 @@ parser.add_option("", "--contcolor", dest="contcolor",  type="string", default='
 parser.add_option("", "--aspect", dest="aspect",  type="string", default="auto", help='''sets axes aspect ratio (default: "")
 Possible values are: auto, equal, normal or num = number''', metavar="FLOAT" )
 parser.add_option("", "--scaleExtent", dest="scaleExtent", default=1, type="float", help='rescale the extent of the axes range -- this affects tick labels calculation', metavar="VALUE")
+parser.add_option("", "--scaleX", default=1, type="float", help='rescale the extent of the X axis -- this affects tick labels calculation. It also scales the best fit parameter', metavar="VALUE")
+parser.add_option("", "--XunitPrefix", default='', type="string", help='add this prefixt to X axis unit description (useful when scaling by e.g 1000, you can add "m" for milli for example)', metavar="VALUE")
+parser.add_option("", "--scaleY", default=1, type="float", help='rescale the extent of the Y axis -- this affects tick labels calculation. It also scales the best fit parameter', metavar="VALUE")
+parser.add_option("", "--YunitPrefix", default='', type="string", help='add this prefixt to Y axis unit description (useful when scaling by e.g 1000, you can add "m" for milli for example)', metavar="VALUE")
 
 
 # switches
@@ -155,7 +158,7 @@ def loadHDF5CRlevels(fname,dset):
     CLcontour=[None,None,None] # these should increase
 #     print f.attrs.keys()
     
-    for item in f[dset].attrs.keys():
+    for item in list(f[dset].attrs.keys()):
 #         print item
         if item=="CLcontour68":
             CLcontour[2]=f[dset].attrs[item]
@@ -204,7 +207,7 @@ def getFileExtension(fname):
 def loadData(fname,dset):
     sliceNo=0
 #     dset='L'
-    print "* loading file: %s (slice: %li)" % (fname,sliceNo)
+    print("* loading file: %s (slice: %li)" % (fname,sliceNo))
     
     f = h5py.File(fname,'r')
     slice = f[dset].value[:,:,sliceNo]
@@ -221,34 +224,34 @@ def loadData(fname,dset):
 #         option.ymin=ymax
 #         option.ymax=ymin
             
-    print 'Read matrix ranges xmin,xmax,ymin,ymax: ',slice_ranges
+    print('Read matrix ranges xmin,xmax,ymin,ymax: ',slice_ranges)
      
     #
     # read contours
     #   
     CLcontours=loadHDF5CRlevels(fname, dset)
     CLcontours.append(1.0)
-    print "Read CL contours:"
-    print CLcontours
+    print("Read CL contours:")
+    print(CLcontours)
     
     #
     # load plot labels
     #
     plot_labels=loadParameterNames(fname, dset)
-    print "Parameter names:"
-    print plot_labels
+    print("Parameter names:")
+    print(plot_labels)
     
     #
     # load plot labels
     #
     bfparams=loadBestFitParameters(fname, dset)
-    print "Best fit parameters:"
-    print bfparams
+    print("Best fit parameters:")
+    print(bfparams)
 
 
-    print
-    print "    * data size after loading and trimming: %i rows %i cols" % (len(slice[:,0]),len(slice[0]))
-    print
+    print()
+    print("    * data size after loading and trimming: %i rows %i cols" % (len(slice[:,0]),len(slice[0])))
+    print()
     return slice,slice_ranges,CLcontours,plot_labels,bfparams
     
 
@@ -281,7 +284,7 @@ def plotData2D(mat,mat_ranges,CRcontours, plot_labels, bfparams, plotNo):
         setp( ax.get_xticklabels(), fontsize=option.fontSize)
         setp( ax.get_yticklabels(), fontsize=option.fontSize)
     else:
-        print 'switching off xlabels'
+        print('switching off xlabels')
         ax.set_xticklabels([])
         ax.set_yticklabels([])
 
@@ -293,7 +296,7 @@ def plotData2D(mat,mat_ranges,CRcontours, plot_labels, bfparams, plotNo):
     else:
         outputFile='.'.join(fname.split('.')[0:-1])+'.eps'
 
-    print 'Saving to file:',outputFile
+    print('Saving to file:',outputFile)
     fig.savefig(outputFile, dpi=option.DPI)
 
     if option.show:
@@ -311,15 +314,27 @@ if type(option.gc)!=type(list()):    option.gc=list(['k'])
 ###########################################################################################
 
 matID=0
-for (fname,matID) in zip(args,range(len(args))):
+for (fname,matID) in zip(args,list(range(len(args)))):
     ext=getFileExtension(fname)
     
     if ext=='hdf5' or ext=='hdf':
 
         mat,ran,CRcontours,plot_labels,bfparams=loadData(fname, option.hdf5dset)
+        if option.scaleX!=1.:
+            ran=ran[0]*option.scaleX,ran[1]*option.scaleX,ran[2],ran[3]
+            bfparams[0]*=option.scaleX
+        if option.XunitPrefix!='':
+            plot_labels[0]=plot_labels[0].replace('[','['+option.XunitPrefix)
+
+        if option.scaleY!=1.:
+            ran=ran[0],ran[1],ran[2]*option.scaleY,ran[3]*option.scaleY
+            bfparams[1]*=option.scaleY
+        if option.YunitPrefix!='':
+            plot_labels[1]=plot_labels[1].replace('[','['+option.YunitPrefix)
+            
         plotData2D(mat,ran,CRcontours,plot_labels,bfparams,matID)
     
     else:
-        print 'I do not recognize this extension. Supported extensions are: hdf and hdf5'
+        print('I do not recognize this extension. Supported extensions are: hdf and hdf5')
         sys.exit(1)
     

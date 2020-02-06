@@ -4604,10 +4604,10 @@ def makeFunctionPlot(inFile):
 #                         yticks(arange(min(tcs[0], option.ymin[figIdx % len(option.ymin)]), max(tcs[-1], option.ymax[figIdx % len(option.ymax)]), option.yticks[figIdx % len(option.yticks)]))
 
 
-                    if option.xticksMinor[figIdx % len(option.xticks)] != None:
+                    if option.xticksMinor[figIdx % len(option.xticksMinor)] != None:
                         minorLocatorX = MultipleLocator(option.xticksMinor[figIdx % len(option.xticksMinor)])
                         ax.xaxis.set_minor_locator(minorLocatorX)
-                    if option.yticksMinor[figIdx % len(option.yticks)] != None:
+                    if option.yticksMinor[figIdx % len(option.yticksMinor)] != None:
                         minorLocatorY = MultipleLocator(option.yticksMinor[figIdx % len(option.yticksMinor)])
                         ax.yaxis.set_minor_locator(minorLocatorY)
 #                     ax1.tick_params(axis='x',which='major',direction='out',length=4,width=4,color='b',pad=10,labelsize=20,labelcolor='g')
