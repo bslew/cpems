@@ -200,6 +200,64 @@ void aging_linear_driftZD(double AZ, double ZD, double *dAZ, double *dZD,double 
 */
 void aging_linearT_driftZD(double AZ, double ZD, double *dAZ, double *dZD, double JD, double Tmeteo);
 
+
+/*!
+	\brief implements Model4e using full DR2017 pointing data corrected by linear and thermal drift
+	\details 
+	@param AZ [deg] - from South
+	@param ZD [deg]
+	@param dAZ [deg] - model position correction
+	@param dZD [deg] - model position correction
+
+	Temperature independent model.
+	Although this model is mathematically the same as Model4e for AZ corrections (for the same data)
+	and similar to Model4e for ZD corrections, the processing of the pointing data to 
+	derive this model is different in processing the weather dependent refraction. 
+	Now the full history of the refraction angles is used rather than optical refraction.
+	
+	Also, at the preprocessing stage the best fit linear drift and temperature dependence 
+	is removed using aging_linearT_drift model
+	
+	See 2020/1 tech rep. for details. - DOES NOT EXIST YET
+
+	\date Feb 4, 2020, 6:10:27 PM
+	\author Bartosz Lew
+*/
+void Model4e_DR2017_linearT_drift_removed(double AZ, double ZD, double* dAZ, double *dZD);
+
+/*!
+	\brief implements Model4gr 
+	\details 
+	@param AZ [deg] - from South
+	@param ZD [deg]
+	@param dAZ [deg] - model position correction
+	@param dZD [deg] - model position correction
+
+	The model adds rail track corrections atop model 4g: 
+	hence the name has "r" - according to the new naming convention
+	
+	Calibrated against DR2017sum pointing data. See 2017/1 tech rep. for details.
+
+	\date Feb 4, 2020, 6:10:37 PM
+	\author Bartosz Lew
+*/
+void cpeds_Model4er_DR2017_linearT_drift_removed(double AZ, double ZD, double *dAZ, double *dZD);
+
+/*!
+	\brief model used for COR2COR conversions in RT32 pointing project
+	\details 
+
+	This procedure combines COR model Model4er_DR2017_linearT_drift_removed
+	with linear drift model aging_linearT_driftZD
+	
+	as it is done by default in 'oldage' control system.
+	
+	
+	
+	\date Feb 7, 2020, 2:59:52 PM
+*/
+void cpeds_Model4er_DR2017_linearT_drift_removed_linearT_drift(double AZ, double ZD, double JD, double T, double *dAZ, double *dZD);
+
 #endif /* RT32_POINTING_MODELS_H_ */ 
 
 

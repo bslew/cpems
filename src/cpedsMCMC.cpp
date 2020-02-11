@@ -630,6 +630,12 @@ void cpedsMCMC::startChain(bool followPriors) {
 	if (length()==_walk.maximalChainLength) { msgs->say("Breaking the chain. The chain length reached: "+msgs->toStr(_walk.maximalChainLength),Medium); }
 	
 	//
+	// print best fit in this chain
+	//
+	bestFitLink().printLink();
+	
+	
+	//
 	// save step PDF after walk finishes
 	//
 	saveStepPDFs(getPartialFilesDirFull()+"/stepPDF-walkEnd");				
