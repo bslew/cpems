@@ -8,7 +8,7 @@
 
 
 #include <Python.h>
-#include <ndarraytypes.h>
+//#include <ndarraytypes.h>
 #include <numpy/arrayobject.h>
 #include "cpeds-math.h"
 #include "cpeds-point3d.h"
@@ -191,24 +191,32 @@ static PyMethodDef cpedsRotation_methods[] = {
 		{NULL, NULL, 0, NULL},
 };
 
+#if PY_MAJOR_VERSION >= 3
 // python3 implementation
-/*
-static struct PyModuleDef pycpeds_math_definition = {
+static struct PyModuleDef cpedsRotation_definition = {
     PyModuleDef_HEAD_INIT,
-    "example",
-    "example module containing pants() function",
+    "cpedsRotation",
+    "cpedsRotation function python3 API",
     -1,
-    pycpeds_math_methods,
+    cpedsRotation_methods,
 };
 
-PyMODINIT_FUNC PyInit_example(void) {
+PyMODINIT_FUNC PyInit_cpedsRotation(void) {
   Py_Initialize();
-  PyObject *m = PyModule_Create(&pycpeds_math_definition);
+  PyObject *m = PyModule_Create(&cpedsRotation_definition);
 
   return m;
 }
- */
+ 
 
+//PyMODINIT_FUNC
+//initcpedsRotation(void)
+//{
+//	(void) Py_Initialize();
+//	import_array();
+//}
+
+#else
 // python2 implementation
 PyMODINIT_FUNC
 initcpedsRotation(void)
@@ -216,3 +224,4 @@ initcpedsRotation(void)
 	(void) Py_InitModule("cpedsRotation", cpedsRotation_methods);
 	import_array();
 }
+#endif

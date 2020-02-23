@@ -436,7 +436,9 @@ int main(int argc, char **argv) {
 /*     for (i=1;i<=(long)(_ml[0]);i++) {       map.set_Treg(_ml[i]*PI/180,_mb[i]*PI/180,2); } */
 /*     map.clear_multimask(); */
 
-    for (i=1;i<=(long)(_tl[0]);i++) {       map.make_circle_dot(_tl[i],_tb[i],_ts[i],_tv[i],"T",_overplot_region_type,_overplot_region_type_dot_points,""); }
+    for (i=1;i<=(long)(_tl[0]);i++) {       
+    	map.make_circle_dot(_tl[i],_tb[i],_ts[i],_tv[i],"T",_overplot_region_type,_overplot_region_type_dot_points,""); 
+    }
 
 /*     EXPERIMENTAL BEGIN */
 

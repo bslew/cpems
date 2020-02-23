@@ -38,8 +38,8 @@ class confidenceRange():
     
     def test(self):
         d=[random.gauss(0.0,1.0) for x in range(10000)]
-        print d
+        print(d)
         np.savetxt('d.tmp', d)
-        print np.percentile(d, 50.0)
-        print np.percentile(d, 50.0+34.0)
-        print np.percentile(d, 50.0-34.0)
+        print(np.percentile(d, 50.0))
+        print(np.percentile(d, 50.0+34.0))
+        print(np.percentile(d, 50.0-34.0))

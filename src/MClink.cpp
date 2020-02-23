@@ -93,6 +93,41 @@ const MClink& MClink::operator=(const MClink& rhs) {
 //	printf("MClink::operator= out>>> _theta: %li, rhs.theta: %li, dims: %li, rhs.dims: %li\n",_theta,rhs._theta,dims(), rhs.dims());
 	return *this;
 }
+/* ******************************************************************************************** */
+const MClink& MClink::operator=(const double v) {
+	for (long i = 0; i < _Nparam; i++) {				_theta[i]=v;			}
+	return *this;
+}
+/* ******************************************************************************************** */
+const bool MClink::operator==(const double v) {
+	for (long i = 0; i < _Nparam; i++) {
+		if (_theta[i]!=v) return false;	}
+	return true;
+}
+/* ******************************************************************************************** */
+MClink MClink::operator-(const MClink& rhs) {
+	MClink mc(*this);
+	return mc-=rhs;
+}
+/* ******************************************************************************************** */
+MClink MClink::operator*(const double v) {
+	MClink mc(*this);
+	return mc*=v;	
+}
+/* ******************************************************************************************** */
+const MClink& MClink::operator*=(const double v) {
+	for (long i=0;i<_Nparam;i++) { setParam(i,getParam(i)*v); }
+	return *this;
+}
+/* ******************************************************************************************** */
+MClink& MClink::operator-=(const MClink& rhs) {
+	assert(rhs.dims()==dims());
+	for (long i=0;i<_Nparam;i++) { setParam(i,getParam(i)-rhs.getParam(i)); }
+	setChisq(chisq()-rhs.chisq());
+	setIdx(getIdx()-rhs.getIdx());
+	_likelihood-=rhs.L();
+	return *this;
+}
 /***************************************************************************************/
 const double& MClink::operator[](const long i) const {
 //	printf("operator[]:: theta: %li, i: %li, dims: %li\n",_theta,i,dims());
@@ -127,7 +162,7 @@ void MClink::save(string fname) {
 	}
 	fprintf(f,"%.10lE ", chisq());
 	fprintf(f,"%.10lE ", L());
-	fprintf(f,"%li ", _idx);
+	fprintf(f,"%lf ", _idx);
 	long acc;
 	if (isAccepted()) acc=1; else acc=0;
 	fprintf(f,"%li ", acc);
@@ -191,3 +226,34 @@ void MClink::printLink() const {
 	cout << "dims: " << dims() << "\n";
 	printParams();
 }
+/* ******************************************************************************************** */
+ostream& operator<< (ostream& output, const MClink& l ) {
+	for (long i=0;i<l.dims();i++) {
+		output << l.getParam(i) << " ";
+	}
+	output << l.chisq();
+	output << std::endl;
+	return output;
+}
+/* ******************************************************************************************** */
+/* ******************************************************************************************** */
+MClink& operator*(double v,MClink& l) {
+	for (long i=0;i<l.dims();i++) { l.setParam(i,l.getParam(i)*v); }
+	return l;	
+
+}
+
+void MClink::printParamsLine(string info) const {
+	std::cout << info;
+	for (long i=0;i<dims();i++) {
+		printf("p%i: %lE ",i,getParam(i));
+	}
+	printf("\n");
+
+}
+//ostream& operator<<(MClink& link) {
+//	for (long i=0;i<link.dims();i++) {
+//		*sb << link.getParam(i) << " ";
+//	}
+//	
+//}

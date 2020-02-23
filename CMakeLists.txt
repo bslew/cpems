@@ -730,6 +730,7 @@ add_executable(mkFractal src/mkFractal.cpp)
 add_executable(mk_gauss_map src/mk_gauss_map.cpp)
 add_executable(map_oper src/map_oper.cpp)
 add_executable(calculate_Cth src/calculate_Cth.cpp)
+#add_executable(calculate_alms src/calculate_alms.cpp) # not ported
 
 ################################################################
 ################################################################

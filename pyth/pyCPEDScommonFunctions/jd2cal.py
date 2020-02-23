@@ -91,19 +91,19 @@ parser.add_option("", "--testFmt", action="store_true", dest="testFmt", default=
 if option.test:
     dt='2017-10-27 09:10:11.23'
     val=cpedsPythCommon.cal2jd(date_time_str=dt,offset=option.offset)
-    print dt,' UTC is %.15f' % val
+    print(dt,' UTC is %.15f' % val)
     shouldBe=2458053.882074421271682
-    print 'should be: %.15f' % shouldBe
-    print 'diff: ',val-shouldBe
+    print('should be: %.15f' % shouldBe)
+    print('diff: ',val-shouldBe)
     sys.exit()
 
 if option.testFmt:
     dt='2017 10 27 09 10 11.23'
     val=cpedsPythCommon.cal2jd(date_time_str=dt,offset=option.offset,DT_FMT=option.fmt)
-    print dt,' UTC is %.15f' % val
+    print(dt,' UTC is %.15f' % val)
     shouldBe=2458053.882074421271682
-    print 'should be: %.15f' % shouldBe
-    print 'diff: ',val-shouldBe
+    print('should be: %.15f' % shouldBe)
+    print('diff: ',val-shouldBe)
     sys.exit()
 
 from matplotlib.dates import strpdate2num
@@ -111,9 +111,9 @@ data=np.loadtxt(args[0], dtype="float")
 # print data
 
 dt=cpedsPythCommon.jd2cal(jd=data[:,option.col], DT_FMT=option.fmt).reshape([len(data),1])
-print np.shape(data[:,range(option.col+1,len(data[0]),1)])
-print np.shape(dt)
-data=np.hstack([dt,data[:,range(option.col+1,len(data[0]),1)]])
+print(np.shape(data[:,list(range(option.col+1,len(data[0]),1))]))
+print(np.shape(dt))
+data=np.hstack([dt,data[:,list(range(option.col+1,len(data[0]),1))]])
 # data=np.array(data,dtype="float")
 
 np.savetxt(option.outfile, data, fmt="%s")

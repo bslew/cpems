@@ -98,7 +98,7 @@ class cpedsMCMC {
 				long maximalNumberOfForcedCoolings; //! the number of times when the system will be forced to cool down each time when _maximalRejectionsCount has been reached and _temperature > _finalTemperature
 				
 				double temperature; //!< defines the current temperature for the simulated annealing and its history
-				cpedsList<double> temperatureHistory; //!< records the cooling history
+				mscsFunction temperatureHistory; //!< records the cooling history
 				double initialTemperature; //! temperature to start the walk with
 				double finalTemperature; //!< temperature at which we stop the parameter space walk
 				double coolingRate; //!< temperature decrease multiplier for one Monte-Carlo step
@@ -133,8 +133,10 @@ class cpedsMCMC {
 				cpedsRNG rnSgn; //!< This generator only generates the sign + or -
 				MClink current; //!< The last accepted MClink
 				MClink next; //!< currently not used
+				MClink avgStep; //!< average step calculated using NavgSteps
 				double likelihoodRejectionThreshold; //!< likelihood threshold below which links are rejected for posterior calculation
 				long maximalChainLength; //!< the maximal length of the chain after which the chain will be broken
+				long maximalAcceptedChainLength; //!< the maximal number of accepted links (default: 0 = not used)
 				long statesTot; //!< total number of states (accepted and rejected) considered during the walk
 				long statesTotBeforeBurnOut; //!< chain length after the walk is done and before burning-out
 				double initialPDFstepCRfraction; //!< fraction of the parameter domain used for generation of initial step size PDFs
@@ -145,13 +147,32 @@ class cpedsMCMC {
 				bool uphillClimbing; //!< this defines whether to keep the direction of walk if the previous state was accepted and deltaX2>0 (true) or otherwise whether the next step direction should be random (default: true)
 				bool keepDirectionNow; //!< defines whether to keep the current direction when _uphillClimbing is on
 				cpedsList<double> currentDirection; //!< holds the current climb direction
-				vector< cpedsList<double> > steps; //!< holds history of MC steps in each direction
+
+				cpedsMC steps; //!< holds history of MC steps in each direction (regardless of whether the step is accepted or not)
+//				cpedsMC stepsBuff; //!< holds history of MC steps in each direction (regardless of whether the step is accepted or not)
+//				vector< cpedsList<double> > steps; //!< holds history of MC steps in each direction (regardless of whether the step is accepted or not)
+				vector< cpedsList<double> > stepsBuff; //!< holds history of NavgSteps accepted MC steps 
 				long keepDirectionStepGenerationFailuresNumber; //!< maximal number of failures to generate the next step in given direction before dropping that direction (this prevents chain from trying to keep direction when staying on wall)
 				long rejectedLinkNumber; //!< number of links that were prepended before the beginning of the chain to store the location of the true first link in the chain. -- not sure if this is accurate anymore...
 				long rejectionsCount; //!< current number of rejected states
 				long userOutputFrequency; //!< output info about MCMC walk every this number of MCMC states
 				long convergenceTestMinimalLength; //!< the minimal length of the chain for testing the convergence; the cooling is not done for chains shorter than this value
 				long burnOutLength; //!< number of steps to perform after convergence is reached.
+				long NavgSteps; /*!< number of last steps used to calculate average step.
+				 	 	 	 	 	 Used only for UphillGradient method to speed up
+				 	 	 	 	 	 the convergence. */
+				long momentum; /*!< number of accumulated average steps.
+				 	 	 	 	 	 Used only for UphillGradient method to speed up
+				 	 	 	 	 	 the convergence. */
+				
+				mscsFunction momentumFactorHistory;
+				cpedsMC momentumHistory;
+				cpedsMC etagradHistory;
+				mscsFunction etaHistory;
+				double d2X2rel;
+				int d2X2rel_points; //!< number of last points used for d(deltaX2rel)/d step calculation
+				mscsFunction dX2rel; //!< delta(chisq)/chisq used to control gradient walk parameters
+				
 		} walk_t;
 		
 		typedef struct {
@@ -232,7 +253,8 @@ class cpedsMCMC {
 				long PDF1d_pointsCount; //!< number of points used to store estimated 1d PDFs
 				long PDF2d_pointsCount; //!< number of points used to store estimated 2d PDFs
 //				bool calculate1Dpdf;				
-				bool calculate2Dpdf;				
+				bool calculate2Dpdf;	
+				int saveFilePrecision; //!< parameter sent to setprecision in ostream when saving
 		} IOcontrol_t;
 		
 //		cpedsMCMC(int runIdx=0);
@@ -381,16 +403,18 @@ class cpedsMCMC {
 		*/
 		const mscsFunction& getParameter(string Pname, int* ctrl=NULL) const;
 
-		const int getParameterByName(string Pname) const;
+		int getParameterByName(string Pname) const;
 
 		int dims() const { return _walk.Nparam; }
 		long sizeRejected() { return _MCrej.size(); }
 		long sizeAccepted() { return _MCaccepted.size(); }
 		long size() { return sizeAccepted()+sizeRejected(); }
 		long length() { return _MCaccepted.size()+_MCrej.size(); }
+		long lengthAccepted() { return _MCaccepted.size(); }
 		cpedsMC& BFchain() { return _MCbestFitChain; }
 		MClink& chain(long i) { return _MCaccepted[i]; }
 		cpedsMC& rejectedStates() { return _MCrej; }
+		cpedsMC& testStates() { return _MCtest; }
 		cpedsMC& chain() { return _MCaccepted; }
 		cpedsMC& acceptedStates() { return _MCaccepted; }
 		MClink getBestFitLink() { return _bestFit; }
@@ -421,6 +445,7 @@ class cpedsMCMC {
 		*/
 		void walkNstates(long Nstates, MClink startingLink, int how=1);
 		void setMaximalChainLength(long l) { _walk.maximalChainLength=l; }
+		void setMaximalAcceptedChainLength(long l) { _walk.maximalAcceptedChainLength=l; }
 		/*!
 			\brief set the maximal number of rejected states required for forced cooling
 			\details 
@@ -450,6 +475,7 @@ class cpedsMCMC {
 		
 		
 		void printInfo() const;
+		void printLastStep() const;
 
 		QList<MscsPDF1D>& posteriors() { return _chisqData.bestFitData.posteriors1D; }
 		MscsPDF1D get1Dposterior(string paramName, long pdfPoints=50, string interpolationType="steffen");
@@ -473,7 +499,9 @@ class cpedsMCMC {
 		void saveAcceptedChisq(string fname);
 		cpedsMC loadMC(string fnameName);
 		void loadMCrun(string dirName);
-		void saveParams(string fname);
+		void saveAcceptedParams(string fname);
+		void saveMomentumHistory(string fname);
+		void saveLearningRateHistory(string fname);
 		void saveData(string fname);
 		/*!
 			\brief calculate and save residuals calculated wrt the provided input data column
@@ -520,8 +548,9 @@ class cpedsMCMC {
 		void saveBestFitStepPDFs(string fname);
 		void loadBestFitStepPDFs(string dirName);
 		void saveStepPDFs(string fname);
-		cpedsList<double> getMCsteps(long param);
-		cpedsList<double>& MCsteps(long param);
+//		mscsFunction getMCstepsFn(long param) const;
+		cpedsMC getMCsteps() const { return _walk.steps; }
+		cpedsMC& MCsteps();
 		void saveMCsteps(string fname);
 		void saveParameterNames(string fname="");
 		/*!
@@ -575,6 +604,9 @@ class cpedsMCMC {
 			}
 		}
 		bool getUphillGradient() const { return _walk.uphillGradient; }
+		void setAvgStepsCount(long N);
+		void resetAvgStep();
+		void resetMomentum() { _walk.momentum=0; }
 		void setChisqSignature(string sig) { _IOcontrol.chisqSignature=sig; }
 		const string getChisqSignature() const { return _IOcontrol.chisqSignature; }
 		/*!
@@ -655,7 +687,7 @@ class cpedsMCMC {
 		void setTemperatures(double initial, double final) { _cooling.initialTemperature=initial; _cooling.finalTemperature=final; updateCoolingPDF();  }
 		void setInitialWalkStepSize(double size) { _walk.initialPDFstepCRfractionAfterBurnIn=size; }
 		
-		void setWalkInfoOutputFrequency(long everyNstates) { _walk.userOutputFrequency=everyNstates;	}
+		void setWalkInfoOutputFrequency(long everyNstates);
 		long getWalkInfoOutputFrequency() const { return _walk.userOutputFrequency;	}
 		
 		/*!
@@ -903,10 +935,12 @@ class cpedsMCMC {
 		int paramij2idx(int i,int j);
 		MClink& current() { return _walk.current; }
 		MClink& nextCandidate() { return _walk.next; }
+		MClink& avgStep() { return _walk.avgStep; }
 
+		
 		void saveCooling();
 		void saveModel();
-		void dumpAll();
+		void dumpAll(bool dumpNow=false);
 
 		/*!
 			\brief this function defines the actual cooling scheme
@@ -928,7 +962,9 @@ class cpedsMCMC {
 		void coolDownLogLin(double deltaX);
 		/*!
 			\brief cool the system in a geometric sequence
+			@param factor - factor by which the temperature will shrink
 			\details 
+			
 			
 			The current temperature is divided by 2^coolingRage
 			For the typical coolingRate=1 this will cool system by 2.
@@ -937,7 +973,7 @@ class cpedsMCMC {
 		
 			\date Jan 9, 2018, 12:57:49 PM
 		*/
-		double coolDownGeometric();
+		double coolDownGeometric(double factor=2.0);
 		void coolForcibly();
 		void coolDownProp(double deltaX);
 
@@ -978,7 +1014,7 @@ class cpedsMCMC {
 		void saveFirstLinkLocation();
 		void saveCurrentLength();
 		void saveCurrentTemperature();
-		void printLink(const MClink& link) const;
+		void printLink(const MClink& link, string comment="") const;
 
 		void storeBestFit();
 		
@@ -993,6 +1029,21 @@ class cpedsMCMC {
 		*/
 		void updateAcceptWorseThresholds();
 		
+		
+		/*!
+			\brief update the internal list of MC step sizes. Useful for debugging purposes
+			\details 
+
+			@return returns delta w.r.t previous step
+			The returned link contains parameter differences from the last step to step-2.
+			The index of the returned link is set to the index of the last step.
+			
+			This function assumes that the new link has been added, so it should be called
+			after the link is added.
+		
+			\date Feb 12, 2020, 4:12:51 PM
+		*/
+		MClink update_deltas();
 		
 		/*!
 			\brief extract parameter values and associated likelihoods 
@@ -1016,7 +1067,13 @@ class cpedsMCMC {
 		//
 		
 		cpedsMC _MCaccepted; //!< chain of all accepted links (including those that yield a higher chisq)
+		cpedsMC _MCaccepted_deltas; /*!< TODO: chain of steps for accepted links 
+								(including those that yield a higher chisq).
+								There is a functionaliy overlap between this structure
+								and _walk.steps structure which holds exactly the same 
+								information */
 		cpedsMC _MCrej; //!< list of rejected states
+		cpedsMC _MCtest; //!< list of tested states
 		MClink _bestFit; //!< stores the current best fit state
 		cpedsMC _MCbestFitChain; //!< chain to hold the history of best fit links 
 		MClink _startingLink; //!< the initial link

@@ -1433,6 +1433,7 @@ class mscsFunction3dregc : public mscsObject {
 			\author Bartosz Lew
 		*/
 		void importSlice(double* a, long N, int slice, bool re=true);
+//		void importSlice(cpedsList<double> a,  int slice, bool re=true);
 		/*!
 			\brief exports a copy of the real part of the function; 
 			\details 

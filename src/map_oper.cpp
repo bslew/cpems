@@ -11,6 +11,10 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <sstream>
+#include <iterator>
+#include <algorithm>
+#include <vector>
 #include <tclap/CmdLine.h>
 //#include <QtCore/QStringList>
 //#include <QtCore/QString>
@@ -35,6 +39,40 @@ QString _cmd;
 string _hduName,_mask_file;
 double _const_value;
 
+
+/* ******************************************************************************************** */
+std::vector<string> strToList(string cmd,char delim=',') {
+    std::stringstream ss(cmd);
+    std::string token;
+    vector<string> val;
+    while (std::getline(ss, token, delim)) {
+        val.push_back(token);
+    }
+	return val;
+}
+/* ******************************************************************************************** */
+
+std::map<string,string> parseKeyValue(string cmd,char delim='=') {
+    vector<string> part=strToList(cmd,',');
+    std::map<string,string> kv;
+    if (part.size()>0) kv["cmd"]=part[0];
+    if (part.size()>1) {
+		for (unsigned long i=1;i<part.size();i++) {
+			auto v=strToList(part[i],delim);
+			if (v.size()==2) kv[v[0]]=v[1];
+			else {
+				try {
+					throw "could not correctly parse the command. Check --help";				
+				}
+				catch (char const* e) {
+					std::cout << e << std::endl;
+				}
+			}
+		}
+    }
+	return kv;
+}
+/* ******************************************************************************************** */
 void parseOptions(int argc, char** argv);
 string getProgramVersionString();
 void add_files(vector<string> _infiles);
@@ -46,12 +84,42 @@ void multiply_value(vector<string> _infiles, double val);
 	\brief 
 	\details 
 	@param fwhm [deg]
+	@param alm - output optional parameter. 
+		If pointer to an existing object is given it will be populated
+		with alms of the input map (potentially affected by the mask if 
+		the mask is loaded).
 	@return
 
 	\date May 18, 2016, 6:12:53 PM
 	\author Bartosz Lew
 */
-void smooth_gaussian(mscsMap& map, double fwhm);
+void smooth_gaussian(mscsMap& map, double fwhm, mscsAlms* Alm=0);
+void calculate_pseudoCl(vector<string> infiles, string maskFile, string outfile);
+/*!
+	\brief performs selection and set operations on input map files
+	\details 
+	@param cmd - command string. Can be:
+	
+		mask,below_b=b
+		
+	@param infile - one input file
+	@param maskFile - name of mask file to load
+	@param outfile - name of output file
+	@return
+
+	\date Feb 20, 2020, 2:52:13 PM
+*/
+void make_mask(string cmd,vector<string> infiles, string maskFile, string outfile);
+/*!
+	\brief generate new healpix nested map
+	\details 
+	@param cmd - make,ns=nside[,T=val2]
+		where nside should be an integer
+	@return
+
+	\date Feb 20, 2020, 3:03:46 PM
+*/
+void mkNewMap(string cmd, string outfile);
 void smoothG(vector<string> _infiles);
 void thresold_map(vector<string> _infiles,QString cmd);
 void print_map_stat(vector<string> _infiles, string mask_file);
@@ -75,8 +143,11 @@ int main(int argc, char **argv) {
 	parseOptions(argc,argv);
 
 	if (_add or _cmd=="add")  { add_files(_infiles);	}
+	if (_cmd.contains("make"))  { mkNewMap(_cmd.toStdString(),_outfile);	}
 	if (_cmd.contains("smoothG"))  { smoothG(_infiles);	}
 	if (_cmd.contains("smoothB"))  { smoothB(_infiles);	}
+	if (_cmd.contains("pseudoCl"))  { calculate_pseudoCl(_infiles, _mask_file, _outfile); }
+	if (_cmd.contains("mask"))  { make_mask(_cmd.toStdString(),_infiles, _mask_file, _outfile); }
 	if (_cmd=="sub")  { subtract_files(_infiles);	}
 	if (_cmd=="mul")  { multiply_files(_infiles);	}
 	if (_cmd=="mulV")  { multiply_value(_infiles,_const_value);	}
@@ -119,7 +190,10 @@ void parseOptions(int argc, char** argv) {
 		ValueArg<string> outfile("o","","output file name",false,"","string"); cmd.add(outfile);
 		ValueArg<string> oper("c","cmd","command name (default: '')."
 				"Possible values are:\n"
+				"make,ns=val - generate new map with ns=val\n"
+				"mask,belowb=val - generate mask below b=val\n"
 				"add,sub\n"
+				"pseudoCl\n"
 				"mulV - with value specified with --val option\n"
 				"smoothG,fwhp [']\n"
 				"smoothB,beam_transfer_function_file\n"
@@ -140,7 +214,7 @@ void parseOptions(int argc, char** argv) {
 //		ValueArg<string> traj("", "traj", "trajectory type:", false,"none", allowedStrNew);	cmd.add( traj );
 //		allowedStr.clear();
 
-		UnlabeledMultiArg<string> infiles("infiles", "input file names ","", "string");     	cmd.add( infiles );
+		UnlabeledMultiArg<string> infiles("infiles", "input file names ",false, "string");     	cmd.add( infiles );
 		//     ValueArg<string> mask("m","mask","wheather to mask the file before doing statistics (prefix)",false,"","string"); cmd.add(mask);
 		//     SwitchArg mask_from_here("","MM", "take mask from current directory rather than from the default directory", false);	cmd.add( mask_from_here );
 		//     SwitchArg dont_save_mask("","dont_save_mask", "do not print to file masked pixels; useful for -Tn-txt savings", false);	cmd.add( dont_save_mask );
@@ -155,7 +229,7 @@ void parseOptions(int argc, char** argv) {
 		//
 		// Set variables
 		//
-		_infiles = infiles.getValue();  if (_infiles.size() == 0) { printf("ERROR: not enough input files specified\n"); exit(0);}
+		_infiles = infiles.getValue();  //if (_infiles.size() == 0) { printf("ERROR: not enough input files specified\n"); exit(0);}
 //		_Ndec = Ndec.getValue();
 //		_nLissajous=nLissajous.getValue();
 		_add = add.getValue();
@@ -255,7 +329,8 @@ void smoothG(vector<string> _infiles) {
 		m1.loadbinT(_infiles[i]);
 		printf("gaussian smoothing (fwhm=%lf [deg])\n",fwhm);
 		
-		smooth_gaussian(m1,fwhm);
+		mscsAlms Alm;
+		smooth_gaussian(m1,fwhm,&Alm);
 		printf("saving to file: %s\n",_outfile.c_str());
 		m1.savebinT(_outfile);
 		return;
@@ -299,7 +374,7 @@ void convolveSH(mscsMap& map, mscsFunction b) {
 	
 }
 /***************************************************************************************/
-void smooth_gaussian(mscsMap& map, double fwhm) {
+void smooth_gaussian(mscsMap& map, double fwhm, mscsAlms* Alm) {
 	mscsWindowFunction bl;
 	long lmax=map.nside()*2;
 	bl.make_unit_kernel(lmax);
@@ -309,6 +384,7 @@ void smooth_gaussian(mscsMap& map, double fwhm) {
 //	map.setVerbosityLevel(High);
 	printf("analysis\n");
 	mscsAlms alm=map.SH_analysis(lmax,wf,wf);
+	if (Alm!=0) { *Alm=alm; }
 //	alm.savetxtAlms("alms","RI");
 	printf("synthesis\n");
 	map.SH_synthesis(alm,lmax,bl,wf);
@@ -413,4 +489,68 @@ void thresold_map(vector<string> _infiles,QString cmd) {
 		return;
 	}
 
+}
+/* ******************************************************************************************** */
+void calculate_pseudoCl(vector<string> infiles, string maskFile, string outfile) {
+	mscsMap m1;
+
+	for (unsigned long i = 0; i < infiles.size(); i++) {
+		printf("loading %s\n",infiles[i].c_str());
+		m1.loadbinT(infiles[i]);
+		if (maskFile!="") {
+			m1.loadbinm(maskFile);
+		}
+		
+		printf("SHanalysis\n");
+		long lmax=2*m1.nside();
+		mscsAlms Alm=m1.SH_analysis(lmax);
+		mscsAngularPowerSpectrum Cl=Alm.get_Cl(0,lmax);
+
+		printf("saving to file: %s\n",outfile.c_str());
+		Cl.save(outfile);
+		
+		return;
+	}
+	
+}
+/* ******************************************************************************************** */
+void make_mask(string cmd, vector<string> _infiles, string maskFile, string outfile) {
+	std::map<string,string> kv=parseKeyValue(cmd);
+	
+	std::map<string,string>::iterator it;
+	mscsMap m1;
+	for (unsigned long i = 0; i < _infiles.size(); i++) {
+		printf("loading %s\n",_infiles[i].c_str());
+		m1.loadbinT(_infiles[i]);
+		if (maskFile!="") {
+			m1.loadbinm(maskFile);
+		}
+		
+		if (kv.find("below_b")!=kv.end()) {
+			m1.set_map_coord();
+			double b=std::stod(kv["below_b"])*PI180;
+			for (unsigned long i = 0; i < m1.pixNum(); i++) {
+				if (m1.get_C(i).b()<b) m1.set_T(i,0);
+			}
+		}
+
+		m1.savebinT(outfile);
+		
+		return;
+	}
+	
+}
+/* ******************************************************************************************** */
+void mkNewMap(string cmd, string outfile) {
+	std::map<string,string> kv=parseKeyValue(cmd);
+	long nside=stol(kv["ns"]);
+	double T=0;
+	if (kv.find("T")!=kv.end()) {
+		T=std::stod(kv["T"]);
+		std::cout << "will set map value to " << T << std::endl;
+	}
+	mscsMap m1(nside);
+	m1.makekill_space_manager("make","T");
+	m1.T()=T;
+	m1.savebinT(outfile);
 }

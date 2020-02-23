@@ -6,6 +6,8 @@
  */
 #include <cpedsMC.h>
 #include "cpeds-templates.h"
+#include <iostream>
+#include <fstream>
 cpedsMC::cpedsMC() {
 	// TODO Auto-generated constructor stub
 	
@@ -64,4 +66,27 @@ const cpedsMC& cpedsMC::operator=(const cpedsMC& rhs) {
 		QList<MClink>::operator=(rhs);
 	}
 	return *this;
+}
+/* ******************************************************************************************** */
+void cpedsMC::save(string fname, long precision) {
+	ofstream f;
+	f.open(fname);
+	f << std::setprecision(precision);
+	for (auto it=this->begin();it!=this->end();it++) {
+		f << it->getIdx() << " " << *it;
+	}
+	f.close();
+}
+/* ******************************************************************************************** */
+void cpedsMC::append(MClink l, long idx) {
+	l.setIdx(idx);
+	QList::append(l);
+}
+/* ******************************************************************************************** */
+void cpedsMC::append(MClink l) {
+	QList::append(l);
+}
+/* ******************************************************************************************** */
+void cpedsMC::append(cpedsMC &mc) {
+	QList::append(mc);
 }
