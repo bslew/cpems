@@ -118,6 +118,8 @@ class cpedsProject {
   */
   cpedsPointSet3D projectOnPlane(const cpedsDirection& n, string projFormat="");
 
+//  mscsFunction3dregc projectOnRectangularGrid(const cpedsDirection& n, string projFormat="");
+
   /*!
     \brief projects the set of points onto a sphere
     \details 

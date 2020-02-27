@@ -1,6 +1,8 @@
 #include "cpeds-rng.h"
 #include "Mscs-function.h"
 #include "cpedsMCMC.h"
+#include <boost/program_options.hpp>
+#include "omp.h"
 
 class parabolaMCMC : public cpedsMCMC {
 	public:
@@ -96,8 +98,55 @@ void calculate_sigma_1Dposterior(MscsPDF1D p1, MscsPDF1D p2) {
 /***************************************************************************************/
 /***************************************************************************************/
 /***************************************************************************************/
-int main() {
-	string outdir="parabola_test2/";
+boost::program_options::variables_map parser(int argc, char** argv) {
+	namespace po = boost::program_options;
+	po::variables_map vm;
+
+	
+	po::options_description desc("Allowed options");
+	int opt=1;
+	bool ompnested;
+	long Bin;
+	double dbl;
+	string stropt;
+	desc.add_options()
+	    ("help", "produce help message")
+	    ("Nchains,N", po::value<int>(&opt)->default_value(1), "Number of mcmc chains")
+	    ("ompnested", po::value<bool>(&ompnested)->default_value(false), "Enables nested omp")
+	    ("num_threads", po::value<int>(), "sets maximal number of omp threads")
+	    ("Bin", po::value<long>(&Bin)->default_value(1000), "Burn-in length")
+	    ("Bout", po::value<long>(&Bin)->default_value(10000), "Burn-out length")
+	    ("ctol", po::value<double>(&dbl)->default_value(1.e-10), "X2 improvement convergence tolerance")
+	    ("odir", po::value<string>(&stropt)->default_value("test-parabola_2param"), "output directory")
+	    ("yerr", po::value<double>(&dbl)->default_value(10.), "Independent variable error. ")
+	;
+
+	po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::notify(vm);    
+
+	if (vm.count("help")) {
+	    cout << desc << "\n";
+	    exit(1);
+	}
+
+/*
+	if (vm.count("compression")) {
+	    cout << "Compression level was set to " 
+	 << vm["compression"].as<int>() << ".\n";
+	} else {
+	    cout << "Compression level was not set.\n";
+	}	
+*/
+
+	return vm;
+}
+
+int main(int argc, char** argv) {
+	
+	boost::program_options::variables_map opt=parser(argc,argv);
+	
+	
+	string outdir=opt["odir"].as<string>()+"/";
 	mkdir(outdir.c_str(),0755);
 	
 	//
@@ -107,7 +156,8 @@ int main() {
 	double xmax=10;
 	double a=1, b=1;
 	mscsFunction data, model;
-	double yerr=10;
+	double yerr=opt["yerr"].as<double>();
+//	double yerr=1e-10;
 	
 	data.mkPowerLaw(xmin,xmax,0.1,a,1,2); // generate y=a*x^2+b with 
 	data+=b;
@@ -120,8 +170,9 @@ int main() {
 	rns.setMeanVariance(0.0,yerr);
 //	rns.setPDF(data.pointsCount(),data.extractArguments(),data.extractValues());
 	//	rns.getRNs(100).save("parabola-data.txt");
-	
-	for (long i = 0; i < data.pointsCount(); i++) {		data.f(i)+=rns.getRN();	}
+
+	if (opt["yerr"].as<double>()>0)
+		for (long i = 0; i < data.pointsCount(); i++) {		data.f(i)+=rns.getRN();	}
 	data.save(outdir+"parabola-data.txt");
 	
 
@@ -135,18 +186,23 @@ int main() {
 	// set MC parameters
 	//
 	parab_conf.setOutputDir(outdir);
-	parab_conf.setCoolingRate(1);
-//	parab_conf.setInitialStepSize(0.5);
-//	parab_conf.setInitialWalkStepSize(0.05);
-	parab_conf.setBurnInLength(1000);
+	parab_conf.setUpHillClimbing(true);
+	parab_conf.setUpHillGradient(true);
+	parab_conf.setConvergenceThres(opt["ctol"].as<double>());
+//	parab_conf.setCoolingRate(1);
+	parab_conf.setInitialStepSize(1);
+	parab_conf.setInitialWalkStepSize(1);
+	parab_conf.setMaximalRejectionsCount(2);
+	parab_conf.setBurnInLength(opt["Bin"].as<long>());
+	parab_conf.setBurnOutLength(opt["Bout"].as<long>());
+	parab_conf.setTemperatures(1000,1e-6);
 	parab_conf.setChisqSignature("parabola fit");
-	parab_conf.setMaximalRejectionsCount(50);
 	parab_conf.setWalkInfoOutputFrequency(500);
 	
 	
 	// define the parameter space
-	parab_conf.addParameter("a", -20,20,2);
-	parab_conf.addParameter("b", -20,20,2);
+	parab_conf.addParameter("a", -20,20,0.001,"a");
+	parab_conf.addParameter("b", -20,20,0.001,"b");
 
 //	parabmc.saveStepPDFs("parabola-stepPDFini");
 
@@ -154,15 +210,19 @@ int main() {
 	parab_conf.setData(data);
 	parab_conf.setDiagonalCovarianceMatrix(yerr*yerr);
 	parab_conf.printInfo();
-	parab_conf.setCalculate2Dposteriors(false);
+	parab_conf.setCalculate2Dposteriors(true);
 	parabMC=parab_conf;
 	
 	//
 	// RUN THE MCMC CHAIN
 	//
 	long id;
+	omp_set_nested(int(opt["ompnested"].as<bool>()));
+	if (opt.count("num_threads"))
+		omp_set_num_threads(opt["num_threads"].as<int>());
+
 #pragma omp parallel for private(id)
-	for (id = 0; id < 20; ++id) {
+	for (id = 0; id < opt["Nchains"].as<int>(); ++id) {
 		parabolaMCMC mc(parab_conf);
 		mc.setVerbocity(Medium);
 		mc.setID(id);

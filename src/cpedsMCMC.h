@@ -659,7 +659,13 @@ class cpedsMCMC {
 			If you want to have randomly chosen parameter values during the burn-in state, i.e. 
 			chosen from within the prior volume	and according to the prior PDF you should set this value to zero (0).
 		
+		
 			\date Mar 11, 2011, 12:32:10 PM
+			
+			revision Feb 23, 2020, 5:19:09 PM
+			
+			If you use gradient descent then setting this to 1 should be OK
+			
 			\author Bartosz Lew
 		*/
 		void setInitialStepSize(double size) { 
@@ -685,6 +691,20 @@ class cpedsMCMC {
 			\date Jan 9, 2018, 12:34:52 PM
 		*/
 		void setTemperatures(double initial, double final) { _cooling.initialTemperature=initial; _cooling.finalTemperature=final; updateCoolingPDF();  }
+
+		/*!
+			\brief defines the step size during the MCMC walk
+			\details 
+			@param size
+			
+			If you use gradient descent then setting this to 1 should be OK. In this mode this variable
+			effectively defines the step at which initially the derivatives are taken.
+			During descent the actual sizes are adjusted by falling temperature.
+
+			See also setInitialStepSize()
+		
+			\date Feb 23, 2020, 5:20:15 PM
+		*/
 		void setInitialWalkStepSize(double size) { _walk.initialPDFstepCRfractionAfterBurnIn=size; }
 		
 		void setWalkInfoOutputFrequency(long everyNstates);

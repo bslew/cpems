@@ -187,6 +187,12 @@ if (FFTW_FOUND)
 	MESSAGE(STATUS "FFTW_LIBRARIES: " ${FFTW_LIBRARIES})
 endif()
 
+find_package(Boost)
+#if (Boost_FOUND)
+	MESSAGE(STATUS "Boost_INCLUDE_DIR: " ${Boost_INCLUDE_DIR})
+	MESSAGE(STATUS "Boost_INCLUDES: " ${Boost_INCLUDES})
+	MESSAGE(STATUS "Boost_LIBRARIES: " ${Boost_LIBRARIES})
+#endif()
 
 find_package(GMP )
 # GMP_INCLUDES
@@ -450,6 +456,7 @@ include_directories(
 #	${CPEDS_INCLUDE_DIR}
 #	${MSCS_INCLUDE_DIR}
     /usr/include/python2.7
+    ${Boost_INCLUDE_DIR}
 	)
 
 #add_subdirectory(external_packages/novas)
@@ -518,6 +525,7 @@ set (CPEDSLIB_HEADERS
 
 set (CPEDSLIB_SOURCES 
     ${CPEDSLIB_HEADERS}
+	src/cpeds-common.cpp
 	src/cpeds-consts.cpp
 	src/cpeds-rng.cpp
 	src/cpeds-math.cpp 
@@ -1031,11 +1039,11 @@ set (LIBRARIES
 #
 # depreciated - 
 # generates interdependent libraries that cannot be compiled with appropriate depedencies as dynamic
-target_link_libraries(CPEDS ${EXTERNAL_LIBRARIES} Mscsfn ${GSL_LIBRARIES})
-target_link_libraries(Mscscore ${EXTERNAL_LIBRARIES} CPEDS)
-target_link_libraries(Mscsfn ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
-target_link_libraries(Mscsplot ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
-target_link_libraries(MscsWMAP ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+#target_link_libraries(CPEDS ${EXTERNAL_LIBRARIES} Mscsfn ${GSL_LIBRARIES})
+#target_link_libraries(Mscscore ${EXTERNAL_LIBRARIES} CPEDS)
+#target_link_libraries(Mscsfn ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+#target_link_libraries(Mscsplot ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+#target_link_libraries(MscsWMAP ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
 # new
 target_link_libraries(cpems ${EXTERNAL_LIBRARIES})
 
@@ -1077,7 +1085,7 @@ target_link_libraries(test-domain-decomposition ${LIBRARIES})
 target_link_libraries(test-function-fft ${LIBRARIES})
 target_link_libraries(test-function-derivative ${LIBRARIES})
 target_link_libraries(test-fits-read ${LIBRARIES})
-target_link_libraries(test-cpedsMCMC-parabola_2param ${LIBRARIES})
+target_link_libraries(test-cpedsMCMC-parabola_2param LINK_PUBLIC ${LIBRARIES} boost_program_options )
 
 
 ################################################################

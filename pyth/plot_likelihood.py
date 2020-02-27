@@ -13,6 +13,8 @@ import matplotlib.path as mpath
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
+from matplotlib.patches import Ellipse
+import matplotlib.transforms as transforms
 
 #from matplotlib.collections import PatchCollection
 #import matplotlib.path as mpath
@@ -75,6 +77,9 @@ parser.add_option("", "--contours_fontSize", dest="contours_fontSize", default=1
 parser.add_option("", "--dset", dest="hdf5dset", default='', type="string", help='''comma separated list of names of the datasets from the hdf5 file 
 # The hdf5 dataset if it is 3d dataset saved by mscsFunction3dregc then the x-coordinate increases rightwards in the plot, and y coordinate increases downwards.
 # (default: "") ''', metavar="STRING")
+
+parser.add_option("","--corrMat", type=str, help='correlation matrix file, plots 1-sigma contours')
+
 
 # parser.add_option("", "--textxy", dest="textxy",  type="string", help='print text on the plot. The text string should be: x,y,"text to be plotted"', metavar="NUM", action="append")
 # parser.add_option("", "--textfxfy", dest="textfxfy",  type="string", help='print text on the plot. The text string should be: fx,fy,"text to be plotted", where fx,fy are fractions of the field size where the text should be placed', metavar="NUM", action="append")
@@ -262,6 +267,16 @@ def loadData(fname,dset):
     return slice,slice_ranges,CLcontours,plot_labels,bfparams
     
 
+def plot_correlation_matrix(fig,Cmat,bfparams):
+    siz=lambda x: np.sqrt(x)*(2.*np.sqrt(2.*np.log(2.)))
+    angle=math.atan(Cmat[0][1])*180./math.pi
+    e1 = Ellipse((bfparams[0], bfparams[1]), width=siz(Cmat[0][0]), height=siz(Cmat[1][1]),
+                         angle=angle, linewidth=2, fill=False, zorder=2)
+    ax=gca()
+    ax.add_patch(e1) 
+   
+
+
 def plotData2D(mat,mat_ranges,CRcontours, plot_labels, bfparams, plotNo):
     if option.figSize=="A4":
         option.figSize='11.6929,8.2677'
@@ -298,17 +313,8 @@ def plotData2D(mat,mat_ranges,CRcontours, plot_labels, bfparams, plotNo):
     if option.grid:
         grid(True, color=option.gc[0])
 
-    if option.outputFile!='':
-        outputFile=option.outputFile
-    else:
-        outputFile='.'.join(fname.split('.')[0:-1])+'.eps'
 
-    print('Saving to file:',outputFile)
-    fig.savefig(outputFile, dpi=option.DPI)
-
-    if option.show:
-        show()
-
+    return fig
 
 if type(option.gc)!=type(list()):    option.gc=list(['k'])
 
@@ -339,8 +345,25 @@ for (fname,matID) in zip(args,list(range(len(args)))):
         if option.YunitPrefix!='':
             plot_labels[1]=plot_labels[1].replace('[','['+option.YunitPrefix)
             
-        plotData2D(mat,ran,CRcontours,plot_labels,bfparams,matID)
+        fig=plotData2D(mat,ran,CRcontours,plot_labels,bfparams,matID)
+
+        
+        if option.corrMat:
+            Cmat=np.loadtxt(option.corrMat)
+            plot_correlation_matrix(fig,Cmat,bfparams)
+        
+        
+
+        if option.outputFile!='':
+            outputFile=option.outputFile
+        else:
+            outputFile='.'.join(fname.split('.')[0:-1])+'.eps'
+        print('Saving to file:',outputFile)
+        fig.savefig(outputFile, dpi=option.DPI)
     
+        if option.show:
+            show()
+
     else:
         print('I do not recognize this extension. Supported extensions are: hdf and hdf5')
         sys.exit(1)

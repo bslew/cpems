@@ -141,3 +141,4 @@ double cpedsProject::getLengthScaleFromAng(double ang) {
 	ls=( fabs(ps[1].x()-ps[0].x()) +  fabs(ps[3].y()-ps[2].y()) )/2;  
 	return ls;
 }
+/* ******************************************************************************************** */
