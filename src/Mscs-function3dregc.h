@@ -842,6 +842,10 @@ class mscsFunction3dregc : public mscsObject {
 			@param smKernel - defines which smoothing kernel should be used - default is "gadget2"
 			@param NeighborsMin - minimal number of neighbors
 			@param NeighborsMax - maximal number of neighbors
+			@param providedHSML - a list of smoothing lengths that can be provided (if the size is
+				equal the size of positions) or requested if the allocated vector size is 0,
+				in which case the vector will be modified with the calculated smoothing lengths.
+				
 			@return returns this object
 			
 			This is SPH interpolation. The interpolated field is hold on real part of the function. The imaginary part holds the effective 

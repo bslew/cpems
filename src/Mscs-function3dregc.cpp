@@ -2367,7 +2367,19 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 	// calculate points number density first
 	//
 	if (providedHSML!=NULL) {
-		dens.sml()=(*providedHSML);
+		if (providedHSML->size()==positions.size())	dens.sml()=(*providedHSML);
+		else {
+			if (providedHSML->size()!=0) { 
+				std::cerr << "Wrong providedHSML->size(). "
+						"Should be either 0 or " << positions.size()<<std::endl;
+				exit(1);
+				
+			}
+//			else {
+				// this means we don't know them 
+				// but we want to know them when the calculation is done
+//			}
+		}
 	}
 	if (positions.size()<NeighborsMin) {
 		NeighborsMin=positions.size();
@@ -2383,6 +2395,12 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 	}
 	
 	dens.calculateDensity(NeighborsMin,NeighborsMax,is2Dcase,smKernel,&treeScheme,MassMin,MassMax);
+	
+	// we now have hsml calculated
+	if (providedHSML!=0 and providedHSML->size()==0) { 
+		*providedHSML=dens.sml();
+	}
+	
 #ifdef DEBUG_DENSITY
 	double *v=dens.density().toArray();
 	cpeds_save_matrix(v,dens.size(),1,"mkInterpolatedFieldScatter_ptsDensity",true,false);
