@@ -48,7 +48,16 @@ void pointsDensity::calculateDensity(long NeighborsMin, long NeighborsMax, bool 
 //		if (r.subz==1) norm=double(40.0)/(7.0*PI); //2d case
 		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (is2dcase) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	// prepare tree
 	msgs->say("building tree with minimal number of particles in subdomain: %li",NeighborsMin,Medium);
@@ -166,6 +175,7 @@ void pointsDensity::calculateDensity(long NeighborsMin, long NeighborsMax, bool 
 	else {
 		msgs->say("using pre-set smoothing lengths (hsml vector size: %li)",long(sml().size()),Medium);
 	}
+//#define DEBUG_POINTS_DENSITY
 #ifdef DEBUG_POINTS_DENSITY
 	printf("check\n");
 	for (long i = 0; i < size(); i++) {

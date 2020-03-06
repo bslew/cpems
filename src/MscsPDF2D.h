@@ -46,7 +46,8 @@ class MscsPDF2D : public mscsFunction3dregc {
 			\brief calculate CR contour for a given CL
 			\details 
 			@param CL - conficence level (e.g. 0.68)
-			@return returns set of points approximating vertices of a polygon corresponding to requested CR 
+			@return returns set of points approximating vertices of a polygon 
+			corresponding to requested CR 
 		
 			\date May 31, 2017, 11:09:06 AM
 		*/

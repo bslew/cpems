@@ -194,6 +194,8 @@ find_package(Boost)
 	MESSAGE(STATUS "Boost_LIBRARIES: " ${Boost_LIBRARIES})
 #endif()
 
+find_package(spdlog 1.5 CONFIG REQUIRED)
+
 find_package(GMP )
 # GMP_INCLUDES
 # GMP_LIBRARIES
@@ -535,6 +537,7 @@ set (CPEDSLIB_SOURCES
 	src/cpedsTime.cpp
 	src/cpeds-msgs.cpp
 	src/cpeds-point_set.cpp
+	src/cpeds-point3d.cpp
 	src/cpeds-direction_set.cpp
 	src/cpedsFunctionDistance.cpp
 	src/cpeds-project.cpp
@@ -753,6 +756,7 @@ add_executable(test-function-fft tests/test-function-fft.cpp )
 add_executable(test-function-derivative tests/test-function-derivative.cpp )
 add_executable(test-fits-read tests/test-fits-read.cpp )
 add_executable(test-cpedsMCMC-parabola_2param tests/test-cpedsMCMC-parabola_2param.cpp )
+add_executable(test-cpedsMCMC-2Dcontours tests/test-cpedsMCMC-2Dcontours.cpp )
 
 
 add_executable(test-hdf-openMP2 tests/test-hdf-openMP2.cpp)
@@ -764,6 +768,7 @@ add_executable(test-hdf-openMP tests/test-hdf-openMP.cpp)
 #test-hdf-openMP-omp	:
 #	$(CC) -DENABLE_OMP $(OFLAGS)   $(DISTR_DIRcpp)/test-hdf-openMP.cpp -o $(OUTDIR)/$@ $(IFLAGS) $(LLFLAGS) $(LFLAGS) 
 
+add_executable(test-SPinterpolation-2d tests/test-SPinterpolation-2d.cpp)
 
 
 #-------------------------------------------
@@ -1086,6 +1091,8 @@ target_link_libraries(test-function-fft ${LIBRARIES})
 target_link_libraries(test-function-derivative ${LIBRARIES})
 target_link_libraries(test-fits-read ${LIBRARIES})
 target_link_libraries(test-cpedsMCMC-parabola_2param LINK_PUBLIC ${LIBRARIES} boost_program_options )
+target_link_libraries(test-SPinterpolation-2d ${LIBRARIES})
+target_link_libraries(test-cpedsMCMC-2Dcontours ${LIBRARIES} boost_program_options)
 
 
 ################################################################
@@ -1126,6 +1133,7 @@ set (CPEMS_TEST_EXECUTABLES
     test-function-derivative
     test-fits-read
     test-cpedsMCMC-parabola_2param
+	test-cpedsMCMC-2Dcontours
 )
 
 install (TARGETS 

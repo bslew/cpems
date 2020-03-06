@@ -1292,11 +1292,21 @@ mscsFunction3dregc& mscsFunction3dregc::mkDensityFieldGather(subDomain_region_t 
 	double (*kernel)(double );
 	double norm;
 	//	mscsWindowFunction wfn;
-	if (smKernel == "gadget2") { kernel=&mscsWindowFunction::kernelGadget; 	
-	if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
-	else norm=8.0/PI; //3d case
+	if (smKernel == "gadget2") { 
+		kernel=&mscsWindowFunction::kernelGadget; 	
+		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	//	mscsWindowFunction w("SPH kernel");
 	//	w.mkSPHkernelGadget2(100);
@@ -1390,12 +1400,22 @@ mscsFunction3dregc& mscsFunction3dregc::mkDensityFieldScatter(subDomain_region_t
 	double (*kernel)(double );
 	double norm;
 	//	mscsWindowFunction wfn;
-	if (smKernel == "gadget2") { kernel=&mscsWindowFunction::kernelGadget; 	
+	if (smKernel == "gadget2") { 
+		kernel=&mscsWindowFunction::kernelGadget; 	
 	//		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
-	if (r.subz==1) norm=double(40.0)/(7.0*PI); //2d case
-	else norm=8.0/PI; //3d case
+		if (r.subz==1) norm=double(40.0)/(7.0*PI); //2d case
+		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	// prepare tree
 	msgs->say("building tree",Medium);
@@ -1602,7 +1622,16 @@ mscsFunction3dregc& mscsFunction3dregc::mkDensityFieldScatter2(subDomain_region_
 		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
 		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	//
 	// prepare tree
@@ -2430,7 +2459,16 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
 		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	//
 	// get the tree
@@ -2721,7 +2759,16 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
 		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	
 	//

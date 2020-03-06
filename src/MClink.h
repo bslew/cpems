@@ -93,7 +93,7 @@ class MClink {
 //		const MClink operator+(const MClink& rhs);
 		const MClink& operator=(const MClink& rhs);
 		const MClink& operator=(const double v);
-		const bool operator==(const double v);
+		bool operator==(const double v);
 //		MClink& operator=(const MClink& rhs);
 		const double& operator[](const long i) const;
 		double& operator[](const long i);

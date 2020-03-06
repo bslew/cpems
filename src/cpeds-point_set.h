@@ -233,7 +233,7 @@ class cpedsPointSet3D  : public mscsVector<cpedsPoint3D> {
   cpedsPoint3D value(long i) { return cpedsPoint3D(at(i)); }
   cpedsPoint3D& point(long i) { return at(i); }
   double val(long i) { return _vals[i]; }
-  const double val(long i) const { return _vals[i]; }
+  double val(long i) const { return _vals[i]; }
   
   void clear() { vector<cpedsPoint3D>::clear(); _vals.clear(); }
   

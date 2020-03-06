@@ -306,7 +306,8 @@ void cpedsMCMC::walkNstates(long Nstates, MClink startingLink, int how) {
 		//
 		// output
 		//
-		if (length() % getWalkInfoOutputFrequency() == 0 or walk==false or msgs->getVerbosity()>=High)
+		if (length() % getWalkInfoOutputFrequency() == 0 or 
+				walk==false or msgs->getVerbosity()>=High)
 			msgs->say("B-out: MC len.: %.0f, next.X2: %lE, bf.X2: %lE, left: %.0f ",
 					double(length()),
 					nextCandidate().chisq(),
@@ -315,6 +316,10 @@ void cpedsMCMC::walkNstates(long Nstates, MClink startingLink, int how) {
 					Medium);
 		
 	}
+}
+/* ******************************************************************************************** */
+void cpedsMCMC::walkNindependent_states(long N) {
+
 }
 /* ******************************************************************************************** */
 void cpedsMCMC::startChain(bool followPriors) {
@@ -957,7 +962,7 @@ const mscsFunction3dregc& cpedsMCMC::getData2D() const {
 	return _chisqData.data2d;
 }
 /***************************************************************************************/
-const double cpedsMCMC::getData2D(long i, long j) const {
+double cpedsMCMC::getData2D(long i, long j) const {
 	return _chisqData.data2d(i,j);
 }
 /***************************************************************************************/
@@ -2049,7 +2054,7 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpol
 	long pdfPoints_internal=long(sqrt(states.pointsCount()));
 	double dx=pdfRange/pdfPoints_internal;
 	
-	
+	assert(dx>0);
 	bins.clear();
 	pdf=states.binFunction(dx,bins,"bin_center","max");
 	pdf.checkRanges();

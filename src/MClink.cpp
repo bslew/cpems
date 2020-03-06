@@ -99,7 +99,7 @@ const MClink& MClink::operator=(const double v) {
 	return *this;
 }
 /* ******************************************************************************************** */
-const bool MClink::operator==(const double v) {
+bool MClink::operator==(const double v) {
 	for (long i = 0; i < _Nparam; i++) {
 		if (_theta[i]!=v) return false;	}
 	return true;

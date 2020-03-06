@@ -18,7 +18,7 @@
 #include <string.h>
 
 #include <gsl/gsl_rng.h>
-
+#include <tuple>
 
 
 #include "cpeds-common.h"
@@ -1928,6 +1928,8 @@ const matrix<double> cpeds_matrix_load(string fileName, string how="", long * re
 long cpeds_matrix_save(const matrix<double>& M, string fileName, string how="",int precision=20);
 
 double cpeds_get_memory_usage();
+
+std::tuple<string, string, string> cpeds_get_dirname_filebase_ext(string s);
 
 #endif
 

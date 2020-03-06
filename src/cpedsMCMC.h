@@ -336,7 +336,7 @@ class cpedsMCMC {
 		const mscsFunction& getData() const;
 		const mscsFunction& getModel() const;
 		const mscsFunction3dregc& getData2D() const;
-		const double getData2D(long i, long j) const;
+		double getData2D(long i, long j) const;
 
 		void setDataMask(const cpedsList<double>& dataMask) { _chisqData.dataMask=dataMask; }
 		long dataSize() const { return _chisqData.data.pointsCount(); }
@@ -444,6 +444,19 @@ class cpedsMCMC {
 			\date Jan 25, 2018, 6:56:54 PM
 		*/
 		void walkNstates(long Nstates, MClink startingLink, int how=1);
+		
+		/*!
+			\brief run MCMC for another N states in parallel assuming that steps are independent
+			\details 
+			@param N - number of steps that should be taken
+
+			This method is useful for burn-in and burn-out phases where the next step
+			does not depend on the current step.
+			The next step is taken from the current PDFs for each dimension.
+			
+			\date Mar 6, 2020, 12:13:02 PM
+		*/
+		void walkNindependent_states(long N);
 		void setMaximalChainLength(long l) { _walk.maximalChainLength=l; }
 		void setMaximalAcceptedChainLength(long l) { _walk.maximalAcceptedChainLength=l; }
 		/*!

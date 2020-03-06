@@ -4811,3 +4811,12 @@ double cpeds_RT4_arcsin(double x) {
 	if (x < -1.) x = -1.;
 	return asin(x);
 }
+/* ******************************************************************************************** */
+std::tuple<string, string, string> cpeds_get_dirname_filebase_ext(string s) {
+	std::tuple<string, string, string> tpl;
+	
+	std::stringstream ss;
+	throw "Not implemented";
+	
+	return tpl;
+}
