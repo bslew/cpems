@@ -45,7 +45,7 @@ mscsFunction MscsPDF2D::getContour(double CL, double* LVL) {
 	while (x<xmax) {
 		y=ymin;
 		while (y<ymax) { 
-//			printf("x %lf, y %lf, f %lf, dfx %lE, dfy %lE\n",x,y,tmp,dfx,dfy);
+			printf("x %lf, y %lf, f %lf, dfx %lE, dfy %lE\n",x,y,tmp,dfx,dfy);
 			tmp=fxy(x,y,0,0,&dfx,&dfy,false);
 			df=cpeds_get_max(fabs(dfx*getDx()),fabs(dfy*getDy()))/2;
 			if (fabs(tmp-lvl)<=df) c.newPoint(x,y);
