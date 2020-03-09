@@ -281,7 +281,7 @@ class cpedsMCMC {
 		void initialize(int runIdx, long runOffset=0,long Npar=1, long runSeed=0);
 
 		void setRunIdx(int idx) { _IOcontrol.mcmcRunIdx=idx; }
-		int getRunIdx() { return _IOcontrol.mcmcRunIdx; }
+		int getRunIdx() const { return _IOcontrol.mcmcRunIdx; }
 		string getRunDependentFileName(string fname);
 		string getParameterDependentFileName(string fname, long paramID);
 		string get2ParameterDependentFileName(string fname, long paramID1, long paramID2);
@@ -429,11 +429,13 @@ class cpedsMCMC {
 			\details 
 			@param followPriors - if true then the random point will be drawn according to the priors defined in the parameter space; 
 			if false then flat priors will be used for all parameters (currently this is ON by default and the only one that works)
+			@param startingLink - if given then it is used as starting link instead of the randomly generated one
+				from the distribution of priors. Useful for debugging.
 		
 			\date Nov 19, 2010, 10:07:40 PM
 			\author Bartosz Lew
 		*/
-		void startChain(bool followPriors=true);
+		void startChain(MClink* startingLink=0, bool followPriors=true);
 		/*!
 			\brief run MCMC for Nstates another states around the starting link
 			\details 

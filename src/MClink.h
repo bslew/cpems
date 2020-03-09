@@ -44,6 +44,7 @@ class MClink {
 	public:
 		MClink();
 		MClink(long Nparams);
+		MClink(std::vector<double> params);
 		MClink(const MClink& parent);
 		virtual ~MClink();
 		void setNpar(long n);

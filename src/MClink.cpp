@@ -28,6 +28,17 @@ MClink::MClink(long Nparams) {
 	_accepted=false;
 	_idx=0;
 }
+/* ******************************************************************************************** */
+MClink::MClink(std::vector<double> params) {
+	long Nparams=params.size();
+	_theta=new double[Nparams];	
+	for (long i = 0; i < Nparams; i++) {		_theta[i]=params[i];	}
+	_Nparam=Nparams;
+	_likelihood=-1;
+	_chisq=-1;
+	_accepted=false;
+	_idx=0;	
+}
 /***************************************************************************************/
 MClink::MClink(const MClink& parent) {
 //	*this=parent;

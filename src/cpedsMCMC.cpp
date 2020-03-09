@@ -322,7 +322,7 @@ void cpedsMCMC::walkNindependent_states(long N) {
 
 }
 /* ******************************************************************************************** */
-void cpedsMCMC::startChain(bool followPriors) {
+void cpedsMCMC::startChain(MClink* startingLink, bool followPriors) {
 	mkOutputDir();
 	
 	//	MClink next(dims());
@@ -341,14 +341,19 @@ void cpedsMCMC::startChain(bool followPriors) {
 	current().setNpar(dims());
 	_walk.statesTot=0;
 	
-	// randomly choose the starting location in the parameter space
-	msgs->say("Generating random starting point in the prameter space",Medium);
-	current().set(dims(),getStartingPoint());
+	if (startingLink!=0) {
+		current()=*startingLink;
+	}
+	else {
+		// randomly choose the starting location in the parameter space
+		msgs->say("Generating random starting point in the prameter space",Medium);
+		current().set(dims(),getStartingPoint());
+	}
 	current().setAccepted(true);
 	current().setIdx(0);
-	_startingLink=current();
 	// calculate the chisq there
 	current().setChisq(chisq(current())); // get first chisq and assign chisq signature
+	_startingLink=current();
 	_convergence.last_chisq=current().chisq();
 	//	printInfo(); // print and store setup here to get the chisq assigned correctly before storing
 	
@@ -412,6 +417,8 @@ void cpedsMCMC::startChain(bool followPriors) {
 				nextCandidate()=randomLink;
 			}
 			else { // we are no longer in the burn-in phase
+				current().save(getRunDependentFileName(getPartialFilesDirFull()+"/burnInEnd-link")); 
+
 				if (getUphillGradient()) {
 					nextCandidate()=getNextPointUphillGradient(current());
 				}
@@ -686,7 +693,7 @@ void cpedsMCMC::startChain(bool followPriors) {
 		//		printf("step param0: %lE\n",getMCsteps(0).last());
 		
 		if (length() % getWalkInfoOutputFrequency() == 0 or walkDone==true or walk==false or msgs->getVerbosity()>=High) {
-			printf("\nMC%li len.tot.: %.0f (acc/rej/test:%.0f/%.0f/%li), "
+			printf("\nMC%i len.tot.: %.0f (acc/rej/test:%.0f/%.0f/%li), "
 					"cur.X2: %lE, bf.X2: %lE, cur./min.T: %lE/%lE, "
 					"conv: %lE, next conv.chk: %.0f, eta: %lE, d2X2: %lE\n",
 					getRunIdx(),
@@ -705,10 +712,10 @@ void cpedsMCMC::startChain(bool followPriors) {
 			
 			printLastStep();
 			if (getUphillGradient()) {	
-				printLink(avgStep(),"avgStep: ");	
-				printLink(avgStep()*_walk.momentum,"momentum: ");	
+				printLink(avgStep(),string("MC")+std::to_string(getRunIdx())+string(" avgStep:"));
+				printLink(avgStep()*_walk.momentum,string("MC")+std::to_string(getRunIdx())+string(" momentum:"));	
 			}
-			printLink(bestFitLink(),"best fit:");
+			printLink(bestFitLink(),"best fit");
 			//			delta.printLink();
 			
 		}
@@ -721,7 +728,8 @@ void cpedsMCMC::startChain(bool followPriors) {
 	// print best fit in this chain
 	//
 	//	bestFitLink().printLink();
-	
+	bestFitLink().save(getRunDependentFileName(getPartialFilesDirFull()+"/walkEnd-link")); 
+
 	
 	//
 	// save step PDF after walk finishes
@@ -736,7 +744,18 @@ void cpedsMCMC::startChain(bool followPriors) {
 	statesTotBeforeBurnOut=length();
 	_walk.statesTotBeforeBurnOut=length();
 	
-	burnOut();
+	msgs->say("bfX2: %lE, initial X2: %lE, ratio: %lE",
+			bestFitLink().chisq(), getStartingLink().chisq(),
+			bestFitLink().chisq()/getStartingLink().chisq(),
+			High);
+	if (bestFitLink().chisq()/getStartingLink().chisq()<0.99) {
+		burnOut();
+		
+	}
+	else {
+		msgs->say("Chain does not converge, will not burn out", High);
+		addNewBestFitLink(bestFitLink());
+	}
 	
 	//
 	// save step sizes
@@ -1270,7 +1289,7 @@ void cpedsMCMC::saveBestFitStepPDFs(string fname) {
 	outfile=getRunDependentFileName(fname);
 	msgs->say("Saving step PDF to file: "+outfile,Medium);
 #pragma omp critical 
-	for (long j = 0; j < dims(); j++) {
+	for (long j = 0; j < _chisqData.bestFitData.stepGeneratingDistr.size(); j++) {
 		
 		//		outfile=getParameterDependentFileName(fname,j);
 		//		outfile=getRunDependentFileName(outfile);
@@ -1556,11 +1575,14 @@ void cpedsMCMC::saveChain(QList<MClink>& chain, string fname) {
 }
 /***************************************************************************************/
 void cpedsMCMC::printLink(const MClink& link, string comment) const {
-	std::cout << comment;
+	stringstream ss;
+	ss << "MC" << getRunIdx() <<" " << comment << ":";
 	for (long i=0;i<link.dims();i++) {
-		printf("p%i: %lE ",i,link[i]);
+		ss << "p"<<i << "="<<link[i];
+		if (i<link.dims()-1) ss  << ", ";
 	}
-	printf("\n");
+	ss << std::endl;
+	std::cout << ss.str();
 
 //	msgs->say("Link Information:",Medium);
 //	for (long i = 0; i < link.dims(); i++) {
@@ -2056,8 +2078,11 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpol
 	if (states.pointsCount()<2) pdfRange=increment; else pdfRange=states.getMaxArg()-states.getMinArg();
 	long pdfPoints_internal=long(sqrt(states.pointsCount()));
 	double dx=pdfRange/pdfPoints_internal;
-	
-	assert(dx>0);
+	if (dx<=0) {
+		std::cerr << "Current run index: " << getRunIdx() << std::endl;
+		assert(dx>0);
+	}
+		
 	bins.clear();
 	pdf=states.binFunction(dx,bins,"bin_center","max");
 	pdf.checkRanges();
@@ -2826,7 +2851,9 @@ MClink cpedsMCMC::update_deltas() {
 /* ******************************************************************************************** */
 void cpedsMCMC::printLastStep() const {
 	if (getMCsteps().size()==0) return;
-	getMCsteps().last().printParamsLine("steps: ");
+	stringstream ss;
+	ss << "MC" << getRunIdx() << ": ";
+	getMCsteps().last().printParamsLine("steps"+ss.str());
 }
 /* ******************************************************************************************** */
 void cpedsMCMC::setAvgStepsCount(long N) {
