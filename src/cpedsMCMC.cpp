@@ -686,9 +686,10 @@ void cpedsMCMC::startChain(bool followPriors) {
 		//		printf("step param0: %lE\n",getMCsteps(0).last());
 		
 		if (length() % getWalkInfoOutputFrequency() == 0 or walkDone==true or walk==false or msgs->getVerbosity()>=High) {
-			printf("\nMC len.tot.: %.0f (acc/rej/test:%.0f/%.0f/%li), "
+			printf("\nMC%li len.tot.: %.0f (acc/rej/test:%.0f/%.0f/%li), "
 					"cur.X2: %lE, bf.X2: %lE, cur./min.T: %lE/%lE, "
 					"conv: %lE, next conv.chk: %.0f, eta: %lE, d2X2: %lE\n",
+					getRunIdx(),
 					double(length()),
 					double(acceptedStates().size()),
 					double(rejectedStates().size()),
