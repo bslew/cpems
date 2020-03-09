@@ -1765,7 +1765,7 @@ double cpeds_bilinear_interpolation(double x1, double x2, double y1, double y2, 
 	\date Jan 12, 2012, 1:43:05 PM
 	\author Bartosz Lew
 */
-void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double (&c)[4][4]);
+void cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double c [][4]);
 /*!
 	\brief routine to calculate c matrix coefficients for bicubic interpolation it is called by bicubic_interpolation function
 	\details 
@@ -1795,7 +1795,7 @@ void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, doubl
 	\date Jan 12, 2012, 1:43:05 PM
 	\author Bartosz Lew
 */
-void* cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
+void cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
 		const double x1l, const double x1u, const double x2l, const double x2u,
 		const double x1, const double x2, double &ansy, double &ansy1, double &ansy2);
 

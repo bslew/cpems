@@ -27,6 +27,7 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 #if (CMAKE_BUILD_TYPE EQUAL "Debug")
 #	set(CMAKE_CXX_FLAGS -g)
 #endif()

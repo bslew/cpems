@@ -362,16 +362,18 @@ string cpedsDirection::print_direction(string comment, bool show, int format) co
   }
   string s;
   char tmpch[1000];
-  if (format==0 or format==2)
+  if (format==0 or format==2) {
 	  if (format==0)
 		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [d] %li [m] %lE [s], lat  %li [d] %li [m] %lE [s] \n", comment.c_str(), cpeds_check_phi(lon())*PI180inv, cpeds_check_b(lat())*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
 	  else
-		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [d] %li [m] %lE [s], lat  %li [d] %li [m] %lE [s] \n", comment.c_str(), cpeds_check_phi(lon()*PI180)*PI180inv, cpeds_check_b(lat()*PI180)*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
-  if (format==1 or format==3)
+		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [d] %li [m] %lE [s], lat  %li [d] %li [m] %lE [s] \n", comment.c_str(), cpeds_check_phi(lon()*PI180)*PI180inv, cpeds_check_b(lat()*PI180)*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  	  
+  }
+  if (format==1 or format==3) {
 	  if (format==1)
 		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [h] %li [m] %lE [s], lat  %li [d] %li ['] %lE [\"] \n", comment.c_str(), cpeds_check_phi(lon())*PI180inv, cpeds_check_b(lat())*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
 	  else
 		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [h] %li [m] %lE [s], lat  %li [d] %li ['] %lE [\"] \n", comment.c_str(), cpeds_check_phi(lon()*PI180inv)*PI180, cpeds_check_b(lat()*PI180)*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
+  }
   if (show) printf("%s",tmpch);
   s=tmpch;
   return s;

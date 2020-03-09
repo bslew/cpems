@@ -278,8 +278,8 @@ double cpeds_get_dA_from_ang(double Wr0, double Wb0, double Wm0, double  Wl0, do
 //		t.newPoint(zz,1.0 / ( (1+zz)*cpeds_Efactor(Wr0,Wm0,Wl0,zz,w) )); 
 //		zz+=dz;
 //	} while (zz <= CPEDS_ZINF);
-
-	
+	throw("Not implemented");
+	return -1;
 }
 //**************************************************************************************
 double cpeds_sound_horizon(double Wr0, double Wb0, double Wm0,double Wl0, double z, double w, double h) {

@@ -30,7 +30,7 @@ cpedsPlanetDirection::~cpedsPlanetDirection() {
 }
 
 
-cpedsPlanetDirection::cpedsPlanetDirection(const cpedsPlanetDirection& parent)  {
+cpedsPlanetDirection::cpedsPlanetDirection(const cpedsPlanetDirection& parent) {
 	this->operator=(parent);
 }
 cpedsPlanetDirection::cpedsPlanetDirection(const cpedsMoonDirection& parent) : cpedsMoonDirection(parent) {

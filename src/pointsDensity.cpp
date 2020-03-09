@@ -75,7 +75,7 @@ void pointsDensity::calculateDensity(long NeighborsMin, long NeighborsMax, bool 
 	
 	// prepare initial smoothing length guess
 //	subDomain_region_t particle_reg;
-	double hsml, rho,dist;
+	double hsml=0, rho=0,dist=0;
 	
 //	_pointsDensity_data.hsml.reserve(size());
 	
@@ -198,7 +198,7 @@ void pointsDensity::calculateDensity(long NeighborsMin, long NeighborsMax, bool 
 	// do the density calculation
 	//
 	msgs->say("calculating density",Medium);
-	double x,y,z;
+	double x=0,y=0,z=0;
 //	double hsmlo2=hsml/2;
 
 	

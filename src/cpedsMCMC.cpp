@@ -933,6 +933,8 @@ double cpedsMCMC::getX2Convergence() {
 /* ******************************************************************************************** */
 double cpedsMCMC::getRelX2Improvement() {
 	//	return current().chisq()-next.chisq()/_bestFit.chisq();
+	throw("not implemented");
+	return 0;
 }
 /***************************************************************************************/
 void cpedsMCMC::setData(const mscsFunction& data) {	

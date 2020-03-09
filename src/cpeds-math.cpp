@@ -1981,7 +1981,7 @@ double cpeds_gauss_on_sphere(double thc, double phic, double s, double th, doubl
 // and the resolution parameter which defines the pixel size
 double cpeds_normalize_gauss_on_sphere(double s, long int pix_num) {
 	//long int i;
-	double integr;
+	double integr=0;
 	
 	
 	/*   for (i=0;i<pix_num;i++) {  */
@@ -4525,7 +4525,7 @@ double cpeds_bilinear_interpolation(double x1, double x2, double y1, double y2, 
 }
 /* ******************************************************************************************** */
 
-void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double (&c)[4][4]) {
+void cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double c[][4]) {
 	
 	int l,k=0,j,i;
 	double xx,d1d2=d1*d2;
@@ -4544,13 +4544,16 @@ void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, doubl
 		cl[i]=xx;
 	}
 	l=0;
-	for (i=0;i<4;i++)
-		for (j=0;j<4;j++) c[i][j]=cl[l++];
+	for (i=0;i<4;i++) {
+		for (j=0;j<4;j++) {
+			c[i][j]=cl[l++];		
+		}
+	}
 	
 }
 
 
-void* cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
+void cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
 		const double x1l, const double x1u, const double x2l, const double x2u,
 		const double x1, const double x2, double &ansy, double &ansy1, double &ansy2) {
 	

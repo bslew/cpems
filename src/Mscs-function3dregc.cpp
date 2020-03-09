@@ -2806,7 +2806,7 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 	//
 	msgs->say("calculating interpolated values at grid cells",Medium);
 	msgs->say("hsmlMax: %lE",hsmlMax,Medium);
-	double x,y,z,Neff,kernVal;
+	double x=0,y=0,z=0,Neff=0,kernVal=0;
 	
 	cpedsPoint3D p0prev=p0ctr;
 	
