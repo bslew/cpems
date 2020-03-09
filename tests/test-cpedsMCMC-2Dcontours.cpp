@@ -50,6 +50,9 @@ int main(int argc, char **argv) {
 	logger.info("test-cpedsMCMC-2Dcontours - NEW RUN");
 	logger.info(getCmdString(argc,argv));
 
+	if (opt.count("input-file")==0) {
+		return 0;
+	}
 	vector<string> input_file=opt["input-file"].as< vector<string> >();
     if (input_file.size()>0) {
     	logger.info("Loading data from: {}", input_file[0]);
