@@ -2079,6 +2079,11 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpol
 	long pdfPoints_internal=long(sqrt(states.pointsCount()));
 	double dx=pdfRange/pdfPoints_internal;
 	if (dx<=0) {
+		std::cout << "pdfRange: "<< pdfRange << std::endl;
+		std::cout << "increment: "<< increment << std::endl;
+		std::cout << "pdfPoints_internal: "<< pdfPoints_internal << std::endl;
+		std::cout << "states.pointsCount(): "<< states.pointsCount() << std::endl;
+		
 		std::cerr << "Current run index: " << getRunIdx() << std::endl;
 		assert(dx>0);
 	}
