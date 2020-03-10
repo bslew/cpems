@@ -2051,12 +2051,12 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpol
 	
 	msgs->say("Calculating 1-D PDF for parameter: %li",paramID,Medium);
 	
-	mscsFunction states=getParamValues(paramID);
-	mscsFunction statesInv=states;
-	statesInv.invert();
-	statesInv.sortFunctionArgAscending();
-	statesInv.invert();
-	double increment=fabs(statesInv.getX(0)-statesInv.getX(1));
+	mscsFunction states=combineParamLikelihoods(paramID); // L(param) function
+	mscsFunction statesLsorted=states;
+	statesLsorted.invert();
+	statesLsorted.sortFunctionArgAscending(); // sort by likelihood
+	statesLsorted.invert();
+	double minDist=fabs(statesLsorted.getX(0)-statesLsorted.getX(1)); // 
 	
 	states.checkRanges();
 	states/=states.getMaxValue();
@@ -2075,12 +2075,13 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpol
 	
 	cpedsList<long> bins;
 	double pdfRange;//=sqrt(params.variance());
-	if (states.pointsCount()<2) pdfRange=increment; else pdfRange=states.getMaxArg()-states.getMinArg();
+	if (states.pointsCount()<2) pdfRange=minDist; else pdfRange=states.getMaxArg()-states.getMinArg();
+	if (pdfRange==0) pdfRange=minDist;
 	long pdfPoints_internal=long(sqrt(states.pointsCount()));
 	double dx=pdfRange/pdfPoints_internal;
 	if (dx<=0) {
 		std::cout << "pdfRange: "<< pdfRange << std::endl;
-		std::cout << "increment: "<< increment << std::endl;
+		std::cout << "minDist: "<< minDist << std::endl;
 		std::cout << "pdfPoints_internal: "<< pdfPoints_internal << std::endl;
 		std::cout << "states.pointsCount(): "<< states.pointsCount() << std::endl;
 		
@@ -2293,8 +2294,8 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pd
 	
 	
 	
-	mscsFunction states1=getParamValues(paramID1);
-	mscsFunction states2=getParamValues(paramID2);
+	mscsFunction states1=combineParamLikelihoods(paramID1);
+	mscsFunction states2=combineParamLikelihoods(paramID2);
 	mscsFunction3dregc pdf;
 	if (getNparam()<2) return pdf;
 	
@@ -2498,7 +2499,7 @@ void cpedsMCMC::setup(cpedsMCMC& chain) {
 	_convergence=chain.getConvergence();
 }
 /***************************************************************************************/
-mscsFunction cpedsMCMC::getParamValues(int j) {
+mscsFunction cpedsMCMC::combineParamLikelihoods(int j) {
 	mscsFunction p;
 	
 	/*
@@ -2512,7 +2513,7 @@ mscsFunction cpedsMCMC::getParamValues(int j) {
 	 */
 	
 	for (long i = 0; i < acceptedStates().size(); i++) {
-		p.newPoint(chain(i).getParam(j),chain(i).chisq());
+		p.newPoint(acceptedStates()[i].getParam(j),acceptedStates()[i].chisq());
 	}
 	
 	for (long i = 0; i < rejectedStates().size(); i++) {
