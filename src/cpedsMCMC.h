@@ -1081,14 +1081,14 @@ class cpedsMCMC {
 		MClink update_deltas();
 		
 		/*!
-			\brief extract parameter values and associated likelihoods 
+			\brief extract parameter likelihoods from all accepted, rejected and test states
 			\details 
 			@param j - parameter index
 			@return an unsorted function of parameter values (X) and their likelihoods (Y)
 		
 			\date May 24, 2017, 12:04:57 PM
 		*/
-		mscsFunction getParamValues(int j);
+		mscsFunction combineParamLikelihoods(int j);
 		
 		bool forcedCoolingPossible() { return _walk.rejectionsCount>=_cooling.maximalRejectionsCount and getTemperature()>getFinalTemperature(); }
 		bool coolingPossible() { return getTemperature()>getFinalTemperature(); }
