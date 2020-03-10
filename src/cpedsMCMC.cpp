@@ -101,6 +101,8 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_walk.avgStep=MClink(Npar);
 	setAvgStepsCount(100);
 	_walk.momentum=0;
+	_walk.momentumFactorHistory.setVerbosityLevel(Zero);
+	_walk.etaHistory.setLogVerbosityLevel(Zero);
 	_walk.d2X2rel=1;
 	_walk.d2X2rel_points=20;
 	_walk.userOutputFrequency=1000;
@@ -342,7 +344,9 @@ void cpedsMCMC::startChain(MClink* startingLink, bool followPriors) {
 	_walk.statesTot=0;
 	
 	if (startingLink!=0) {
+		msgs->say("Using provided starting link",Medium);
 		current()=*startingLink;
+		current().printParamsLine("Starting link");
 	}
 	else {
 		// randomly choose the starting location in the parameter space
@@ -397,6 +401,7 @@ void cpedsMCMC::startChain(MClink* startingLink, bool followPriors) {
 			//			if (deltaX > 0) { // cool down at the same time to reduce chance of going away from the best fit solution
 			//				coolDownLogLin(deltaX);
 			//			}
+			current().save(getRunDependentFileName(getPartialFilesDirFull()+"/burnInEnd-link")); 
 		}
 		else {
 			//			if (getInitialStepSize()==0 and length()<getBurnInLength()) { // we are in the burn-in phase
@@ -417,7 +422,6 @@ void cpedsMCMC::startChain(MClink* startingLink, bool followPriors) {
 				nextCandidate()=randomLink;
 			}
 			else { // we are no longer in the burn-in phase
-				current().save(getRunDependentFileName(getPartialFilesDirFull()+"/burnInEnd-link")); 
 
 				if (getUphillGradient()) {
 					nextCandidate()=getNextPointUphillGradient(current());
@@ -443,13 +447,14 @@ void cpedsMCMC::startChain(MClink* startingLink, bool followPriors) {
 				addNewBestFitLink(nextCandidate());
 			}
 			
-			// we don't used momentum during the burn-in phase
+			// we don't use momentum during the burn-in phase
 			resetMomentum();
 			resetAvgStep();
 			_walk.rejectionsCount=0;
 		}
 		else  { // after burn-in
-			acceptWorseThreshold=_cooling.acceptWorseThresholdAfterBurnIn; acceptWorseBoltzmannFactor=_cooling.acceptWorseAfterBurnInBoltzmannFact; 
+			acceptWorseThreshold=_cooling.acceptWorseThresholdAfterBurnIn; 
+			acceptWorseBoltzmannFactor=_cooling.acceptWorseAfterBurnInBoltzmannFact; 
 			
 			
 			if (nextCandidate().chisq()<current().chisq()) {
@@ -565,6 +570,7 @@ void cpedsMCMC::startChain(MClink* startingLink, bool followPriors) {
 					else acceptWorseState(false,nextCandidate(),_walk.rejectionsCount);
 				}
 				else {
+//					if (_cooling.acceptWorse)
 					deltaX2perDOF=(nextCandidate().chisq()-current().chisq())/dataSize();
 					if (acceptWorseBoltzmannFactor*acceptWorseRN > deltaX2perDOF) { // take the step
 						acceptWorseState(true,nextCandidate(),_walk.rejectionsCount);
@@ -1486,6 +1492,7 @@ double cpedsMCMC::coolDownGeometric(double factor) {
 //	msgs->say("COOLING: new temperature: "+msgs->toStr(getTemperature()),Low);
 	
 	updateStepGeneratingPDFs();		
+	
 	updateCoolingPDF();
 	
 	return oldTemperature-_cooling.temperature;
@@ -1666,7 +1673,11 @@ void cpedsMCMC::setAcceptWorsePvalues(double bipv, double abipv) {
 }
 /***************************************************************************************/
 void cpedsMCMC::updateAcceptWorseThresholds() {
+//	if (_cooling.acceptWorsePvalue==0) { _cooling.acceptWorseThreshold=0; }
+//	else 
 	_cooling.acceptWorseThreshold=_cooling.coolingDistrInvCDF.f(1.0-_cooling.acceptWorsePvalue,NULL);
+//	if (_cooling.acceptWorsePvalueAfterBurnIn==0) { _cooling.acceptWorseThresholdAfterBurnIn=0; }
+//	else 
 	_cooling.acceptWorseThresholdAfterBurnIn=_cooling.coolingDistrInvCDF.f(1.0-_cooling.acceptWorsePvalueAfterBurnIn,NULL);
 }
 /***************************************************************************************/
@@ -2592,7 +2603,7 @@ void cpedsMCMC::coolForcibly() {
 	//	if (_cooling.forcedCoolingTemperatureDecrement< 0.001*(_cooling.initialTemperature-_cooling.finalTemperature)) _cooling.forcedCoolingTemperatureDecrement=0.001*(_cooling.initialTemperature-_cooling.finalTemperature);
 	//	_cooling.temperature-=_cooling.forcedCoolingTemperatureDecrement;
 	_cooling.forcedCoolingTemperatureDecrement=coolDownGeometric();
-	msgs->say("Forcibly cooling by %f K",_cooling.forcedCoolingTemperatureDecrement,Medium);
+	msgs->say("Forcibly cooling by %.2lE K",_cooling.forcedCoolingTemperatureDecrement,Medium);
 	
 	
 	if (getTemperature()<getFinalTemperature()) _cooling.temperature=getFinalTemperature();

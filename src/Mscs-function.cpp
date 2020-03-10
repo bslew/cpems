@@ -248,7 +248,8 @@ double mscsFunction::Y(long i) const {
 double mscsFunction::getY(long i) const {
 	if (argOK(i)) return _f[i].y();
 	else {
-		msgs->error("index out of range: "+msgs->toStr(i),Medium);
+//		msgs->error("index out of range: "+msgs->toStr(i),Medium);
+		msgs->say("index out of range: "+msgs->toStr(i),Medium);
 	}
 	return 0;
 }
