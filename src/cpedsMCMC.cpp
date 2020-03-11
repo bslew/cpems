@@ -162,7 +162,8 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	_cooling.coolingRNGseedOffset=cpeds_get_devrandom_seed();
 	_cooling.coolingRNG.seedOffset(_cooling.coolingRNGseedOffset);
 	_cooling.coolingRNG.seed(_walk.runRNGseed);
-	setAcceptWorsePvalues(0.3,0.05);
+//	setAcceptWorsePvalues(0.3,0.05);
+	setAcceptWorsePvalues(0.0,0.0);
 	setAcceptWorseBoltzmannSchemeFactors(1,1);
 	_cooling.coolingRate=0.5;
 	
@@ -1819,7 +1820,7 @@ void cpedsMCMC::calculate1Dposteriors() {
 	msgs->say("Calculating 1-D posteriors",Medium);
 	
 	for (long i = 0; i < getNparam(); i++) {
-		MscsPDF1D p=get1Dposterior(i,_IOcontrol.PDF1d_pointsCount);
+		MscsPDF1D p=get1Dposterior(i,_IOcontrol.PDF1d_pointsCount,"steffen",true);
 		p.checkRanges();
 		_chisqData.bestFitData.posteriors1D.append(p);
 	}	
@@ -1838,7 +1839,7 @@ void cpedsMCMC::calculate2Dposteriors() {
 	}
 }
 /***************************************************************************************/
-void cpedsMCMC::save1Dposteriors() {
+void cpedsMCMC::save1Dposteriors(string output_file_prefix) {
 	if (_chisqData.bestFitData.posteriors1D.size()!=dims()) {
 		calculate1Dposteriors();
 	}
@@ -1847,23 +1848,24 @@ void cpedsMCMC::save1Dposteriors() {
 	}
 	
 	for (long i = 0; i < getNparam(); i++) {
-		_chisqData.bestFitData.posteriors1D[i].saveHDF5(getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i));
+		_chisqData.bestFitData.posteriors1D[i].saveHDF5(getOutputDir()+"/"+
+				output_file_prefix+".hdf5",msgs->toStr(i));
 		
 		// save parameter name
 		_chisqData.bestFitData.posteriors1D[i].setHDF5_scalarStringAttribute(
-				getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i),
+				getOutputDir()+"/"+output_file_prefix+".hdf5",msgs->toStr(i),
 				"full_name",parameterSpace().names_latex()[i]);
 		
 		//
 		//  save best-fit parameter value
 		//
 		_chisqData.bestFitData.posteriors1D[i].setHDF5_scalarDoubleAttribute(
-				getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i),
+				getOutputDir()+"/"+output_file_prefix+".hdf5",msgs->toStr(i),
 				"bestFit",bestFitLink().getParam(i),"best fit parameter value");
 		
 		// save CR
 		_chisqData.bestFitData.confidenceRanges1D[i].saveHDF5(
-				getOutputDir()+"/posterior1D.hdf5",msgs->toStr(i)+"_CR");
+				getOutputDir()+"/"+output_file_prefix+".hdf5",msgs->toStr(i)+"_CR");
 		
 	}
 	
@@ -2052,13 +2054,14 @@ void cpedsMCMC::storeBestFit() {
 	}	
 }
 /***************************************************************************************/
-MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpolationType) {
-	
-/*
-	if (paramID<_chisqData.bestFitData.posteriors1D.size()) { // if it was calculated then return it right away
-		return _chisqData.bestFitData.posteriors1D[paramID];
+MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints, string interpolationType,
+		bool recalculate) {
+
+	if (not recalculate) {
+		if (paramID<_chisqData.bestFitData.posteriors1D.size()) { // if it was calculated then return it right away
+			return _chisqData.bestFitData.posteriors1D[paramID];
+		}		
 	}
-*/
 	
 	msgs->say("Calculating 1-D PDF for parameter: %li",paramID,Medium);
 	
@@ -2635,7 +2638,7 @@ void cpedsMCMC::burnOut() {
 	
 	// update walk PDFs with expected step sizes fixed to well cover the high-likelihood region about the best fit solution
 	calculate1Dposteriors();
-	
+	save1Dposteriors(getPartialFilesDir()+"/pre-burnout-PDFs");
 	setInitialWalkStepSize(1); // we're not using this during burn-out, but I keep it here to remember of its existence
 	
 	for (long i = 0; i < dims(); i++) { // we need to find out the best step size in each direction for the burn-out
@@ -2673,7 +2676,7 @@ void cpedsMCMC::burnOut() {
 		}
 		
 		// expected stepPDF size
-		double EXstep=oneSigma;
+		double EXstep=3*oneSigma;
 		msgs->say("Setting step PDF for parameter %.0lf to %lE",double(i),EXstep,Medium);
 		
 		updateStepGeneratingPDF(i,EXstep);

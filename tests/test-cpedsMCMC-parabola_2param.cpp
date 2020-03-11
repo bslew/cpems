@@ -115,10 +115,12 @@ boost::program_options::variables_map parser(int argc, char** argv) {
 	    ("ompnested", po::value<bool>(&ompnested)->default_value(false), "Enables nested omp")
 	    ("num_threads", po::value<int>(), "sets maximal number of omp threads")
 	    ("Bin", po::value<long>(&Bin)->default_value(1000), "Burn-in length")
-	    ("Bout", po::value<long>(&Bin)->default_value(10000), "Burn-out length")
+	    ("Bout", po::value<long>(&Bin)->default_value(100000), "Burn-out length")
 	    ("ctol", po::value<double>(&dbl)->default_value(1.e-10), "X2 improvement convergence tolerance")
 	    ("odir", po::value<string>(&stropt)->default_value("test-parabola_2param"), "output directory")
 	    ("yerr", po::value<double>(&dbl)->default_value(10.), "Independent variable error. ")
+	    ("a", po::value<double>(&dbl)->default_value(1.), "a*x**2+b model parameter 0: a")
+	    ("b", po::value<double>(&dbl)->default_value(1.), "a*x**2+b model parameter 0: b")
 	;
 
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -154,7 +156,7 @@ int main(int argc, char** argv) {
 	//
 	double xmin=-10;
 	double xmax=10;
-	double a=1, b=1;
+	double a=opt["a"].as<double>(), b=opt["b"].as<double>();
 	mscsFunction data, model;
 	double yerr=opt["yerr"].as<double>();
 //	double yerr=1e-10;
@@ -189,6 +191,7 @@ int main(int argc, char** argv) {
 	parab_conf.setUpHillClimbing(true);
 	parab_conf.setUpHillGradient(true);
 	parab_conf.setConvergenceThres(opt["ctol"].as<double>());
+	parab_conf.setAcceptWorsePvalues(0,0);
 //	parab_conf.setCoolingRate(1);
 	parab_conf.setInitialStepSize(1);
 	parab_conf.setInitialWalkStepSize(1);

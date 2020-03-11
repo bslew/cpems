@@ -494,7 +494,7 @@ class cpedsMCMC {
 
 		QList<MscsPDF1D>& posteriors() { return _chisqData.bestFitData.posteriors1D; }
 		MscsPDF1D get1Dposterior(string paramName, long pdfPoints=50, string interpolationType="steffen");
-		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50, string interpolationType="steffen");
+		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50, string interpolationType="steffen", bool recalculate=true);
 		mscsFunction3dregc get2Dposterior(string paramName1, string paramName2, long pdfPoints=50);
 		mscsFunction3dregc get2Dposterior(int paramID1, int paramID2, long pdfPoints=50);
 
@@ -531,10 +531,16 @@ class cpedsMCMC {
 		void saveResiduals(int inputDataColumn=-1);
 
 		void savePriors();
-		void save1Dposteriors();
+		void save1Dposteriors(string output_file_prefix="posterior1D");
 		void save2Dposteriors();
 //		void setCalculate1Dposteriors(bool tf) {_IOcontrol.calculate1Dpdf=tf; }
 		void setCalculate2Dposteriors(bool tf) {_IOcontrol.calculate2Dpdf=tf; }
+		/*!
+			\brief re-calculate 1-D likelihoods based on all currently available links
+			\details This method forces re-calculating the likelihoods.
+		
+			\date Mar 11, 2020, 3:27:03 PM
+		*/
 		void calculate1Dposteriors();
 		/*!
 			\brief calculate 1D CRs
