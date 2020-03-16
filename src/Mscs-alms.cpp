@@ -340,7 +340,7 @@ const mscsAlms& mscsAlms::generate_gaussian_alms(long llmax, double fm, double f
   clear();
   lmax(llmax);
   if (rns==NULL) { rns = new cpedsRNG("gaussian","double"); rns->setCentralLimitNumbers(100); rnsWasNull=true; } else { rnsWasNull=false; }
-  rns->setMeanVariance(fm,fs);
+  rns->setMeanStd(fm,fs);
 
 
   long N=almsNum();

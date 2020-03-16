@@ -363,6 +363,15 @@ class mscsFunction3dregc : public mscsObject {
 		double getMaxValue(long* iMax=NULL, bool Re=true) const;
 		double getMinValue(long* iMin=NULL, bool Re=true) const;
 		cpedsPoint3D getMinValueCell(bool Re=true) const;
+		/*!
+			\brief return function space coordinates of the maximal function value
+			\details 
+			@param Re - if true the maximal value corresponds to real part, otherwise
+				it concerns the imaginary part.
+			@return x,y,z point in function space of the maximal value.
+		
+			\date Mar 13, 2020, 12:52:29 PM
+		*/
 		cpedsPoint3D getMaxValueCell(bool Re=true) const;
 
 //		//! returns a modifiable reference to the list of X coordinates list

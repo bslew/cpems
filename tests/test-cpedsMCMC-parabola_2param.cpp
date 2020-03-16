@@ -52,7 +52,7 @@ void calculateFisher(mscsFunction& data, double yerr, string outdir, mscsFunctio
 	matrix<double> C=F.Inv();
 	cout << "Parameters correlation matrix\n";
 	cpeds_print_matrix(C);
-	cpeds_matrix_save(C,outdir+"Correlation.mat");
+	cpeds_matrix_save(C,outdir+"Covariance.mat");
 	
 	printf("Fisher parameter1 sigma: %lE\n",sqrt(C(0,0)));
 	printf("Fisher parameter2 sigma: %lE\n",sqrt(C(1,1)));
@@ -114,13 +114,15 @@ boost::program_options::variables_map parser(int argc, char** argv) {
 	    ("Nchains,N", po::value<int>(&opt)->default_value(1), "Number of mcmc chains")
 	    ("ompnested", po::value<bool>(&ompnested)->default_value(false), "Enables nested omp")
 	    ("num_threads", po::value<int>(), "sets maximal number of omp threads")
-	    ("Bin", po::value<long>(&Bin)->default_value(1000), "Burn-in length")
+	    ("Bin", po::value<long>(&Bin)->default_value(10000), "Burn-in length")
 	    ("Bout", po::value<long>(&Bin)->default_value(100000), "Burn-out length")
 	    ("ctol", po::value<double>(&dbl)->default_value(1.e-10), "X2 improvement convergence tolerance")
 	    ("odir", po::value<string>(&stropt)->default_value("test-parabola_2param"), "output directory")
-	    ("yerr", po::value<double>(&dbl)->default_value(10.), "Independent variable error. ")
-	    ("a", po::value<double>(&dbl)->default_value(1.), "a*x**2+b model parameter 0: a")
-	    ("b", po::value<double>(&dbl)->default_value(1.), "a*x**2+b model parameter 0: b")
+	    ("yerr", po::value<double>(&dbl)->default_value(0.1), "Independent variable error. ")
+	    ("a,a", po::value<double>(&dbl)->default_value(0.1), "a*x**2+b model parameter 0: a")
+	    ("b,b", po::value<double>(&dbl)->default_value(1.), "a*x**2+b model parameter 0: b")
+		("Tini", po::value<double>(&dbl)->default_value(1000.0), "Initial temperature")
+		("Tend", po::value<double>(&dbl)->default_value(1e-20), "Final temperature")
 	;
 
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -169,14 +171,21 @@ int main(int argc, char** argv) {
 	cpedsRNG rns;
 	rns.setRNsType(rns.gaussian);
 	rns.seed(1);
-	rns.setMeanVariance(0.0,yerr);
+	rns.setMeanStd(0.0,yerr);
 //	rns.setPDF(data.pointsCount(),data.extractArguments(),data.extractValues());
 	//	rns.getRNs(100).save("parabola-data.txt");
 
+	cpedsList<double> noise;
 	if (opt["yerr"].as<double>()>0)
-		for (long i = 0; i < data.pointsCount(); i++) {		data.f(i)+=rns.getRN();	}
+		for (long i = 0; i < data.pointsCount(); i++) {		
+			double n=rns.getRN();
+			noise.append(n);
+			data.f(i)+=n;	
+		}
 	data.save(outdir+"parabola-data.txt");
-	
+	cout << "noise variance: "<< noise.variance() << endl;
+	cout << "noise std: "<< sqrt(noise.variance())  << endl;
+//	exit(0);
 
 	
 	
@@ -198,7 +207,7 @@ int main(int argc, char** argv) {
 	parab_conf.setMaximalRejectionsCount(2);
 	parab_conf.setBurnInLength(opt["Bin"].as<long>());
 	parab_conf.setBurnOutLength(opt["Bout"].as<long>());
-	parab_conf.setTemperatures(1000,1e-6);
+	parab_conf.setTemperatures(opt["Tini"].as<double>(),opt["Tend"].as<double>());
 	parab_conf.setChisqSignature("parabola fit");
 	parab_conf.setWalkInfoOutputFrequency(500);
 	

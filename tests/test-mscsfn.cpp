@@ -113,6 +113,7 @@ int main(int argc, char** argv) {
 		printf("59 - mscsFunction3dregc: test hdf5 string attribute\n");
 		printf("60 - shiftYwrtX\n");
 		printf("61 - binFunction with provided edges\n");
+		printf("62 - test sigma estimate from 1d pdf second derivatives\n");
 		exit(0);
 	}
 	long testNo=strtol(argv[1],NULL,10);
@@ -460,7 +461,7 @@ int main(int argc, char** argv) {
 			f.print(true);
 			printf("x: %lf, finter: %lf\n",4.5,f.finter(4.5));
 
-
+			break;
 		case 19:
 			goOMP();
 			break;
@@ -552,7 +553,8 @@ int main(int argc, char** argv) {
 			cleanfn.setVerbosityLevel(Top);
 			cleanfn.initiate(g3d,g3d,5000,0.2);			
 			cleanfn.clean();
-
+			break;
+			
 		case 27:
 			f.mkConst(0,36,1,0);
 			f.mkPowerLaw(0,36,1,0.3,0,1,2,1);
@@ -1334,7 +1336,30 @@ int main(int argc, char** argv) {
 			
 			break;
 			
-			
+		case 62: 
+		{	
+			double s0=2.5;
+			f.mkGauss(-5,5,0.1,1,0,s0,0);
+			long maxi=f.getMaxValueIdx();
+			f.save("gauss.pdf");
+			f.lnY();
+			f*=-2.;		
+			f.save("X2.pdf");
+			f.checkRanges();
+			mscsFunction D=f.derivative(false);
+			mscsFunction D2=D.derivative(false);
+			D.save("X2-deriv.pdf");
+//			D2.derivative(true);
+			D2.save("X2-deriv2.pdf");
+			double s=sqrt(fabs(2./D2.f(maxi)));
+			std::cout << "f(maxi): " << f.f(maxi) << std::endl;
+			std::cout << "f'(maxi): " << D.f(maxi) << std::endl;
+			std::cout << "f''(maxi): " << D2.f(maxi) << std::endl;
+			std::cout << "maxi: " << maxi << std::endl;
+			std::cout << "sigma estimate: " << s << ", should be " << s0 << std::endl;
+					
+			break;
+		}	
 		default:
 			break;
 	}
@@ -1592,7 +1617,7 @@ void goOMP() {
 
 //		omp_unset_lock(&_omp_lock);
 
-		for (unsigned long k = 0; k < Nx; k++) {
+		for (long k = 0; k < Nx; k++) {
 //			printf("setting h(i=%li)\n",i);
 			h.setf(k,i,0,double(i)*Nx+k,0);			
 		}
@@ -1634,9 +1659,9 @@ void gofxy() {
 	g.allocFunctionSpace();
 	g.setVerbosityLevel(Top);
 	g.printInfo();
-	for (unsigned long i = 0; i < Nx; i++) {
+	for (long i = 0; i < Nx; i++) {
 		x=f.getMinX()+double(i)/Nx*f.lengthX()+g.getDxo2();
-		for (unsigned long j = 0; j < Ny; j++) {
+		for (long j = 0; j < Ny; j++) {
 			y=f.getMinY()+double(j)/Ny*f.lengthY()+g.getDyo2();
 			printf("i,j: %li, %li,   x,y: %lf, %lf\n",i,j,x,y);
 			g.fRe(i,j,0)=f.fxy(x,y,0,0);

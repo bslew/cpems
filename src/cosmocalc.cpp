@@ -2097,7 +2097,7 @@ void calculateGravitationalPotential(string infile) {
 			cpedsRNG rns("uniform");
 			cpedsRNG rnsG("gaussian");
 			rns.setMinMax(-10, 0);
-			rns.setMeanVariance(0, 1);
+			rns.setMeanStd(0, 1);
 			double x, y, z, M;
 			long n = 0;
 			while (n < _NP) {

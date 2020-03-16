@@ -131,6 +131,7 @@ parser.add_option("", "--YunitPrefix", default='', type="string", help='add this
 # Changes Y ticks of the plot subtracting a value so that the center of the image is at Ytick 0. Useful when --ymin and --ymax are read from hdf5 file.''')
 parser.add_option("", "--grid", action="store_true", dest="grid", default=False, help="triggers showing the grid on plot")
 parser.add_option("", "--show", action="store_true", dest="show", default=False, help="triggers showing the plot")
+parser.add_option("", "--dump", action="store_true", dest="dump", default=False, help="triggers dumping data to file")
 # parser.add_option("", "--colorbar", action="store_true", dest="colorbar", default=False, help="triggers showing a color bar")
 # parser.add_option("", "--zrangeSym", action="store_true", dest="zrangeSym", default=False, help="triggers showing z-range to be within the -max(abs(zmin),abs(zmax)) and +max(abs(zmin),abs(zmax)) ")
 # parser.add_option("", "--enumSlices", action="store_true", dest="enumSlices", default=False, help="triggers enumerating slices in the plot title by the slice number")
@@ -164,34 +165,51 @@ cpedsPythCommon.saveHowWeWereCalled()
 
 (option, args) = parser.parse_args()
 
+def loadHDF5_1d_CR(fname,dset):
+    f=h5py.File(fname,'r')
+
+    if getLikelihoofTypeFromHDF(fname, dset)=='1d':
+        CR=f[dset+"_CR"].value.T[0]
+    
+    f.close()
+    return CR
+    
 def loadHDF5CRlevels(fname,dset):
     f=h5py.File(fname,'r')
+
+    if getLikelihoofTypeFromHDF(fname, dset)=='2d':
     
-    CLcontour=[None,None,None] # these should increase
 #     print f.attrs.keys()
-    
-    for item in list(f[dset].attrs.keys()):
-#         print item
-        if item=="CLcontour68":
-            CLcontour[2]=f[dset].attrs[item]
-        elif item=="CLcontour95":
-            CLcontour[1]=f[dset].attrs[item]
-        elif item=="CLcontour99":
-            CLcontour[0]=f[dset].attrs[item]
+        CLcontour=[None,None,None] # these should increase
+        
+        for item in list(f[dset].attrs.keys()):
+    #         print item
+            if item=="CLcontour68":
+                CLcontour[2]=f[dset].attrs[item]
+            elif item=="CLcontour95":
+                CLcontour[1]=f[dset].attrs[item]
+            elif item=="CLcontour99":
+                CLcontour[0]=f[dset].attrs[item]
     
     return CLcontour
 
 def loadParameterNames(fname,dset):
+    plot_labels=[]
     f=h5py.File(fname,'r')
-
-    plot_labels=[f[dset].attrs['full_name_x'],    f[dset].attrs['full_name_y']]
+    if getLikelihoofTypeFromHDF(fname, dset)=='1d':
+        plot_labels=f[dset].attrs['full_name'].decode()
+    elif getLikelihoofTypeFromHDF(fname, dset)=='2d':
+        plot_labels=[f[dset].attrs['full_name_x'].decode(),    f[dset].attrs['full_name_y'].decode()]
     f.close()
     return plot_labels
     
 def loadBestFitParameters(fname, dset):
+    bf=[]
     f=h5py.File(fname,'r')
-
-    bf=[f[dset].attrs['bestFit_x'],    f[dset].attrs['bestFit_y']]
+    if getLikelihoofTypeFromHDF(fname, dset)=='1d':
+        bf=f[dset].attrs['bestFit']
+    elif getLikelihoofTypeFromHDF(fname, dset)=='2d':
+        bf=[f[dset].attrs['bestFit_x'],    f[dset].attrs['bestFit_y']]
     f.close()
     return bf
         
@@ -216,7 +234,48 @@ def getFileExtension(fname):
 #    sys.exit()
     return ext[-1]
 
-def loadData(fname,dset):
+def loadData1D(fname,dset):
+    sliceNo=0
+#     dset='L'
+    print("* loading file: %s (slice: %li)" % (fname,sliceNo))
+    
+    f = h5py.File(fname,'r')
+    slice = f[dset].value[:]
+    f.close()        
+    # convert the ordering of the slice to make first dimention (x) increase rightwards and second dimention (y) increase downwards
+    slice=slice.T
+    print(slice)
+
+            
+    #
+    # read contours
+    #   
+    CR=loadHDF5_1d_CR(fname, dset)
+    print("Read CL contours:")
+    print(CR)
+    
+    #
+    # load plot labels
+    #
+    plot_labels=loadParameterNames(fname, dset)
+    print("Parameter names:")
+    print(plot_labels)
+    
+    #
+    # load plot labels
+    #
+    bfparams=loadBestFitParameters(fname, dset)
+    print("Best fit parameters:")
+    print(bfparams)
+
+
+    print()
+    print("    * data size after loading and trimming: %i rows %i cols" % (len(slice[:,0]),len(slice[0])))
+    print()
+    return slice,CR,plot_labels,bfparams
+    
+
+def loadData2D(fname,dset):
     sliceNo=0
 #     dset='L'
     print("* loading file: %s (slice: %li)" % (fname,sliceNo))
@@ -267,14 +326,113 @@ def loadData(fname,dset):
     return slice,slice_ranges,CLcontours,plot_labels,bfparams
     
 
-def plot_correlation_matrix(fig,Cmat,bfparams):
-    siz=lambda x: np.sqrt(x)*(2.*np.sqrt(2.*np.log(2.)))
-    angle=math.atan(Cmat[0][1])*180./math.pi
-    e1 = Ellipse((bfparams[0], bfparams[1]), width=siz(Cmat[0][0]), height=siz(Cmat[1][1]),
-                         angle=angle, linewidth=2, fill=False, zorder=2)
+def plot_confidence_ellipse(fig,Cmat,bfparams):
+    p1=lambda C: (C[0][0]+C[1][1])/2
+    p2=lambda C: math.sqrt((C[0][0]-C[1][1])**2/4+C[0][1]**2)
+    sizX=lambda C: math.sqrt(p1(C)+p2(C))
+    sizY=lambda C: math.sqrt(p1(C)-p2(C))
+    
+    angle=math.atan(2.*Cmat[0][1]/(Cmat[0][0]-Cmat[1][1]))/2
+    A=sizY(Cmat)
+    B=sizX(Cmat)
+
+    
+    
+    
+    sx2=Cmat[0][0]
+    sy2=Cmat[1][1]
+    A2=0.5*(sx2+sy2+(sx2-sy2)/np.cos(angle))
+    B2=0.5*(sx2+sy2+(sy2-sx2)/np.cos(angle))
+    A=np.sqrt(A2)
+    B=np.sqrt(B2)
+
+    '''
+    The 2-D confidence region along a given parameter direction is broader
+    by a factor 
+    
+    Solve[Integrate[f[r] r, {r, 0, x}]/
+       Integrate[f[r] r, {r, 0, \[Infinity]}] == Erf[Nsigma/Sqrt[2]], x]
+       
+    which gives x=Sqrt[-2 Log[Erfc[Nsigma/Sqrt[2]]]]
+    
+    
+    '''
+    alpha68=1.52 # Sqrt[-2 Log[Erfc[Nsigma/Sqrt[2]]]], where Nsigma=1
+    alpha95=2.48598
+    A68=A*alpha68
+    B68=B*alpha68
+
+#     angle=0.7*math.pi/180
+    print('A: {}, B: {}, angle: {}'.format(A68,B68,angle*180./math.pi))
+    e1 = Ellipse((bfparams[0], bfparams[1]), width=2*A68, height=2*B68,
+                         angle=angle*180./math.pi, linewidth=2, fill=False, zorder=2,
+                         color='m', ls='--', label='Fisher 1-$\sigma$')
+
+    A95=A*alpha95
+    B95=B*alpha95
+
+    e2 = Ellipse((bfparams[0], bfparams[1]), width=2*A95, height=2*B95,
+                         angle=angle*180./math.pi, linewidth=2, fill=False, zorder=2,
+                         color='m', ls='--', label='Fisher 2-$\sigma$')
+
+
+#     e1 = Ellipse((bfparams[0], bfparams[1]), width=A, height=2*B,
+#                          angle=3.7, linewidth=2, fill=False, zorder=2,
+#                          color='m', ls='--', label='Fisher')
+#     e2 = Ellipse((bfparams[0], bfparams[1]), width=A, height=2*B,
+#                          angle=45, linewidth=2, fill=False, zorder=2)
     ax=gca()
     ax.add_patch(e1) 
+    ax.add_patch(e2) 
+#     ax.set_aspect('equal')
    
+
+def plotData1D(XY,CR, plot_label, bfparam, plotNo):
+    if option.figSize=="A4":
+        option.figSize='11.6929,8.2677'
+    else:
+        figSize=cpedsPythCommon.getFloatList(option.figSize)
+
+    fig=figure(figsize=figSize)
+#     fig=figure(figsize=figSize, dpi=option.DPIgui)
+    ax=subplot(111)
+    fig.subplots_adjust(left=option.border_left, right=1-option.border_right, top=1-option.border_top, bottom=option.border_bottom,  hspace=option.border_vspace, wspace=option.border_hspace)
+
+#     CS=contour(mat,CRcontours,linewidths=option.contours_w,colors=option.contcolor[plotNo % len(option.contcolor)], extent=mat_ranges)
+    plot(XY[:,0],XY[:,1],linewidth=option.contours_w, zorder=1, label='reconstructed 1-d likelihood')
+#     ax=gca()
+#     ax.axis(mat_ranges)
+#     plot_label=plot_label
+    xlabel(plot_label, fontsize=option.fontSize)
+    ylabel('L', fontsize=option.fontSize)
+
+
+    # plot CR95
+    axvspan(CR[1][1],CR[1][2], zorder=0, color='g', alpha=0.5)
+    # plot CR68
+    axvspan(CR[0][1],CR[0][2], zorder=0, color='g', alpha=0.5)
+
+    # plot bf params
+    
+    axvline([bfparam], color='b')
+    
+    
+
+    if option.fontSize>0:
+        setp( ax.get_xticklabels(), fontsize=option.fontSize)
+        setp( ax.get_yticklabels(), fontsize=option.fontSize)
+    else:
+        print('switching off xlabels')
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+
+    if option.grid:
+        grid(True, color=option.gc[0])
+
+
+    return fig
+    
+
 
 
 def plotData2D(mat,mat_ranges,CRcontours, plot_labels, bfparams, plotNo):
@@ -290,7 +448,7 @@ def plotData2D(mat,mat_ranges,CRcontours, plot_labels, bfparams, plotNo):
 
 #     CS=contour(mat,CRcontours,linewidths=option.contours_w,colors=option.contcolor[plotNo % len(option.contcolor)], extent=mat_ranges)
     CS=contourf(mat,CRcontours,linewidths=option.contours_w, extent=mat_ranges,
-                colors=['g','y','r'], alpha=0.5)
+                colors=['g','y','r'], alpha=0.5, label='reconstructed CRs')
 #     ax=gca()
 #     ax.axis(mat_ranges)
 
@@ -318,6 +476,86 @@ def plotData2D(mat,mat_ranges,CRcontours, plot_labels, bfparams, plotNo):
 
 if type(option.gc)!=type(list()):    option.gc=list(['k'])
 
+def getLikelihoofTypeFromHDF(fname,dset):
+    if '-' in dset:
+        return '2d'
+    return '1d'
+
+
+def plot_normed_gauss(X,m, sigma,fig):
+    Y=np.exp(-np.power(X-m,2)/(2.*sigma**2))
+    plot(X,Y,'--', label='Fisher', color='m', lw=2)
+
+def plot1Dlikelihood(fname,option):
+    XY,CR,plot_labels,bfparam=loadData1D(fname, option.hdf5dset)
+    if option.dump:
+        np.savetxt('L.dump', XY)
+
+#     if option.scaleX!=1.:
+#         ran=ran[0]*option.scaleX,ran[1]*option.scaleX,ran[2],ran[3]
+#         bfparams[0]*=option.scaleX
+#     if option.XunitPrefix!='':
+#         plot_labels[0]=plot_labels[0].replace('[','['+option.XunitPrefix)
+
+
+    fig=plotData1D(XY,CR,plot_labels,bfparam,matID)
+
+    
+    if option.corrMat:
+        Cmat=np.loadtxt(option.corrMat)
+        X=np.linspace(min(XY[:,0]), max(XY[:,0]), 200)
+        plot_normed_gauss(X, m=bfparam, sigma=np.sqrt(Cmat[int(option.hdf5dset)][int(option.hdf5dset)]),
+                          fig=fig)
+    
+    legend()
+
+
+    if option.outputFile!='':
+        outputFile=option.outputFile
+    else:
+        outputFile='.'.join(fname.split('.')[0:-1])+'.eps'
+    print('Saving to file:',outputFile)
+    fig.savefig(outputFile, dpi=option.DPI)
+
+    if option.show:
+        show()
+
+    
+def plot2Dlikelihood(fname,option):
+    mat,ran,CRcontours,plot_labels,bfparams=loadData2D(fname, option.hdf5dset)
+    
+    if option.scaleX!=1.:
+        ran=ran[0]*option.scaleX,ran[1]*option.scaleX,ran[2],ran[3]
+        bfparams[0]*=option.scaleX
+    if option.XunitPrefix!='':
+        plot_labels[0]=plot_labels[0].replace('[','['+option.XunitPrefix)
+
+    if option.scaleY!=1.:
+        ran=ran[0],ran[1],ran[2]*option.scaleY,ran[3]*option.scaleY
+        bfparams[1]*=option.scaleY
+    if option.YunitPrefix!='':
+        plot_labels[1]=plot_labels[1].replace('[','['+option.YunitPrefix)
+        
+    fig=plotData2D(mat,ran,CRcontours,plot_labels,bfparams,matID)
+
+    
+    if option.corrMat:
+        Cmat=np.loadtxt(option.corrMat)
+        plot_confidence_ellipse(fig,Cmat,bfparams)
+    
+    
+    legend()
+
+    if option.outputFile!='':
+        outputFile=option.outputFile
+    else:
+        outputFile='.'.join(fname.split('.')[0:-1])+'.eps'
+    print('Saving to file:',outputFile)
+    fig.savefig(outputFile, dpi=option.DPI)
+
+    if option.show:
+        show()
+    
 ###########################################################################################
 ###########################################################################################
 ###########################################################################################
@@ -330,39 +568,15 @@ matID=0
 for (fname,matID) in zip(args,list(range(len(args)))):
     ext=getFileExtension(fname)
     
-    if ext=='hdf5' or ext=='hdf':
-
-        mat,ran,CRcontours,plot_labels,bfparams=loadData(fname, option.hdf5dset)
-        if option.scaleX!=1.:
-            ran=ran[0]*option.scaleX,ran[1]*option.scaleX,ran[2],ran[3]
-            bfparams[0]*=option.scaleX
-        if option.XunitPrefix!='':
-            plot_labels[0]=plot_labels[0].replace('[','['+option.XunitPrefix)
-
-        if option.scaleY!=1.:
-            ran=ran[0],ran[1],ran[2]*option.scaleY,ran[3]*option.scaleY
-            bfparams[1]*=option.scaleY
-        if option.YunitPrefix!='':
-            plot_labels[1]=plot_labels[1].replace('[','['+option.YunitPrefix)
-            
-        fig=plotData2D(mat,ran,CRcontours,plot_labels,bfparams,matID)
-
-        
-        if option.corrMat:
-            Cmat=np.loadtxt(option.corrMat)
-            plot_correlation_matrix(fig,Cmat,bfparams)
-        
-        
-
-        if option.outputFile!='':
-            outputFile=option.outputFile
-        else:
-            outputFile='.'.join(fname.split('.')[0:-1])+'.eps'
-        print('Saving to file:',outputFile)
-        fig.savefig(outputFile, dpi=option.DPI)
     
-        if option.show:
-            show()
+    if ext=='hdf5' or ext=='hdf':
+        Ltype=getLikelihoofTypeFromHDF(fname,option.hdf5dset)
+
+        if Ltype=='2d':
+            plot2Dlikelihood(fname,option)
+            
+        elif Ltype=='1d':
+            plot1Dlikelihood(fname,option)
 
     else:
         print('I do not recognize this extension. Supported extensions are: hdf and hdf5')

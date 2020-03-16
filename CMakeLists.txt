@@ -762,6 +762,7 @@ add_executable(test-function-derivative tests/test-function-derivative.cpp )
 add_executable(test-fits-read tests/test-fits-read.cpp )
 add_executable(test-cpedsMCMC-parabola_2param tests/test-cpedsMCMC-parabola_2param.cpp )
 add_executable(test-cpedsMCMC-2Dcontours tests/test-cpedsMCMC-2Dcontours.cpp )
+add_executable(test-cpedsMCMC-gaussXY-independent tests/test-cpedsMCMC-gaussXY-independent.cpp )
 
 
 add_executable(test-hdf-openMP2 tests/test-hdf-openMP2.cpp)
@@ -987,7 +988,7 @@ add_definitions(
 #	-DDEBUG_USING_FFTW2AND3 
 	-DHAVE_OPENMP 
 #    -DDEBUG_MCMC_PDF
-#    -DDEBUG_MCMC_PDF2
+    -DDEBUG_MCMC_PDF2
 #    -Wall
 	)
 # add -DCMAKE_CXX_FLAGS=-pg when calling cmake to generate gprof-ready binaries
@@ -1098,6 +1099,7 @@ target_link_libraries(test-fits-read ${LIBRARIES})
 target_link_libraries(test-cpedsMCMC-parabola_2param LINK_PUBLIC ${LIBRARIES} boost_program_options )
 target_link_libraries(test-SPinterpolation-2d ${LIBRARIES})
 target_link_libraries(test-cpedsMCMC-2Dcontours ${LIBRARIES} boost_program_options)
+target_link_libraries(test-cpedsMCMC-gaussXY-independent ${LIBRARIES} boost_program_options)
 
 
 ################################################################

@@ -561,7 +561,7 @@ mscsFunction3dregc& mscsFunction3dregc::generateRandomGaussianField(double m, do
 	if (_rns->getRNsType()!=_rns->gaussian_circle) {
 		_rns->setRNsType(_rns->gaussian_circle);
 	}
-	_rns->setMeanVariance(m,s);
+	_rns->setMeanStd(m,s);
 	
 	if (seed!=0) {
 		_rns->seed(seed);

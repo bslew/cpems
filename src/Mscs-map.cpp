@@ -3112,7 +3112,7 @@ void mscsMap::make_gaussian_map(double m, double s, int method, cpedsRNG *rns) {
 	} else {
 		rnsWasNull = false;
 	}
-	rns->setMeanVariance(m, s);
+	rns->setMeanStd(m, s);
 	rns->setCentralLimitNumbers(100);
 	cpedsList<double> cl;
 	T() = cl = rns->getRNs(pixNum());

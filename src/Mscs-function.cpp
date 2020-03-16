@@ -3071,7 +3071,7 @@ mscsFunction& mscsFunction::mkGaussianNoise(long N, double m, double s, long see
 			rns=_rns;		
 		}
 	}	
-	rns->setMeanVariance(m,s);
+	rns->setMeanStd(m,s);
 	
 	double *a=NULL;
 	

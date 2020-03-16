@@ -15,6 +15,9 @@
 #include <iostream>
 #include <assert.h>
 
+constexpr double cpedsMCMC::one_sigma_CL;
+constexpr double cpedsMCMC::two_sigma_CL;
+
 /***************************************************************************************/
 //cpedsMCMC::cpedsMCMC(int runIdx) {
 //	initialize(runIdx);
@@ -173,8 +176,8 @@ void cpedsMCMC::initialize(int runIdx, long runOffset, long Npar, long runSeed) 
 	//	_chisqData.rnCov.seedOffset(102+_IOcontrol.runOffset);
 	_chisqData.rnCov.seedOffset(cpeds_get_devrandom_seed());
 	_chisqData.rnCov.seed(_walk.runRNGseed);
-	_chisqData.bestFitData.confidenceLevels.append(0.68);
-	_chisqData.bestFitData.confidenceLevels.append(0.95);
+	_chisqData.bestFitData.confidenceLevels.append(one_sigma_CL);
+	_chisqData.bestFitData.confidenceLevels.append(two_sigma_CL);
 	_chisqData.bestFitData.confidenceLevels.append(0.99);
 	
 	
@@ -1832,7 +1835,7 @@ void cpedsMCMC::calculate2Dposteriors() {
 		for (long i = 0; i < getNparam(); i++) {
 			for (long j = i+1; j < getNparam(); j++) {
 				msgs->say("Calculating 2-D PDF for parameters: %li %li",i,j,Medium);
-				mscsFunction3dregc p=get2Dposterior(i,j,_IOcontrol.PDF2d_pointsCount);
+				mscsFunction3dregc p=get2Dposterior(i,j,_IOcontrol.PDF2d_pointsCount,true);
 				_chisqData.bestFitData.posteriors2D.append(p);
 			}
 		}		
@@ -2028,8 +2031,27 @@ cpedsList<double> cpedsMCMC::get1DCR(int paramID1, double CL, double* LVL) {
 	MscsPDF1D pdf=get1Dposterior(paramID1);
 	cpedsList<double> CR;
 	CR=pdf.getCR(CL,LVL);
-	
 	return CR;	
+}
+/* ******************************************************************************************** */
+double cpedsMCMC::get1D_fwhm(int paramID) {
+//	auto CR=get1DCR(paramID)
+	throw ("not implemented");
+	return 0;
+}
+/* ******************************************************************************************** */
+double cpedsMCMC::get1D_sigma_estimate(int paramID) {
+	MscsPDF1D pdf=get1Dposterior(paramID);
+	pdf.checkRanges();
+	long maxi=pdf.getMaxValueIdx();
+	
+	// convert to X2
+	pdf.lnY();
+	pdf*=-2.;		
+
+	mscsFunction D2=pdf.derivative(false);
+	D2.derivative(true);
+	return sqrt(fabs(2./D2.f(maxi)));
 }
 /* ******************************************************************************************** */
 mscsFunction cpedsMCMC::get2DCR(int paramID1, int paramID2, double CL, double* LVL) {
@@ -2260,10 +2282,12 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(string paramName1, string paramName
 	return get2Dposterior( getParameterByName(paramName1), getParameterByName(paramName2),pdfPoints );	
 }
 /***************************************************************************************/
-mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pdfPoints) {
-	
-	if (paramij2idx(paramID1,paramID2)<_chisqData.bestFitData.posteriors2D.size()) { // if it was calculated then return it right away
-		return _chisqData.bestFitData.posteriors2D[paramij2idx(paramID1,paramID2)];
+mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pdfPoints,bool recalculate) {
+
+	if (not recalculate) {
+		if (paramij2idx(paramID1,paramID2)<_chisqData.bestFitData.posteriors2D.size()) { // if it was calculated then return it right away
+			return _chisqData.bestFitData.posteriors2D[paramij2idx(paramID1,paramID2)];
+		}		
 	}
 	
 	
@@ -2306,15 +2330,69 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pd
 	
 	
 	
-	
-	
-	mscsFunction states1=combineParamLikelihoods(paramID1);
+	mscsFunction states1=combineParamLikelihoods(paramID1); 
 	mscsFunction states2=combineParamLikelihoods(paramID2);
+	
+	
+/*
+	mscsFunction states1=combineParamLikelihoods(paramID1,true); // X2(param)
+	mscsFunction states2=combineParamLikelihoods(paramID2,true);
+	
+	//
+	// calculate correlation between parameter 1 and 2
+	//
+	
+	
+	 * Comment:
+	 * 
+	 * rho = var12/var1/var2
+	 * 
+	 * where varX - variance
+	 * var12 - covariance between parameter 1 and 2
+	 * 
+	 * author: blew
+	 * date: Mar 15, 2020 6:59:42 PM
+	 *
+	 
+	double rho=states1.correlationCoefficient(states2);
+	
+	// recalculate X2 values for the (generally) correlated parameters
+	double bf1=bestFitLink()[paramID1];
+	double bf2=bestFitLink()[paramID2];
+	
+//	double sigma2=cpeds_fwhm2sigma(get1D_fwhm(paramID2));
+//	double sigma1=cpeds_fwhm2sigma(get1D_fwhm(paramID1));
+	double sigma1=get1D_sigma_estimate(paramID1);
+	double sigma2=get1D_sigma_estimate(paramID2);
+	//
+	// re-calculate likelihoods
+	//
+	long N=states1.pointsCount();
+	double one_minus_rho2=1.0-rho*rho;
+	for (long i = 0; i < N; i++) {
+		double deltaP1=(states1.getx(i)-bf1)/sigma1;
+		double deltaP2=(states2.getx(i)-bf2)/sigma2;
+		
+		double X2=( pow(deltaP1,2)+pow(deltaP2,2)-2.0*rho*deltaP1*deltaP2)/one_minus_rho2;
+//		double P=exp(-X2/2);
+		states1.setf(i,X2);
+		states2.setf(i,X2);
+	}
+	
+	calculateProbability(states1);
+	calculateProbability(states2);
+*/
+	
 	mscsFunction3dregc pdf;
 	if (getNparam()<2) return pdf;
 	
 	
 #ifdef DEBUG_MCMC_PDF2
+/*
+	std::cout << "correlationCoefficient: " << rho << std::endl;
+	std::cout << "1D sigma estimate p1: " << sigma1 << std::endl;
+	std::cout << "1D sigma estimate p2: " << sigma2 << std::endl;
+*/
 	states1.save(getOutputDir()+"/"+getParameterDependentFileName("debug-states1",paramID1));
 	states2.save(getOutputDir()+"/"+getParameterDependentFileName("debug-states2",paramID2));
 #endif
@@ -2353,17 +2431,22 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pd
 #endif
 	long Nx=pdfPoints;
 	long Ny=pdfPoints;
-	cpedsPointSet3D ps(states1.pointsCount(),states1.toXList().toCarray(),states2.toXList().toCarray(),states1.toYList().toCarray(),states1.toYList().toCarray(),true);
+	cpedsPointSet3D ps(states1.pointsCount(),
+			states1.toXList().toCarray(),
+			states2.toXList().toCarray(),
+			states1.toYList().toCarray(),
+			states1.toYList().toCarray(),true);
 	
 	
 	// maximize through parameter space (this pdf may have holes in it if not enough MCchains were run)
 	pdf.setSizeRange(Nx,Ny,1,p1Min,p2Min,0,p1Max,p2Max,0);
 	pdf.allocFunctionSpace();
 	pdf.populateField(ps,true,0,0,false,true,"max");
+//	pdf.populateField(ps,true,0,0,false,true,"mean");
 	pdf/=pdf.getMaxValue();
-#ifdef DEBUG_MCMC_PDF
-	pdf.saveSlice(2,0,"2dposterior.slice");
-	ps.save("2dposterior.ps");	
+#ifdef DEBUG_MCMC_PDF2
+	pdf.saveSlice(2,0,getOutputDir()+"/2dposterior.slice");
+	ps.save(getOutputDir()+"/2dposterior.ps");	
 	printf("p1Min: %lE, p1Max: %lE, p2Min: %lE, p2Max: %lE\n",p1Min,p1Max,p2Min,p2Max);
 #endif
 	
@@ -2407,20 +2490,27 @@ mscsFunction3dregc cpedsMCMC::get2Dposterior(int paramID1, int paramID2, long pd
 #ifdef DEBUG_MCMC_PDF2
 	pdf.setVerbosityLevel(Top);
 #endif
-	pdf.mkInterpolatedFieldScatter(r,t,v,vals,"gadget2");
+	pdf.mkInterpolatedFieldScatter(r,t,v,vals,"gadget2",4,6);
 	//	ps.save("ps");
 	//	pdf.saveSlice(2,0,"pdf2d");
 	//	printf("%li\n",ps.size());
 	//	pdf.mkInterpolatedFieldTriangLinear2D(ps);
-	
+
 #ifdef DEBUG_MCMC_PDF2
 	pdf/=pdf.getMaxValue();
-	pdf.saveSlice(2,0,"pdfint2d");
+	pdf.saveSlice(2,0,getOutputDir()+"/pdfint2d");
 	pdf.printInfo();
 	//	exit(0);
+	cpedsPoint3D p=pdf.getMaxValueCell();
+	
+	mscsFunction pdfslice0;
+	for (long i = 0; i < pdf.Nx(); i++) {
+		double y=p.y();
+		double x=pdf.getX(i);
+		pdfslice0.newPoint(x,pdf.fxy(x,y));
+	}
+	pdfslice0.save(getOutputDir()+"/pdfint1d.slice0");
 #endif
-	
-	
 	
 	
 	
@@ -2513,7 +2603,7 @@ void cpedsMCMC::setup(cpedsMCMC& chain) {
 	_convergence=chain.getConvergence();
 }
 /***************************************************************************************/
-mscsFunction cpedsMCMC::combineParamLikelihoods(int j) {
+mscsFunction cpedsMCMC::combineParamLikelihoods(int j,bool returnX2only) {
 	mscsFunction p;
 	
 	/*
@@ -2545,8 +2635,10 @@ mscsFunction cpedsMCMC::combineParamLikelihoods(int j) {
 	p.save("raw-states-paramID"+msgs->toStr(j,"%i")+".chisq");
 #endif
 	
-	for (long i = 0; i < p.pointsCount(); i++) {
-		p.setf(i,exp(-p.f(i)/2));
+	if (not returnX2only) {
+		for (long i = 0; i < p.pointsCount(); i++) {
+			p.setf(i,exp(-p.f(i)/2));
+		}		
 	}
 	
 	return p;
@@ -2890,4 +2982,18 @@ void cpedsMCMC::resetAvgStep() {
 	for (long i = 0; i < dims(); i++) {	
 		for (long j=0;j<_walk.NavgSteps;j++) { _walk.stepsBuff[i][j]=0; }
 	}
+}
+/* ******************************************************************************************** */
+mscsFunction cpedsMCMC::calculateProbability(mscsFunction& p) {
+	p.checkRanges();
+	p-=p.getMinValue(); // this effectively scales the PDF by a constant factor
+	
+#ifdef DEBUG_MCMC_PDF
+	p.save("raw-states-paramID"+msgs->toStr(j,"%i")+".chisq");
+#endif
+	
+	for (long i = 0; i < p.pointsCount(); i++) {
+		p.setf(i,exp(-p.f(i)/2));
+	}		
+	return p;
 }

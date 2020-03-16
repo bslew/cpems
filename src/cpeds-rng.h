@@ -178,11 +178,11 @@ class cpedsRNG {
   //! returns the theoretical requested maximal value for the uniform RNs
   double Max() const {return _max; }
   //! sets the mean and standard deviation (not variance!!) value for the gaussian RNs
-  void setMeanVariance(double m, double v) { _mean=m; _variance=v; }
+  void setMeanStd(double m, double s) { _mean=m; _stdev=s; }
   //! returns the theoretical requested mean for the gaussian RNs
   double mean() const { return _mean; }
   //! returns the theoretical variance mean for the gaussian RNs
-  double variance() const { return _variance; }
+  double gauss_std() const { return _stdev; }
   //! set the number of numbers uniformly distributed that will be used to create the gaussian distributed variate
   void setCentralLimitNumbers(long n) { _centralLimitNumbers=n; }
   //! get the number of numbers uniformly distributed that will be used to create the gaussian distributed variate
@@ -277,7 +277,7 @@ class cpedsRNG {
   long _seed;
   long _seed_offset;
   double _min,_max;
-  double _mean, _variance;
+  double _mean, _stdev;
   long _centralLimitNumbers;
   double *gCDF;
   double *gCDF2d;

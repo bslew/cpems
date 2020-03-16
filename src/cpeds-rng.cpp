@@ -6,7 +6,7 @@ void cpedsRNG::initiateRNG(string distr, string rn, const gsl_rng_type* generato
 	_state=cpeds_random_uniform_numbersGSL_init(&_seed, seedOffset(),generator); // this is the default one in gsl: gsl_rng_mt19937
 	_generator_type=generator;
 	setMinMax(0,1);
-	setMeanVariance(0,1);
+	setMeanStd(0,1);
 	setCentralLimitNumbers(100);
 	gCDF=NULL;
 	gCDF2d=NULL;
@@ -50,7 +50,7 @@ void cpedsRNG::clone(const cpedsRNG& parent) {
 	_rnDataType=parent._rnDataType;
 	_distr=parent._distr;
 	setMinMax(parent.Min(),parent.Max());
-	setMeanVariance(parent.mean(),parent.variance());
+	setMeanStd(parent.mean(),parent.gauss_std());
 	setCentralLimitNumbers(parent.centralLimitNumbers());
 	copyGCDF(parent);
 	_drawsCount=parent._drawsCount;
@@ -203,7 +203,7 @@ double* cpedsRNG::getRN(long n) {
 	}
 	/***************************************************************************************/
 	if (_distr==gaussian) {
-		t=cpeds_random_gauss_numbers(mean(),variance(),n, centralLimitNumbers(),getState());
+		t=cpeds_random_gauss_numbers(mean(),gauss_std(),n, centralLimitNumbers(),getState());
 		//for (i=0;i<n;i++) { t[i]= cpeds_random_gauss_numbers(mean(),variance(),n, centralLimitNumbers(),getState()); }
 
 		_drawsCount+=n*centralLimitNumbers();
@@ -217,7 +217,7 @@ double* cpedsRNG::getRN(long n) {
 		if (gCDF==NULL || 2*n!=gCDFsize) {
 			killGCDF();
 			gCDFsize=2*n;
-			gCDF = cpeds_generate_gaussian_distribuant_function(gCDFsize, variance(), mean());
+			gCDF = cpeds_generate_gaussian_distribuant_function(gCDFsize, gauss_std(), mean());
 		}
 		for (j=0;j<n;j++) {
 			x = gsl_rng_uniform(getState());
@@ -248,7 +248,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_circle) {
 		t=new double[n];
-		double v=variance();
+		double v=gauss_std();
 		double m=mean();
 		double v1,v2;
 		double S;
@@ -266,7 +266,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_power_law) {
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		double* gauss=getRN(n); // _drawsCount will be increased here
 		_distr=gaussian_power_law;
 		
@@ -312,7 +312,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_power_law_t) {
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		double* gauss=getRN(n); // _drawsCount will be increased here
 		_distr=gaussian_power_law_t;
 		
@@ -367,7 +367,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_power_law_t2) {
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		double* gauss=getRN(n); // _drawsCount will be increased here
 		_distr=gaussian_power_law_t2;
 		
@@ -439,7 +439,7 @@ double* cpedsRNG::getRN(long n) {
 		// setup the random number generator
 		//
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		//
 		// generate gaussian noise
 		//

@@ -288,13 +288,31 @@ class cpedsMCMC {
 		void setVerbocity(cpeds_VerbosityLevel verb);
 		
 		/*!
-			\brief chisq evaluation - abstract method to be implemented in the derived class fit for the particular problem.
+			\brief chisq evaluation - abstract method to be implemented in the derived class 
+				fit for the particular problem.
 			\details 
 			@param data - data vector
 			@param th - set of model parameters used to derive the expected values for every measured data point
 			@param cov - covariance matrix for the input data; the reference is passed so that the object can be modified if
 			the covariance matrix changes from one state to another which is generally true
-			@return
+			@return chisq value should be returned and should be calculated according to
+			
+			X2 = sum_data ( D - M(X,theta) )^2/sigma^2(X)
+			
+			where:
+			
+			D(X) - data vector for a given vector of X independent variables
+			M(X,theta) - model value for a given parameter vector theta at point X
+			sigma^2(X) - variance as a function of measurement point X
+			
+			Notice: Do not implement this function as reduced X2: i.e. X2/N
+			where N - number of degrees of freedom
+			
+			This X2 value will provide the correct best fit solution and the reconstructed 1-D 
+			likelihoods and 2-D likelihood contours for the case of uncorrelated parameters.
+			
+			For the general case when covariance between the parameters is not known and 
+			should be measured it is better to simply overload the residual() method.
 		
 			\date Nov 19, 2010, 10:04:48 PM
 			\author Bartosz Lew
@@ -303,6 +321,9 @@ class cpedsMCMC {
 		virtual double chisq(const mscsFunction& data, const MClink &th, matrix<double>& cov);
 		virtual double chisq(const MClink &th);
 
+		
+//		virtual std::vector<double> residual(const MClink &th);
+		
 		double getRelX2Improvement();
 		double getX2Convergence();
 		
@@ -496,7 +517,7 @@ class cpedsMCMC {
 		MscsPDF1D get1Dposterior(string paramName, long pdfPoints=50, string interpolationType="steffen");
 		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50, string interpolationType="steffen", bool recalculate=true);
 		mscsFunction3dregc get2Dposterior(string paramName1, string paramName2, long pdfPoints=50);
-		mscsFunction3dregc get2Dposterior(int paramID1, int paramID2, long pdfPoints=50);
+		mscsFunction3dregc get2Dposterior(int paramID1, int paramID2, long pdfPoints=50,bool recalculate=true);
 
 		/*!
 			\brief define the frequency at which the MCMC run states information is dumped defined in number of states between dumps
@@ -563,6 +584,23 @@ class cpedsMCMC {
 		void save2DCR(double CL);
 //		void save1DCR(double CL, string fname, string dset);
 		cpedsList<double> get1DCR(int paramID1, double CL, double* LVL=NULL);
+		double get1D_fwhm(int paramID);
+		/*!
+			\brief calculates an estimate of the parameter uncertainty from 1-D likelihood
+			\details 
+			@param paramID - parameter id
+			@return
+			
+			Calculates 2nd derivative of the PDF at its maximum and returns sqrt of its twice inverse value:
+			
+			err = sqrt(2/ (d^2 X^2/ d param^2))
+			
+			For gaussian PDF this yields the value of sigma.
+			
+		
+			\date Mar 16, 2020, 1:28:54 PM
+		*/
+		double get1D_sigma_estimate(int paramID);
 		mscsFunction get2DCR(int paramID1, int paramID2, double CL, double* LVL=NULL);
 	
 		void saveTemperature(string fname);
@@ -1090,11 +1128,13 @@ class cpedsMCMC {
 			\brief extract parameter likelihoods from all accepted, rejected and test states
 			\details 
 			@param j - parameter index
+			@param returnX2only - if true, the function value will hold the X2 value instead of 
+				the associated probability = exp(-X2/2)
 			@return an unsorted function of parameter values (X) and their likelihoods (Y)
 		
 			\date May 24, 2017, 12:04:57 PM
 		*/
-		mscsFunction combineParamLikelihoods(int j);
+		mscsFunction combineParamLikelihoods(int j, bool returnX2only=false);
 		
 		bool forcedCoolingPossible() { return _walk.rejectionsCount>=_cooling.maximalRejectionsCount and getTemperature()>getFinalTemperature(); }
 		bool coolingPossible() { return getTemperature()>getFinalTemperature(); }
@@ -1136,7 +1176,8 @@ class cpedsMCMC {
 		// data used to calculate the chisq
 		//
 		chisqData_t _chisqData;
-		
+		static constexpr double one_sigma_CL = 0.682689;
+		static constexpr double two_sigma_CL = 0.9545;
 		//
 		// run/debug/save control stuff
 		//
@@ -1174,6 +1215,18 @@ class cpedsMCMC {
 		
 		MClink getNextPoint(const MClink& current);
 		MClink getNextPointUphillGradient(const MClink& current);
+		
+		/*!
+			\brief re-calculate probability inside provided states function
+			\details 
+			@param p - function contains parameter values a X values and X2 values as Y values;
+			@return same function with X2 shifted to 0 and rederived likelihood as
+			
+			P = exp(-X2/2)
+		
+			\date Mar 16, 2020, 2:40:07 PM
+		*/
+		mscsFunction calculateProbability(mscsFunction& p);
 		
 		double getSign();
 		void generateInitialStepSizePDFsAfterBurnIn();
