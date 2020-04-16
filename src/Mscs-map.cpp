@@ -52,13 +52,13 @@ typedef matrix Matrix;
 // CONSTRUCTOR
 //************************************************************************
 mscsMap::mscsMap(long ns) :
-	mscsObject("mscsMap",Zero) {
+			mscsObject("mscsMap",Zero) {
 	set_object_initial_variables();
 	set_nside(ns);
 }
 //************************************************************************
 mscsMap::mscsMap(string _object_name, long ns) :
-	mscsObject(_object_name,Zero) {
+			mscsObject(_object_name,Zero) {
 	set_object_initial_variables();
 	set_nside(ns);
 }
@@ -74,7 +74,7 @@ mscsMap::mscsMap(const mscsMap &orig)
 
 //************************************************************************
 mscsMap::mscsMap(const string _object_name, const mscsMap &orig) :
-	mscsObject(orig) {
+			mscsObject(orig) {
 	setName(_object_name);
 	set_object_initial_variables();
 	clone(orig);
@@ -107,10 +107,10 @@ void mscsMap::resetMaskInfo() {
 //************************************************************************
 void mscsMap::set_object_initial_variables() {
 	// int i;
-
+	
 	// initialization of various variables
 	//************************************************************************
-
+	
 	loadedMapFileName = "";
 	loadedMaskFileName = "";
 	
@@ -124,17 +124,17 @@ void mscsMap::set_object_initial_variables() {
 	mapInfo.ordering = nested;
 	/* alms_num=0; */
 	/* lmax=0; */
-
+	
 	//map = new pixel;  //map_ptr = new pixel; *map_ptr = *map;
 	/* map->T = NULL;  map->m = NULL;   map->N = NULL;   map->n = NULL;  // REAL SPACE DATA INITIALIZATION */
 	/* map->Q = NULL; map->U = NULL; map->V = NULL; */
 	//alm = NULL; // SH SPACE DATA INITIALIZATION
-
+	
 	//flatmap = NULL; flatcoord = NULL;
 	/* n2r_conv_tab = NULL; r2n_conv_tab = NULL;  // CONVERSION OF ORDERING TABLES INITIALIZATION */
 	/* rotation_map = NULL; // INITIALIZATION OF THE ROTATION MAP */
 	/*   exclude_values_list = NULL; */
-
+	
 	//************************************************************************
 	// DATA ALLOCATION FLAGS INITIALIZATION
 	loaded.T = false;
@@ -145,7 +145,7 @@ void mscsMap::set_object_initial_variables() {
 	loaded.n = false;
 	loaded.rotation = false;
 	//seed_offset = 0;
-
+	
 	n2rConvTabLoaded(0);
 	r2nConvTabLoaded(0);
 	
@@ -159,16 +159,16 @@ void mscsMap::set_object_initial_variables() {
 #pragma omp critical
 	Mscs_initiate_global_variables();
 	/* strcpy(data_path,PROGRAM_DIRS[7]); // hope this works */
-
+	
 	//************************************************************************
 	// window functions stuff
 	/* for (i=0;i<NUMBER_OF_WINDOW_FUNCTIONS;i++) bl_tab[i] = NULL;  */
-
+	
 	//************************************************************************
 	// spectra stuff
 	/* lmax_C_l = 0; lmin_C_l = 0; l_num_C_l = 0; */
 	/* for (i=0;i<MAX_L;i++) { C_l[i][0]=C_l[i][1]=C_l[i][2] = 0; } */
-
+	
 	//************************************************************************
 	// visualization stuff -- not sure if this is used
 	/* vis_sizeofxy = 1000; vis_iter=0; */
@@ -179,7 +179,7 @@ void mscsMap::set_object_initial_variables() {
 	/* flatmap_minT=flatmap_maxT=0; */
 	/* flatmap_change_zrange = false; */
 	/* reference_dir.l=0; reference_dir.b=0; */
-
+	
 	//************************************************************************
 	// gsl and other external stuff
 	// srand(time(0)-seed_offset); // commented out on 2009-01-22 -- moved to cpeds and individual applications
@@ -191,46 +191,46 @@ void mscsMap::set_object_initial_variables() {
 	//************************************************************************
 	// physical stuff
 	/* C_2WMAP = 0.12844E-09; // normalization factor;  */
-
+	
 	// definition of temperature uncertainties in different frequency channels
 	// WMAP I yr data.
 	/* sigma0_K1 = 1.439E-3; sigma0_K2 = 1.464E-3; // K1=K1 K2=Ka1 these values are actually from wmap3 TO BE VERIFIED */
 	/* sigma0_Q1 = 2.26677E-3; sigma0_Q2 = 2.15567E-3; */
 	/* sigma0_V1 = 3.28789E-3; sigma0_V2 = 2.93683E-3; */
 	/* sigma0_W1 = 5.85196E-3; sigma0_W2 = 6.53276E-3; sigma0_W3 = 6.88032E-3; sigma0_W4 = 6.72537E-3; */
-
+	
 	/* sigma0_WMAP[0] = sigma0_K1;   sigma0_WMAP[1] = sigma0_K2; */
 	/* sigma0_WMAP[2] = sigma0_Q1;   sigma0_WMAP[3] = sigma0_Q2; */
 	/* sigma0_WMAP[4] = sigma0_V1;   sigma0_WMAP[5] = sigma0_V2; */
 	/* sigma0_WMAP[6] = sigma0_W1;   sigma0_WMAP[7] = sigma0_W2; */
 	/* sigma0_WMAP[8] = sigma0_W3;   sigma0_WMAP[9] = sigma0_W4; */
-
+	
 	// sigma0 in [K] for various DAs of the WMAP
 	// WMAP III yr data. from astro-ph/0603451 and astro-ph/0603452
 	/* sigma0_K1 = 1.439E-3; sigma0_K2 = 1.464E-3; // K1=K1 K2=Ka1 */
 	/* sigma0_Q1 = 2.245E-3; sigma0_Q2 = 2.135E-3; */
 	/* sigma0_V1 = 3.304E-3; sigma0_V2 = 2.946E-3; */
 	/* sigma0_W1 = 5.883E-3; sigma0_W2 = 6.532E-3; sigma0_W3 = 6.885E-3; sigma0_W4 = 6.744E-3; */
-
+	
 	/* sigma0_WMAP[10] = sigma0_K1;   sigma0_WMAP[11] = sigma0_K2; */
 	/* sigma0_WMAP[12] = sigma0_Q1;   sigma0_WMAP[13] = sigma0_Q2; */
 	/* sigma0_WMAP[14] = sigma0_V1;   sigma0_WMAP[15] = sigma0_V2; */
 	/* sigma0_WMAP[16] = sigma0_W1;   sigma0_WMAP[17] = sigma0_W2; */
 	/* sigma0_WMAP[18] = sigma0_W3;   sigma0_WMAP[19] = sigma0_W4; */
-
+	
 	// sigma0 in [K] for various DAs of the WMAP
 	// WMAP 5 yr data. from http://lambda.gsfc.nasa.gov/product/map/dr3/pub_papers/fiveyear/basic_results/wmap5basic.pdf
 	/* sigma0_K1 = 1.436E-3; sigma0_K2 = 1.470E-3; // K1=K1 K2=Ka1 */
 	/* sigma0_Q1 = 2.254E-3; sigma0_Q2 = 2.141E-3; */
 	/* sigma0_V1 = 3.314E-3; sigma0_V2 = 2.953E-3; */
 	/* sigma0_W1 = 5.899E-3; sigma0_W2 = 6.565E-3; sigma0_W3 = 6.926E-3; sigma0_W4 = 6.761E-3; */
-
+	
 	/* sigma0_WMAP[20] = sigma0_K1;   sigma0_WMAP[21] = sigma0_K2; */
 	/* sigma0_WMAP[22] = sigma0_Q1;   sigma0_WMAP[23] = sigma0_Q2; */
 	/* sigma0_WMAP[24] = sigma0_V1;   sigma0_WMAP[25] = sigma0_V2; */
 	/* sigma0_WMAP[26] = sigma0_W1;   sigma0_WMAP[27] = sigma0_W2; */
 	/* sigma0_WMAP[28] = sigma0_W3;   sigma0_WMAP[29] = sigma0_W4; */
-
+	
 	// WMAP Beam sizes - the Full Width at Half Maximum in degrees for different DA in degrees
 	/* thFWHM_Q = 0.49;  thFWHM_V = 0.33; thFWHM_W = 0.21;  */
 	//strcpy(data_path,"/home/blew/programy/Mscs/data/"); // THIS IS WRONG --- THIS INFORMATION SHOULD BE GIVEN THROUGH PROGRAM_DIRS[] VARIABLE TO THE CONSTRUCTOR
@@ -267,15 +267,15 @@ void mscsMap::setLoadedMapFileName(string name) {
 // THIS METHOD IS TO CLONE OBJECT'S DATA INTO A NEW OBJECT. IS EVERYTHING IS COPIED ?
 void mscsMap::clone(const mscsMap &orig) {
 	// long i;
-
+	
 	msgs->say("cloning from object: " + orig.getName(), Medium);
-//
-//	mapInfo = orig.mapInfo;
-//	mask = orig.mask;
-//	map = orig.map;
+	//
+	//	mapInfo = orig.mapInfo;
+	//	mask = orig.mask;
+	//	map = orig.map;
 	
 	(*this)=orig;
-
+	
 }
 
 //************************************************************************
@@ -285,12 +285,12 @@ void mscsMap::clone(const mscsMap &orig) {
 //************************************************************************
 mscsMap::~mscsMap() {
 	/* long i; */
-
+	
 	/* kill_conv_tabs(); */
-
+	
 	/* kill_map();  //delete map_ptr;    */
 	/* if (rotation_map != NULL) { delete [] rotation_map; loaded.rotation = false; } */
-
+	
 }
 //************************************************************************
 
@@ -321,7 +321,7 @@ int mscsMap::load_conv_tabs(long ns, string type) {
 	if (type == "r2n") if (r2nConvTabLoaded() != 0) {
 		r2n_conv.clear();
 	}
-
+	
 	// load new tabs
 	// reading for nested2ring conversion
 	if (type == "n2r") {
@@ -340,14 +340,14 @@ int mscsMap::load_conv_tabs(long ns, string type) {
 			msgs->error(
 					"The conversion table size is invalid (" + msgs->toStr(
 							n2r_conv.size()) + ", should be: " + msgs->toStr(
-							cpeds_get_healpix_pix_num(nside()))
-							+ "). Will not load", Low);
+									cpeds_get_healpix_pix_num(nside()))
+									+ "). Will not load", Low);
 			n2r_conv.clear();
 			return -1;
 		}
 		n2rConvTabLoaded(ns);
 	}
-
+	
 	// reading for ring2nested conversion
 	if (type == "r2n") {
 		fileName = MSCS_DATA_DIR + MSCS_GLOBAL__R2N_CONV_TAB_PREF
@@ -365,8 +365,8 @@ int mscsMap::load_conv_tabs(long ns, string type) {
 			msgs->error(
 					"The conversion table size is invalid (" + msgs->toStr(
 							r2n_conv.size()) + ", should be: " + msgs->toStr(
-							cpeds_get_healpix_pix_num(nside()))
-							+ "). Will not load", Low);
+									cpeds_get_healpix_pix_num(nside()))
+									+ "). Will not load", Low);
 			r2n_conv.clear();
 			return -1;
 		}
@@ -408,10 +408,10 @@ void mscsMap::conv_ring2nest() {
 	long int i;
 	mscsMap maptmp(*this);
 	// if (map_loc==NULL) map_loc=this;
-
+	
 	msgs->say("converting to nested ordering", Medium);
 	// maptmp = *map_loc;
-
+	
 	if (r2nConvTabLoaded() == nside()) {
 		msgs->say("R2N tabs are loaded - converting...", Low);
 	} else {
@@ -448,12 +448,12 @@ void mscsMap::conv_ring2nest() {
 			delete mapRING;
 			r2n_conv.save(
 					MSCS_DATA_DIR + MSCS_GLOBAL__R2N_CONV_TAB_PREF
-							+ msgs->toStr(nside())
-							+ MSCS_GLOBAL__R2N_CONV_TAB_SUFF_BIN, true, "long");
+					+ msgs->toStr(nside())
+					+ MSCS_GLOBAL__R2N_CONV_TAB_SUFF_BIN, true, "long");
 			r2n_conv.save(
 					MSCS_DATA_DIR + MSCS_GLOBAL__R2N_CONV_TAB_PREF
-							+ msgs->toStr(nside())
-							+ MSCS_GLOBAL__R2N_CONV_TAB_SUFF_TXT, false, "long");
+					+ msgs->toStr(nside())
+					+ MSCS_GLOBAL__R2N_CONV_TAB_SUFF_TXT, false, "long");
 		}
 	}
 	
@@ -463,7 +463,7 @@ void mscsMap::conv_ring2nest() {
 	/* kill_map_space(map_loc); // kill the old map space; map will now point to new momory areas */
 	/* if (map_loc == map) { map_ordering = 1; *map = maptmp; } // if the change of ordering was asked for the object's map then set the flat accordingly */
 	/* *map_loc = maptmp;  */
-
+	
 	// if (map_loc==this) *this=maptmp;
 	// *map_loc=maptmp;
 	set_ordering(mscsMap::nested);
@@ -473,14 +473,14 @@ void mscsMap::conv_ring2nest() {
 // void mscsMap::conv_nest2ring(map_structure * map_loc) {
 void mscsMap::conv_nest2ring() {
 	if (ordering()==mscsMap::ring) return;
-
+	
 	long int i;
 	mscsMap maptmp(*this);
 	// if (map_loc==NULL) map_loc=&map;
-
+	
 	msgs->say("converting to ring ordering", Medium);
 	// maptmp = *map_loc;
-
+	
 	// if we have conversion tables ready
 	if (n2rConvTabLoaded() == nside()) {
 		msgs->say("N2R tabs are loaded - converting..", Low);
@@ -518,12 +518,12 @@ void mscsMap::conv_nest2ring() {
 			delete mapNEST;
 			n2r_conv.save(
 					MSCS_DATA_DIR + MSCS_GLOBAL__N2R_CONV_TAB_PREF
-							+ msgs->toStr(nside())
-							+ MSCS_GLOBAL__N2R_CONV_TAB_SUFF_BIN, true, "long");
+					+ msgs->toStr(nside())
+					+ MSCS_GLOBAL__N2R_CONV_TAB_SUFF_BIN, true, "long");
 			n2r_conv.save(
 					MSCS_DATA_DIR + MSCS_GLOBAL__N2R_CONV_TAB_PREF
-							+ msgs->toStr(nside())
-							+ MSCS_GLOBAL__N2R_CONV_TAB_SUFF_TXT, false, "long");
+					+ msgs->toStr(nside())
+					+ MSCS_GLOBAL__N2R_CONV_TAB_SUFF_TXT, false, "long");
 		}
 	}
 	
@@ -532,7 +532,7 @@ void mscsMap::conv_nest2ring() {
 	copy_map(&maptmp, this, &n2r_conv);
 	/* kill_map_space(map_loc); // kill the old map space; map will now point to new momory areas */
 	/* if (map_loc == map) { map_ordering = 0; *map = maptmp; } // if the change of ordering was asked for the object's map then set the flat accordingly */
-
+	
 	// if (map_loc==map_ptr) map=maptmp;
 	// *map_loc = maptmp;
 	set_ordering(mscsMap::ring);
@@ -834,7 +834,7 @@ void mscsMap::TdivMap(const mscsMap& mapP) {
 	mscsMap copy("tmpcopy", mapP);
 	copy.change_map_resolution(nside());
 	// double T;
-
+	
 	// prepare the divisor;
 	if (copy.maskLoaded()) {
 		for (i = 0; i < pix_num; i++) {
@@ -849,7 +849,7 @@ void mscsMap::TdivMap(const mscsMap& mapP) {
 	}
 	//  printf(" **** divisor=%lE mask=%lE\n",copy.map->T[0],copy.map->m[0]);
 	
-
+	
 	// divide maps
 	if (maskLoaded()) {
 		for (i = 0; i < pix_num; i++) {
@@ -877,11 +877,11 @@ void mscsMap::change_map_resolution(long int new_nside) {
 	
 	
 	//  if (nside() != new_nside) { new_map = map;  }
-
+	
 	if (nside() > new_nside) { // doing degrading resloution
 		msgs->say(
 				"degrading map resolution from " + msgs->toStr(nside())
-						+ " to: " + msgs->toStr(new_nside), Medium);
+				+ " to: " + msgs->toStr(new_nside), Medium);
 		if (ordering() == ring) {
 			conv_ring2nest();
 			wasring = true;
@@ -906,14 +906,14 @@ void mscsMap::change_map_resolution(long int new_nside) {
 			if (loaded.N) for (j = i; j < l; j++) {
 				Nl += get_N(j);
 			}
-//			if (loaded.m) for (j = i; j < l; j++) {
-//				if (get_m(i) == 0) mmask_num++;
-//				else mmask_num = get_m(i);
-//			}
+			//			if (loaded.m) for (j = i; j < l; j++) {
+			//				if (get_m(i) == 0) mmask_num++;
+			//				else mmask_num = get_m(i);
+			//			}
 			if (loaded.m) for (j = i; j < l; j++) {
 				mmask_num += get_m(j);
 			}
-
+			
 			/* pix /= (double)average_pix; // calculate the average temperature in the future pixel and new number of observations */
 			if (loaded.T) {
 				new_map.T.append(Tl / (double) average_pix);
@@ -943,7 +943,7 @@ void mscsMap::change_map_resolution(long int new_nside) {
 		if (nside() < new_nside) { // doing progradig resloution
 			msgs->say(
 					"prograding map resolution from " + msgs->toStr(nside())
-							+ " to: " + msgs->toStr(new_nside), Medium);
+					+ " to: " + msgs->toStr(new_nside), Medium);
 			if (ordering() == ring) {
 				conv_ring2nest();
 				wasring = true;
@@ -992,7 +992,7 @@ void mscsMap::change_map_resolution(long int new_nside) {
 		check_mask();
 		msgs->say(
 				"new map nside: " + msgs->toStr(nside()) + " pix_num: "
-						+ msgs->toStr(pixNum()), Low);
+				+ msgs->toStr(pixNum()), Low);
 		// delete new_map;
 	}
 }
@@ -1024,9 +1024,9 @@ int mscsMap::rotate_map(double Ath, double Aphi, double Al, bool rot_short,
 		if (!coordLoaded()) {
 			set_map_coord(0, 0);
 		}
-
+		
 		n = get_n(); // copy the map directions; these will be rotated
-
+		
 		// define what is to be rotated
 		if (what == "m") {
 			XmapP = &map.m;
@@ -1048,7 +1048,7 @@ int mscsMap::rotate_map(double Ath, double Aphi, double Al, bool rot_short,
 			Al *= PI180;
 			Ath *= PI180;
 			Aphi = (90 - Aphi) * PI180; // convert to radians
-
+			
 			// rotate directions
 			if (Ath != 0) { // rotate in b (around y axis defined as l=90, b=0, x axix: l=0 b=0, z axis: b=90)
 				if (Aphi != 0) {
@@ -1065,7 +1065,7 @@ int mscsMap::rotate_map(double Ath, double Aphi, double Al, bool rot_short,
 				rotate_map_directions(n, 3, -Al);
 			} // Rz(l)
 			
-
+			
 			for (i = 0; i < pix_num; i++) { // make rotated data
 				cpeds_ang2pix_healpix(nside(), &j, PIsnd - n[i].b(), n[i].l(),
 						long(1)); // check the range and find new pix number
@@ -1151,7 +1151,7 @@ void mscsMap::make_equatorial_mask(double b) {
 	
 	msgs->say(
 			"setting map mask: symmetrical equatorial cut below |b| < "
-					+ msgs->toStr(b) + " degr.", High);
+			+ msgs->toStr(b) + " degr.", High);
 	makekill_space_manager("make", "m", 1);
 	if (coordLoaded()==false) set_map_coord();
 	
@@ -1256,34 +1256,34 @@ int mscsMap::make_circle_dot(double l, double b, double r, double v,
 	
 	/*   long i,is; // experimentall */
 	/*   FILE* f; // experimental */
-
-//	if (what == "m") {
-//		makekill_space_manager("make", "m", 1);
-//		if (loaded.m == false) clean_mask();
-//	}
-//	if (what == "T") {
-//		makekill_space_manager("make", "T", 1);
-//		if (loaded.T == false) clear_map();
-//	}
-
+	
+	//	if (what == "m") {
+	//		makekill_space_manager("make", "m", 1);
+	//		if (loaded.m == false) clean_mask();
+	//	}
+	//	if (what == "T") {
+	//		makekill_space_manager("make", "T", 1);
+	//		if (loaded.T == false) clear_map();
+	//	}
+	
 	if (what == "m") {
 		Dptr = &map.m;
 		msgs->say(
 				"making circular mask dot around l [deg] = " + msgs->toStr(l)
-						+ " b [deg] = " + msgs->toStr(b) + " size [deg] = "
-						+ msgs->toStr(r), Low);
+				+ " b [deg] = " + msgs->toStr(b) + " size [deg] = "
+				+ msgs->toStr(r), Low);
 	}
 	if (what == "T") {
 		Dptr = &map.T;
 		msgs->say(
 				"T making circular dot around l [deg] = " + msgs->toStr(l)
-						+ " b [deg] = " + msgs->toStr(b) + " size [deg] = "
-						+ msgs->toStr(r) + " T = " + msgs->toStr(v), Low);
+				+ " b [deg] = " + msgs->toStr(b) + " size [deg] = "
+				+ msgs->toStr(r) + " T = " + msgs->toStr(v), Low);
 	}
 	/* if (what == "Q") { Dptr = &map.Q; msgs->say("Q making circular dot around l [deg] = "+msgs->toStr(l)+" b [deg] = "+msgs->toStr(b)+" size [deg] = "+msgs->toStr(r)+" T = "+msgs->toStr(v),Low); } */
 	/* if (what == "U") { Dptr = &map.U; msgs->say("U making circular dot around l [deg] = "+msgs->toStr(l)+" b [deg] = "+msgs->toStr(b)+" size [deg] = "+msgs->toStr(r)+" T = "+msgs->toStr(v),Low); } */
 	/* if (what == "V") { Dptr = &map.V; msgs->say("V making circular dot around l [deg] = "+msgs->toStr(l)+" b [deg] = "+msgs->toStr(b)+" size [deg] = "+msgs->toStr(r)+" T = "+msgs->toStr(v),Low); } */
-
+	
 	cq = get_circle(l, b, r, 0.5, region_type, region_type_dot_points);
 	num = cq->get_size();
 	
@@ -1297,14 +1297,14 @@ int mscsMap::make_circle_dot(double l, double b, double r, double v,
 			(*Dptr)[cq->getq(i)] = v;
 		}
 	}
-
+	
 	if (what == "m") {
 		loaded.m = true;
 	}
 	if (what == "T") {
 		loaded.T = true;
 	}
-
+	
 	delete cq;
 	retval = 1;
 	
@@ -1338,7 +1338,7 @@ void mscsMap::mk_ring(double l, double b, double s, double v, string what) {
 		p = tmpmap.get_C(i);
 		if (fabs(p.b()) <= s2) tmpmap.set_T(i, v);
 	}
-
+	
 	// rotate it
 	tmpmap.rotate_map(90.0 - b, l, 0.0, true, "T");
 	
@@ -1405,13 +1405,13 @@ void mscsMap::make_multi_maskLB(long l_reg_num, long b_reg_num,
 	
 	msgs->say(
 			"Setting regional mask: with " + msgs->toStr(l_reg_num)
-					+ " longitudal divisions and " + msgs->toStr(b_reg_num)
-					+ " lattitudal divisions and " + msgs->toStr(total_reg_num)
-					+ " total number of regions", High);
+			+ " longitudal divisions and " + msgs->toStr(b_reg_num)
+			+ " lattitudal divisions and " + msgs->toStr(total_reg_num)
+			+ " total number of regions", High);
 	mask.multi_mask_lreg = l_reg_num;
 	mask.multi_mask_breg = b_reg_num;
 	mask.multi_mask_reg_num = total_reg_num; // set object multi-mask information variables
-
+	
 	makekill_space_manager("make", "m", 1);
 	set_map_coord(0, 0);
 	//conv_nest2ring(map);
@@ -1421,7 +1421,7 @@ void mscsMap::make_multi_maskLB(long l_reg_num, long b_reg_num,
 	if (maskLoaded()) {
 		M = get_m();
 	} // save current mask
-
+	
 	if (l_reg_num == 1 && b_reg_num == 2) { // bypass (reduce) the problem of unequal pixel distribution between the hemispheres
 		conv_nest2ring();
 		j = pix_num / 2;
@@ -1443,7 +1443,7 @@ void mscsMap::make_multi_maskLB(long l_reg_num, long b_reg_num,
 		}
 	}
 	rotate_map(Ath, Aphi, Al, rot_short, "m"); //rotate multi mask if requested
-
+	
 	if (M.count() == pix_num) {
 		for (i = 0; i < pix_num; i++) {
 			if (m(i) < 1) m(i) = M[i];
@@ -1515,7 +1515,7 @@ void mscsMap::make_multi_maskHP(long nside_loc, string mask_info_filename,
 	msgs->say(
 			"Setting regional healpix based mask: with nside " + msgs->toStr(
 					nside_loc) + " and " + msgs->toStr(
-					12 * nside_loc * nside_loc) + " regions", High);
+							12 * nside_loc * nside_loc) + " regions", High);
 	newmask.set_nside(nside_loc);
 	newmask.makekill_space_manager("make", "m", 1);
 	newmask.clean_mask();
@@ -1524,7 +1524,7 @@ void mscsMap::make_multi_maskHP(long nside_loc, string mask_info_filename,
 	for (i = 0; i < newmask.pixNum(); i++) {
 		newmask.set_m(i, (double) i + 1);
 	}
-
+	
 	if (mask_info_filename.size() != 0) { // save the mask information to file
 		sprintf(tmpch, "multi_mask_info-%s-HP%li-Ath%.3lf-Aphi%.3lf-Al%.3lf",
 				mask_info_filename.c_str(), nside_loc, Ath, Aphi, Al);
@@ -1592,7 +1592,7 @@ void mscsMap::scramble_over_nsigma(double n) {
 	//calculate_map_stats(0);
 	msgs->say(
 			"scrambling the temperature map to fit within +_ " + msgs->toStr(n)
-					+ " sigma of the map.\n", High);
+			+ " sigma of the map.\n", High);
 	
 	scramble_over_minmax(zmin, zmax);
 	
@@ -1607,7 +1607,7 @@ void mscsMap::scramble_over_minmax(double min, double max) {
 	//calculate_map_stats(0);
 	msgs->say(
 			"scrambling the temperature map below " + msgs->toStr(min)
-					+ " and over " + msgs->toStr(max), High);
+			+ " and over " + msgs->toStr(max), High);
 	
 	for (i = 0; i < pix_num; i++) {
 		if (get_T(i) < min) {
@@ -1655,7 +1655,7 @@ void mscsMap::check_mask() {
 	
 	msgs->say(
 			"mask information: loaded: " + msgs->toStr(loaded.m) + " merged: "
-					+ msgs->toStr(mask.merged), High);
+			+ msgs->toStr(mask.merged), High);
 	if (get_m().size() > 0) {
 		mask.masked_pix_num = 0;
 		for (i = 0; i < pix_num; i++) {
@@ -1669,15 +1669,15 @@ void mscsMap::check_mask() {
 		mask.f_sky = (double) mask.masked_pix_num / (double) pix_num;
 		msgs->say(
 				"masked_pix_num: " + msgs->toStr(mask.masked_pix_num)
-						+ " unmasked_pix_num: " + msgs->toStr(
+				+ " unmasked_pix_num: " + msgs->toStr(
 						pix_num - mask.masked_pix_num)
 						+ " masked sky fraction: " + msgs->toStr(mask.f_sky),
-				Medium);
+						Medium);
 		/* cpeds_find_minmax_value(map->m,pix_num,&min,&max,&mini,&maxi); */
 		get_m().getMinMaxValues(&min, &max, &mini, &maxi);
 		msgs->say(
 				"mask min. value: " + msgs->toStr(min) + " mask max. value: "
-						+ msgs->toStr(max), Medium);
+				+ msgs->toStr(max), Medium);
 		if (max == 1.0) {
 			mask.multi_mask_reg_num = 1;
 		}
@@ -1685,8 +1685,8 @@ void mscsMap::check_mask() {
 			mask.multi_mask_reg_num = (long) max;
 			msgs->say(
 					"NOTE: the maximal mask value > 1. setting the multi_mask_reg_num to (long)max value in the mask:  "
-							+ msgs->toStr(mask.multi_mask_reg_num)
-							+ ". Hope this is what you want. Note that the number of regions in the multimask does not include the region 0.",
+					+ msgs->toStr(mask.multi_mask_reg_num)
+					+ ". Hope this is what you want. Note that the number of regions in the multimask does not include the region 0.",
 					Medium);
 		}
 	}
@@ -1713,7 +1713,7 @@ void mscsMap::mask_map_merge() {
 	else {
 		if (maskLoaded()) {
 			msgs->say("applying mask to the temperature map", High);
-//			printf("%li %li\n",T().size(),m().size());
+			//			printf("%li %li\n",T().size(),m().size());
 			T() *= m();
 			mask.merged = true;
 			check_mask();
@@ -1791,7 +1791,7 @@ void mscsMap::gaussianSmoothT(double beamFWHM, double debeamFWHM, long lmax,
 	} else {
 		pixTf.make_unit_kernel();
 	}
-
+	
 	mscsAlms a;
 	if (debeamFWHM>0) a=SH_analysis(lmax, debeamTf, pixTf, method);
 	else a=SH_analysis(lmax);
@@ -1807,7 +1807,7 @@ void mscsMap::average_map_in_rings(cpeds_queue<double>** qp) {
 	if (qp != NULL) {
 		qm = new cpeds_queue<double> ;
 	}
-
+	
 	msgs->say("averaging the map in rings", High);
 	
 	conv_nest2ring();
@@ -1835,7 +1835,7 @@ void mscsMap::average_map_in_rings(cpeds_queue<double>** qp) {
 		m = q.mean();
 		if (qp != NULL) qm->addq(m);
 		k = kp;
-
+		
 		if (maskLoaded()) {
 			for (i = 0; i < j; i++) {
 				if (get_m(k) == 1) {
@@ -1849,7 +1849,7 @@ void mscsMap::average_map_in_rings(cpeds_queue<double>** qp) {
 		}
 		q.delete_all_queue();
 	}
-
+	
 	conv_ring2nest();
 	if (qp != NULL) {
 		(*qp) = qm;
@@ -1867,7 +1867,7 @@ void mscsMap::calculate_map_stats(int output) {
 	long pix_num = pixNum();
 	
 	if (maskLoaded()) { // we calculate the statistics ONLY on the unmasked regions
-	//	  printf("!!!!!!!!!DEBUG:   the mask is still loaded \n");
+		//	  printf("!!!!!!!!!DEBUG:   the mask is still loaded \n");
 		for (i = 0; i < pix_num; i++) {
 			if (get_m(i) != 0) {
 				tmp.append(get_T(i));
@@ -1899,15 +1899,15 @@ void mscsMap::calculate_map_stats(int output) {
 	if (output != 0) {
 		msgs->say(
 				"map stats: nside: " + msgs->toStr(nside())
-						+ " masked_pix_num: "+ msgs->toStr(mask.masked_pix_num)
-						+ " nonmasked_pix_num: "+ msgs->toStr(pix_num-mask.masked_pix_num)
-						+ " f_sky: " + msgs->toStr(mask.f_sky),
-						High);
+				+ " masked_pix_num: "+ msgs->toStr(mask.masked_pix_num)
+				+ " nonmasked_pix_num: "+ msgs->toStr(pix_num-mask.masked_pix_num)
+				+ " f_sky: " + msgs->toStr(mask.f_sky),
+				High);
 		msgs->say(
 				string("map stats: ")
-						+ " mask_loaded is: " + msgs->toStr(loaded.m)
-						+ " merged: " + msgs->toStr(mask.merged)
-						, High);
+				+ " mask_loaded is: " + msgs->toStr(loaded.m)
+				+ " merged: " + msgs->toStr(mask.merged)
+				, High);
 		msgs->say(
 				"appriximated pixel size [deg]: " + msgs->toStr(
 						PI180inv * cpeds_pix_size_healpix(nside())), Medium);
@@ -1917,24 +1917,24 @@ void mscsMap::calculate_map_stats(int output) {
 						+ " imax: " + msgs->toStr(mapInfo.imaxT), Medium);
 		msgs->say(
 				"mean: " + msgs->toStr(mapInfo.meanT)
-						+ " sqrt(variance) (sigma): " + msgs->toStr(
+				+ " sqrt(variance) (sigma): " + msgs->toStr(
 						sqrt(mapInfo.varianceT)) + " skewness: " + msgs->toStr(
-						mapInfo.skewnessT) + " kurtosis: " + msgs->toStr(
-						mapInfo.kurtosisT), Medium);
+								mapInfo.skewnessT) + " kurtosis: " + msgs->toStr(
+										mapInfo.kurtosisT), Medium);
 		cpeds_pix2ang_healpix(nside(), mapInfo.iminT, &th1, &phi1, 1); // CAUTION !!! this is for nested and NO check is performed about the map's ordering
 		msgs->say(
 				"Tmin: l = " + msgs->toStr(180 / PI * phi1) + ", b = "
-						+ msgs->toStr(180 / PI * (PIsnd - th1)) + " iminT = "
-						+ msgs->toStr(mapInfo.iminT), Medium);
+				+ msgs->toStr(180 / PI * (PIsnd - th1)) + " iminT = "
+				+ msgs->toStr(mapInfo.iminT), Medium);
 		cpeds_pix2ang_healpix(nside(), mapInfo.imaxT, &th2, &phi2, 1);
 		msgs->say(
 				"Tmax: l = " + msgs->toStr(180 / PI * phi2) + ", b = "
-						+ msgs->toStr(180 / PI * (PIsnd - th2)) + " iminT = "
-						+ msgs->toStr(mapInfo.imaxT), Medium);
+				+ msgs->toStr(180 / PI * (PIsnd - th2)) + " iminT = "
+				+ msgs->toStr(mapInfo.imaxT), Medium);
 		msgs->say(
 				"Tmin - Tmax relative angle: " + msgs->toStr(
 						180 / PI * cpeds_ang_n1n2(th1, phi1, th2, phi2)),
-				Medium);
+						Medium);
 	}
 	
 	if ((coordLoaded()) && (mapInfo.ordering == nested)) {
@@ -1964,22 +1964,22 @@ stat_info * mscsMap::calculate_map_stats_with_multi_mask(int output) {
 	/* temporary commented out */
 	/*   if (output > 0) { printf("|%s> * calculating the map statistis in separate regions on sky: reg_num = %li \n",object_name.c_str(),reg_tot); } */
 	/* temporary commented out */
-
+	
 	mm_pix_num = count_multi_mask_pix_num();
 	/*   for (i=0;i<reg_tot;i++) { mm_pix_num[i] = 0; } // initialize mm_pix_num array */
 	/*   for (i=0;i<pix_num;i++) { if (map->m[i] >= 1.0) { mm_pix_num[(long)(map->m[i])-1] += 1; }} // count points in different regions but outside the mask */
-
+	
 	/* for (j=0;j<64;j++) { printf("%li ",mm_pix_num[j]); } printf(" mask: %lE\n",map->m[i]); */
 	/*     if (map->m[i] >= 64) printf("dupa\n"); */
 	/*     if (map->m[i] < 0) printf("DUPA\n"); */
-
+	
 	for (i = 0; i < reg_tot; i++) {
 		itab[i] = 0;
 		if (mm_pix_num[i] > 0) {
 			t[i] = new double[mm_pix_num[i]];
 		} else t[i] = NULL;
 	} // initiate space for individual maps in regions
-
+	
 	for (i = 0; i < pix_num; i++) { // copy the map information from regions into separate tables
 		if (get_m(i) >= 1.0) {
 			reg = (long) (get_m(i)) - 1;
@@ -1987,7 +1987,7 @@ stat_info * mscsMap::calculate_map_stats_with_multi_mask(int output) {
 			itab[reg]++;
 		}
 	}
-
+	
 	/*   for (i=0;i<reg_tot;i++) {  // calculate statistics in regions */
 	/*     reg_stat[i].n = mm_pix_num[i]; */
 	/*     if (reg_stat[i].n > 0) reg_stat[i].m = cpeds_mean_value(t[i],mm_pix_num[i]); else reg_stat[i].m = 0; */
@@ -1995,7 +1995,7 @@ stat_info * mscsMap::calculate_map_stats_with_multi_mask(int output) {
 	/*     if (reg_stat[i].n > 1) reg_stat[i].S = cpeds_skewness(t[i],mm_pix_num[i]); else reg_stat[i].S = 0; */
 	/*     if (reg_stat[i].n > 1) reg_stat[i].K = cpeds_kurtosis(t[i],mm_pix_num[i]); else reg_stat[i].K = 0; */
 	/*   } */
-
+	
 	/* FROM OPTIMALIZATION REASOSNS THE DISTRIBUTIONS MOMENTS ROUTINES ARE MOVED TO MSCS AND OPTIMIZED FOR THE PURPOSE OF THE SKREGSTAT PROJECT */
 	for (i = 0; i < reg_tot; i++) { // calculate statistics in regions
 		cl.clear();
@@ -2010,7 +2010,7 @@ stat_info * mscsMap::calculate_map_stats_with_multi_mask(int output) {
 		reg_stat[i].K = kurtosis_loc;
 	}
 	/* FROM OPTIMALIZATION REASOSNS THE DISTRIBUTIONS MOMENTS ROUTINES ARE MOVED TO MSCS AND OPTIMIZED FOR THE PURPOSE OF THE SKREGSTAT PROJECT */
-
+	
 	/* FROM OPTIMALIZATION REASOSNS */
 	/* temporary commented out */
 	/*   if (output > 0) { */
@@ -2020,7 +2020,7 @@ stat_info * mscsMap::calculate_map_stats_with_multi_mask(int output) {
 	/*   } */
 	/* temporary commented out */
 	/* FROM OPTIMALIZATION REASOSNS */
-
+	
 	//free memory
 	for (i = 0; i < reg_tot; i++) {
 		if (t[i] != NULL) delete[] t[i];
@@ -2057,7 +2057,7 @@ stat_info * mscsMap::calculate_map_variance_with_multi_mask(int output) {
 			unmasked_pix_num_loc += mm_pix_num[i];
 		} else t[i] = NULL;
 	} // initiate space for individual maps in regions
-
+	
 	// copy the map information from regions into separate tables
 	j = 0;
 	map_loc = new double[unmasked_pix_num_loc];
@@ -2070,7 +2070,7 @@ stat_info * mscsMap::calculate_map_variance_with_multi_mask(int output) {
 			j++;
 		}
 	}
-
+	
 	variance_loc = sqrt(cpeds_variance(map_loc, unmasked_pix_num_loc));
 	
 	for (i = 0; i < reg_tot; i++) { // calculate statistics in regions
@@ -2080,7 +2080,7 @@ stat_info * mscsMap::calculate_map_variance_with_multi_mask(int output) {
 		reg_stat[i].S = variance_loc;
 		reg_stat[i].K = reg_stat[i].s / variance_loc;
 	}
-
+	
 	//free memory
 	for (i = 0; i < reg_tot; i++) {
 		if (t[i] != NULL) delete[] t[i];
@@ -2145,12 +2145,12 @@ double mscsMap::calculate_map_momentum() {
 			}
 	}
 	/*   for (i=0;i<pix_num;i++) { c=cos(abs(map->n[i].b)); c*=c; T=map->T[i]; T=abs(T); M+=T*c; N+=T;} */
-
+	
 	return M / Nl;
 	
 	
 	/*   conv_nest2ring(map.T); */
-
+	
 }
 //************************************************************************
 cpedsDirection mscsMap::maximize_map_momentum(long nsst, long nsen,
@@ -2163,7 +2163,7 @@ cpedsDirection mscsMap::maximize_map_momentum(long nsst, long nsen,
 	long pix_num = pixNum();
 	bool rot_short = true; // define how the rotations are to be performed using rotate_map method
 	// this must be true since otherwise he may not hit the right rotation to get the right orientation etc.
-
+	
 	// clone the object
 	copy->clone(*this);
 	
@@ -2177,7 +2177,7 @@ cpedsDirection mscsMap::maximize_map_momentum(long nsst, long nsen,
 	
 	do {
 		ns *= 4; //if (ns > nsen) ns=nsen;
-
+		
 		//set the map resolution for search in dir_num directions in northern sky
 		if (ns * 4 >= copy->nside()) nsmap = copy->nside();
 		else nsmap = 4 * ns;
@@ -2232,7 +2232,7 @@ cpedsDirection mscsMap::maximize_map_momentum(long nsst, long nsen,
 					imax = i;
 				}
 			}
-
+			
 			// restore the old map orientation
 			T() = backup;
 			char ctmp[1000];
@@ -2246,7 +2246,7 @@ cpedsDirection mscsMap::maximize_map_momentum(long nsst, long nsen,
 		}
 		/*     printf("koniec petli: ns=%li nsen=%li\n",ns,nsen); */
 	} while (4 * ns < nsen);
-
+	
 	delete copy;
 	
 	*acc = cpeds_pix_size_healpix(nsen);
@@ -2306,7 +2306,7 @@ cpedsDirection mscsMap::fit_map_dipole(double range, double acc, double *AMP,
 			a.set(1, 0, 1, 0);
 			a.set(1, 1, 0, 0);
 		}
-
+		
 		a.antysymmetrize();
 		/*     printf("C_1 = %lE\n",d->calculate_C_l(1)); */
 		d->SH_synthesis(a, 1);
@@ -2349,12 +2349,12 @@ cpedsDirection mscsMap::fit_map_dipole(double range, double acc, double *AMP,
 		/*       for (i=0;i<=pix_num;i++) { d->map->T[i]=backupD[i]*dxyz[j]; } */
 		/*       for (i=0;i<=pix_num;i++) { backup[i]-=d->map->T[i]*stdevMsqrt3; } */
 		/*     } */
-
+		
 	}
-
+	
 	printf("dx %lE, dy %lE, dz %lE\n", dxyz[0], dxyz[1], dxyz[2]);
 	(*AMP) = sqrt(dxyz[0] * dxyz[0] + dxyz[1] * dxyz[1] + dxyz[2] * dxyz[2])
-			* stdevM * sqrt(3);
+					* stdevM * sqrt(3);
 	
 	b = cpeds_cart2sph(0, dxyz[0], dxyz[1], dxyz[2]); // this is theta
 	l = PIsnd - cpeds_cart2sph(1, dxyz[0], dxyz[1], dxyz[2]);
@@ -2377,7 +2377,7 @@ cpedsDirection mscsMap::fit_map_dipole(double range, double acc, double *AMP,
 		/* for (i=0;i<=pix_num;i++) { backup[i]-=d->map->T[i]*(*AMP); } */
 		backup -= d->get_T() * (*AMP);
 	}
-
+	
 	// set back the original temperature map
 	T() = backup;
 	
@@ -2440,21 +2440,21 @@ double mscsMap::get_integralT() {
 /* ******************************************************************************************** */
 mscsCorrelationFunction mscsMap::calculate_C_th(cpedsList<double> th, double wisdomLvl) {
 	msgs->say("calculating C_th", High);
-
+	
 	
 	long int i, j, corr_i;
 	double ang;
-//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
+	//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
 	
-//	cpedsList<double> separation_number;
+	//	cpedsList<double> separation_number;
 	mscsCorrelationFunction Cth;
 	
-//	Cth.setPointsNum(point_num_C_th);
-//	separation_number.makeLength(point_num_C_th);
+	//	Cth.setPointsNum(point_num_C_th);
+	//	separation_number.makeLength(point_num_C_th);
 	
 	if (!coordLoaded()) set_map_coord();
 	/* for (i=0;i<point_num_C_th;i++) { C_th[i][0] = C_th[i][1] = 0; separation_number[i] = 0;} // zeroing tables */
-
+	
 	if (maskLoaded()==false) {
 		makekill_space_manager("make","m");
 		m()=1;
@@ -2477,7 +2477,7 @@ mscsCorrelationFunction mscsMap::calculate_C_th(cpedsList<double> th, double wis
 	}
 	
 	return Cth;
-
+	
 }
 //************************************************************************
 // the resolution parameter defines how wide is the binning of theta range, thus defines the number of points that constitute C_th
@@ -2485,25 +2485,25 @@ mscsCorrelationFunction mscsMap::calculate_C_th(cpedsList<double> th, double wis
 // calculates the correlation function on a map with requested resolution
 mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 		double theta_max, double resolution, double useWisdom) {
-
+	
 	msgs->say(
 			"calculating C_th from theta=" + msgs->toStr(theta_min)
-					+ ", to theta= " + msgs->toStr(theta_max), High);
-
+			+ ", to theta= " + msgs->toStr(theta_max), High);
+	
 	
 	long int i, j, corr_i;
 	double ang;
-//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
+	//	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
 	
-//	cpedsList<double> separation_number;
+	//	cpedsList<double> separation_number;
 	mscsCorrelationFunction Cth;
 	
-//	Cth.setPointsNum(point_num_C_th);
-//	separation_number.makeLength(point_num_C_th);
+	//	Cth.setPointsNum(point_num_C_th);
+	//	separation_number.makeLength(point_num_C_th);
 	
 	if (!coordLoaded()) set_map_coord();
 	/* for (i=0;i<point_num_C_th;i++) { C_th[i][0] = C_th[i][1] = 0; separation_number[i] = 0;} // zeroing tables */
-
+	
 	if (maskLoaded()==false) {
 		makekill_space_manager("make","m");
 		m()=1;
@@ -2511,7 +2511,7 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 	
 	
 	
-/*
+	/*
 	// corralation function calculation
 	long pix_num = pixNum();
 	for (i = 0; i < pix_num; i++) {
@@ -2540,18 +2540,18 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 		Cth[i].rx() /= separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
 		Cth[i].ry() /= separation_number[i]; // normalization of C(th)
 	}
-*/
-
+	 */
+	
 	
 	
 	if (useWisdom>0) {
 		long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
 		Cthwisdom cthwis(theta_min,theta_max,resolution,resolution);
 		string wisdom_file_name=cthwis.get_wisdom_file_name();
-//		wisss << std::getenv("HOME") << "/" << wisdom_default_base_name;
+		//		wisss << std::getenv("HOME") << "/" << wisdom_default_base_name;
 		if (not cpeds_fileExists(wisdom_file_name)) {
 			cout << "Wisdom file not found, will create it\n";
-
+			
 			/*
 			 * Create a list of non-masked directions and pixel values and healpix pixel indexes.
 			 * The initial mask for calculating wisdom should be conservative in order to 
@@ -2581,12 +2581,12 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 			cout << "Matching wisdom file found. Will load it\n";
 			cthwis.load(wisdom_file_name);
 		}
-
+		
 		cthwis.setWisdomFraction(useWisdom);
 		// use something new and provide wisdom
 		Cth=calculate_angular_correlation_fn_wis(cthwis);
 		
-
+		
 		
 	}
 	else {
@@ -2596,7 +2596,7 @@ mscsCorrelationFunction mscsMap::calculate_C_th(double theta_min,
 		theta_min *= PI180;
 		theta_max *= PI180;
 		resolution *= PI180;
-
+		
 		cpedsDirectionSet ds;
 		long pix_num = pixNum();
 		for (i = 0; i < pix_num; i++) {
@@ -2624,9 +2624,9 @@ mscsCorrelationFunction mscsMap::calculate_Sth(double theta_min, double theta_ma
 	
 	msgs->say(
 			"calculating S_th from theta=" + msgs->toStr(theta_min)
-					+ ", to theta= " + msgs->toStr(theta_max), High);
+			+ ", to theta= " + msgs->toStr(theta_max), High);
 	if (!coordLoaded()) set_map_coord();
-
+	
 	if (maskLoaded()==false) {
 		makekill_space_manager("make","m");
 		m()=1;
@@ -2668,191 +2668,195 @@ mscsCorrelationFunction mscsMap::calculate_Sth(double theta_min, double theta_ma
 /* // the address to the full covariance matrix of the estimated power spectrum */
 /* // the address to the estimated full sky noise power spectrum */
 
-/* power_spectrum * mscsMap::extract_C_l(long lmax_loc, power_spectrum * Blsq, power_spectrum * pseudoN, power_spectrum * pseudoW, matrix <double>* M, matrix <double>* C, power_spectrum * Nfs, string Mllinfo) { */
-/*   long l1,l2,l3,  k1,k2,k3,  Nsim; */
-/*   double W3J, tmpd,d1,d2,d3,*D,*DD; */
-/*   matrix <double> *N, *Mi, *Cl, *Bl; */
-/*   power_spectrum *Cfs; */
-/*   long stat; */
-/*   int i; */
-/*   long k,l,m; */
-/*   gsl_sf_result res; */
-/*   double * W3jt; */
-/*   bool noMll;  if (M->RowNo()==1) noMll = true; else  noMll = false;  */
-/*   filenamestr tmpch; */
-
-/*   printf("|%s> * extracting C_l from pseudo C^_l and mask window function\n",object_name.c_str()); */
-/* /\*   if (map_loaded == 0) { printf("|%s>  -- ERROR: The map is not loaded. Load the map file first \n",object_name.c_str()); return; } *\/ */
-/* /\*   if (mask_loaded == 0) { printf("|%s>  -- WARNING: The mask is not loaded. Will assume no mask at all \n",object_name.c_str()); return; } *\/ */
-/* /\*   printf("|%s>  -- computing power spectrum of the window function\n",object_name.c_str()); *\/ */
-/* /\*   set_alms_lmax(lmax_loc); *\/ */
-/* /\*   pseudoCl = new power_spectrum(lmax);   for (l=0;l<=lmax;l++) { (*pseudoCl).set_Cl(l,C_l[l][1]); } // this is to be changed when map class will be updated for more objects *\/ */
-/* /\*   calculate_transformF(default_fourier_method,1,"nosmooth",-1,0,"",""); *\/ */
-/* /\*   calculate_C_l(0,lmax,1); // this is the power spectrum of the window function *\/ */
-
-/*   // here, check the sanity of the input data */
-
-/*   // ****************************************** */
-/*   // declare some usefull matrices */
-/*   // ****************************************** */
-
-/*   //if (noMll) { Mi = new matrix <double>;   (*Mi).SetSize((lmax_loc+1),(lmax_loc+1)); } */
-/*   Mi = new matrix <double>;   (*Mi).SetSize((lmax_loc+1),(lmax_loc+1)); */
-/*   N  = new matrix <double>;   (*N).SetSize((lmax_loc+1),1);     for (l1=0;l1<=lmax_loc;l1++) { (*N)(l1,0) =pseudoN->get_Cl(l1); } */
-/*   Cl = new matrix <double>;   (*Cl).SetSize((lmax_loc+1),1);    for (l1=0;l1<=lmax_loc;l1++) { (*Cl)(l1,0)=C_l[l1][1]; } */
-/*   Bl = new matrix <double>;   (*Bl).SetSize((lmax_loc+1),1);    for (l1=0;l1<=lmax_loc;l1++) { (*Bl)(l1,0)=Blsq->get_Cl(l1); } */
-
-/*   // ****************************************** */
-/*   // deriving  the mode-to-mode coupling matrix */
-/*   // ****************************************** */
-
-/*   if (noMll) {  */
-/*     printf("|%s>  -- computing mode-to-mode coupling matrix\n",object_name.c_str()); */
-
-/*     (*M).SetSize((lmax_loc+1),(lmax_loc+1)); */
-/*     W3jt =  new double[2*(lmax_loc+1)]; */
-
-/*     W3J=0;     */
-/*     for (l1=0;l1<=lmax_loc;l1++) { */
-/* /\*       k1=2*l1; *\/ */
-/*       for (l2=0;l2<=lmax_loc;l2++) { */
-/* /\* 	k2=2*l2; *\/ */
-/* 	(*M)(l1,l2) = 0;  */
-/* 	tmpd = 0; */
-
-/* 	d1=0; d2=(double)lmax_loc; k2=2*(lmax_loc+1); */
-/* 	ThreeJSymbolJ((double)l1,(double)l2,(double)0,(double)0,d1,d2,W3jt,k2,i); */
-/* 	//if (i != 0) cout << " dupa --- cos nie tak\n"; */
-
-/* /\* 	for (l3=0;l3<=lmax_loc;l3++) { printf("%li %lE,  ",l3,W3jt[l3]); } *\/ */
-/* 	k1=0; */
-/* 	for (l3=0;l3<=lmax_loc;l3++) { */
-/* 	  //gsl implementation */
-/* /\* 	  k3=2*l3; *\/ */
-/* /\* 	  W3J=gsl_sf_coupling_3j(l1,l2,l3,0,0,0); W3J=W3J*W3J; *\/ */
-/* /\* 	  stat = gsl_sf_coupling_3j_e(k1,k2,k3,0,0,0,&res); W3J=0; *\/ */
-/* /\* 	  if (stat == 0) { W3J=res.val; } W3J=W3J*W3J; *\/ */
-
-/* 	  // cpeds + lidia implementation -- this is way too slow + there are some problem with header files between lidia and matpack */
-/* /\* 	  if (l1 < 400) W3J=cpeds_W3jm0(l1,l2,l3); else W3J=cpeds_W3jm0_lidia(l1,l2,l3);  *\/ */
-
-/* 	  // cpeds implementation */
-/* /\* 	  W3J=cpeds_W3jm0(l1,l2,l3); *\/ */
-/* /\* 	  W3J=W3J*W3J; *\/ */
-
-/* 	  // matpack implementation */
-/* /\* 	  if (cpeds_W3jm0_non_zero(l1,l2,l3)) {W3J=W3jt[k1]*W3jt[k1]; k1++; } *\/ */
-/* 	  W3J=0; */
-/* 	  if (cpeds_W3jm0_lcond(l1,l2,l3,0)) {W3J=W3jt[k1]*W3jt[k1]; k1++; } */
-
-/* /\* 	  W3J=W3jt[l3]*W3jt[l3]; *\/ */
-/* /\* 	  if (cpeds_W3jm0_non_zero) W3J++; *\/ */
-
-/* // test */
-/* /\* 	  if (cpeds_W3jm0_non_zero(l1,l2,l3)) { *\/ */
-/* /\* 	    d1=cpeds_W3jm0(l1,l2,l3);  *\/ */
-/* /\* 	    d2=cpeds_W3jm0_lidia(l1,l2,l3); *\/ */
-/* /\* 	    d3=W3jt[k1-1]; *\/ */
-/* /\* 	    if (abs(d1-d2)>1e-5 || abs(d1-d3)>1e-5 || abs(d2-d3)>1e-5) printf("----- roznica: cpeds: %lE lidia: %lE: matpack: %lE,  l1 l2 l3 %li %li %li\n",d1,d2,d3,l1,l2,l3); *\/ */
-/* /\* 	    //if (abs(d1-d3)>1e-5 ) printf("----- roznica: cpeds: %lE lidia: %lE: matpack: %lE,  l1 l2 l3 %li %li %li\n",d1,d2,d3,l1,l2,l3); *\/ */
-/* /\* 	  } *\/ */
-
-/* // test */
-
-/* 	  tmpd+=(double)(2*l3+1)*pseudoW->get_Cl(l3)*W3J; */
-
-/* /\* 	  printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); *\/ */
-/* /\* 	if (l1 == 186 && l2 == 186) printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); *\/ */
-/* /\* 	if (l1 == 400 && l2 >= 286) printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); *\/ */
-/* /\* 	if (l1 >= 250 && l2 >= 540) printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); *\/ */
-
-/* 	} */
-/* 	tmpd*=(2*(double)l2+1)/(4*PI);	(*M)(l1,l2)=tmpd; */
-/* /\* 	printf("l1=%li l2=%li\r",l1,l2); *\/ */
-/*       } */
-/*       printf("l1=%li\r",l1); */
-/*     } */
-
-/*     delete [] W3jt; */
-/*     printf("|%s>  -- DONE\n",object_name.c_str());  */
-/*     sprintf(tmpch,"%s--lmax_%li-Mll.mat",Mllinfo.c_str(),lmax_loc);   printf("|%s>  -- saving window kernel matrix to temporary file: %s\n",object_name.c_str(),tmpch); */
-/*     Mscs_matrix_save(M,tmpch); */
-
-/*     printf("|%s>  -- inverting mode to mode coupling matrix...\n",object_name.c_str()); */
-/*     *Mi = !(*M);  */
-
-/*     sprintf(tmpch,"%s--lmax_%li-invMll.mat",Mllinfo.c_str(),lmax_loc); printf("|%s>  -- saving inverse window kernel matrix to temporary file: %s (you probably don't need this)\n",object_name.c_str(),tmpch); */
-/*     Mscs_matrix_save(Mi,tmpch); */
-/*     printf("|%s>  -- DONE\n",object_name.c_str());     */
-/*   } */
-/*   //else { (*Mi)=(*M); } */
-
-/*   // ****************************************** */
-/*   // deriving the full inverse coupling matrix */
-/*   // ****************************************** */
-/*   printf("|%s>  -- deriving the full coupling matrix\n",object_name.c_str()); */
-/*   for (l1=0;l1<=lmax_loc;l1++) {  */
-/*     for (l2=0;l2<=lmax_loc;l2++) { (*Mi)(l2,l1) = (*M)(l2,l1)*(*Bl)(l2,0); }} */
-
-/* /\*   sprintf(tmpch,"%s--lmax_%li-Kll.mat",Mllinfo.c_str(),lmax_loc); printf("|%s>  -- saving kernel matrix to temporary file: %s\n",object_name.c_str(),tmpch);  *\/ */
-/* /\*   Mscs_matrix_save(Mi,tmpch); *\/ */
-/*   printf("|%s>  -- inverting the full coupling matrix\n",object_name.c_str()); */
-/*   (*Mi)=!(*Mi); */
-/* /\*   sprintf(tmpch,"%s--lmax_%li-invKll.mat",Mllinfo.c_str(),lmax_loc);   printf("|%s>  -- saving kernel matrix to temporary file: %s\n",object_name.c_str(),tmpch);  *\/ */
-/* /\*   Mscs_matrix_save(Mi,tmpch); *\/ */
-
-/*   // ****************************************** */
-/*   // deriving the full sky C_l estimator */
-/*   // ****************************************** */
-
-/*   printf("|%s>  -- deriving the full sky power spectrum estimator\n",object_name.c_str()); */
-/*   Cfs = new power_spectrum(lmax_loc+1);  */
-/*   *Cl-=*N;  // subtract estimated pseudo noise */
-/*   (*Cl)=(*Mi)*(*Cl); */
-
-/*   // copy onto Clfs */
-/*   for (l1=0;l1<=lmax_loc;l1++) { Cfs->set_Cl(l1, (*Cl)(l1,0) );   Cfs->set_l(l1,(double)l1); } */
-
-/*   // ****************************************** */
-/*   // setting out the inverse mode-mode coupling matrix for output */
-/*   // ****************************************** */
-/*   (*M)=(*Mi); */
-
-/*   // ****************************************** */
-/*   // deriving the full sky noise estimator */
-/*   // ****************************************** */
-/*   printf("|%s>  -- deriving the full sky noise power spectrum\n",object_name.c_str()); */
-/*   (*N)=(*Mi)*(*N);   */
-/*   // copy onto Nfs */
-/*   for (l1=0;l1<=lmax_loc;l1++) { Nfs->set_Cl(l1, (*N)(l1,0) );   Nfs->set_l(l1,(double)l1); } */
-
-/*   // ****************************************** */
-/*   // deriving the estimated C_l covariance matrix  */
-/*   // ****************************************** */
-/*   printf("|%s>  -- deriving the covariance matrix of the full sky power spectrum\n",object_name.c_str()); */
-/*   Nsim = (long)(C->ColNo());  */
-/*   printf("|%s>  -- data matrix has %li cols and %li rows\n",object_name.c_str(),(long)C->ColNo(),(long)C->RowNo()); */
-/*   D = new double[Nsim*(lmax_loc+1)]; */
-/*   m=0; */
-/*   for (k=0;k<Nsim;k++) { */
-/*     for (l=0;l<=lmax_loc;l++) { D[m]=(*C)(l,k); m++;}} */
-
-/*   DD = cpeds_calculate_covariance_matrix(D,lmax_loc+1,Nsim); */
-
-/*   // copy the cov matrix onto the C matrix structure */
-/*   (*C).SetSize(lmax_loc+1,lmax_loc+1); */
-/*   m=0; */
-/*   for (k=0;k<=lmax_loc;k++) { */
-/*     for (l=0;l<=lmax_loc;l++) { (*C)(l,k)=DD[m]; m++; }} */
-/*   printf("|%s>  -- data matrix has now %li cols and %li rows\n",object_name.c_str(),(long)C->ColNo(),(long)C->RowNo()); */
-
-/*   // freeing space */
-
-/*   if (noMll) delete Mi; */
-/*   delete N; delete Cl; delete Bl; delete [] D; delete [] DD;  */
-
-/*   return Cfs; */
-/* } */
+mscsAngularPowerSpectrum mscsMap::extract_C_l(long lmax_loc, mscsAngularPowerSpectrum* Blsq, mscsAngularPowerSpectrum* pseudoN, mscsAngularPowerSpectrum* pseudoW, matrix <double>* M, matrix <double>* C, mscsAngularPowerSpectrum* Nfs, string Mllinfo) { 
+	long l1,l2,l3,  k1,k2,k3,  Nsim; 
+	double W3J, tmpd,d1,d2,d3,*D,*DD; 
+	matrix <double> *N, *Mi, *Cl, *Bl; 
+	mscsAngularPowerSpectrum Cfs; 
+/*
+	long stat; 
+	int i; 
+	long k,l,m; 
+	gsl_sf_result res; 
+	double * W3jt; 
+	bool noMll;  if (M->RowNo()==1) noMll = true; else  noMll = false;  
+	filenamestr tmpch; 
+	
+	printf("|%s> * extracting C_l from pseudo C^_l and mask window function\n",object_name.c_str()); 
+	if (not mapLoaded()) { printf("|%s>  -- ERROR: The map is not loaded. Load the map file first \n",object_name.c_str()); return Cfs; } 
+	if (not maskLoaded()) { printf("|%s>  -- WARNING: The mask is not loaded. Will assume no mask at all \n",object_name.c_str()); return Cfs; }
+	printf("|%s>  -- computing power spectrum of the window function\n",object_name.c_str());
+	set_alms_lmax(lmax_loc); 
+	pseudoCl = new power_spectrum(lmax);   for (l=0;l<=lmax;l++) { (*pseudoCl).set_Cl(l,C_l[l][1]); } // this is to be changed when map class will be updated for more objects 
+	calculate_transformF(default_fourier_method,1,"nosmooth",-1,0,"",""); 
+	calculate_C_l(0,lmax,1); // this is the power spectrum of the window function
+	
+	// here, check the sanity of the input data 
+	
+	// ****************************************** 
+	// declare some usefull matrices 
+	// ****************************************** 
+	
+	//if (noMll) { Mi = new matrix <double>;   (*Mi).SetSize((lmax_loc+1),(lmax_loc+1)); } 
+	Mi = new matrix <double>;   (*Mi).SetSize((lmax_loc+1),(lmax_loc+1)); 
+	N  = new matrix <double>;   (*N).SetSize((lmax_loc+1),1);     for (l1=0;l1<=lmax_loc;l1++) { (*N)(l1,0) =pseudoN->get_Cl(l1); } 
+	Cl = new matrix <double>;   (*Cl).SetSize((lmax_loc+1),1);    for (l1=0;l1<=lmax_loc;l1++) { (*Cl)(l1,0)=C_l[l1][1]; } 
+	Bl = new matrix <double>;   (*Bl).SetSize((lmax_loc+1),1);    for (l1=0;l1<=lmax_loc;l1++) { (*Bl)(l1,0)=Blsq->get_Cl(l1); } 
+	
+	// ****************************************** 
+	// deriving  the mode-to-mode coupling matrix 
+	// ****************************************** 
+	
+	if (noMll) {  
+		printf("|%s>  -- computing mode-to-mode coupling matrix\n",object_name.c_str()); 
+		
+		(*M).SetSize((lmax_loc+1),(lmax_loc+1)); 
+		W3jt =  new double[2*(lmax_loc+1)]; 
+		
+		W3J=0;     
+		for (l1=0;l1<=lmax_loc;l1++) { 
+			k1=2*l1;
+			for (l2=0;l2<=lmax_loc;l2++) { 
+				k2=2*l2;
+				(*M)(l1,l2) = 0;  
+				tmpd = 0; 
+				
+				d1=0; d2=(double)lmax_loc; k2=2*(lmax_loc+1); 
+				ThreeJSymbolJ((double)l1,(double)l2,(double)0,(double)0,d1,d2,W3jt,k2,i); 
+				//if (i != 0) cout << " dupa --- cos nie tak\n"; 
+				
+				for (l3=0;l3<=lmax_loc;l3++) { printf("%li %lE,  ",l3,W3jt[l3]); }
+				k1=0; 
+				for (l3=0;l3<=lmax_loc;l3++) { 
+					//gsl implementation 
+					k3=2*l3;
+					W3J=gsl_sf_coupling_3j(l1,l2,l3,0,0,0); W3J=W3J*W3J;
+					stat = gsl_sf_coupling_3j_e(k1,k2,k3,0,0,0,&res); W3J=0; 
+					if (stat == 0) { W3J=res.val; } W3J=W3J*W3J;
+					
+					 	  // cpeds + lidia implementation -- this is way too slow + there are some problem with header files between lidia and matpack 
+					 /\* 	  if (l1 < 400) W3J=cpeds_W3jm0(l1,l2,l3); else W3J=cpeds_W3jm0_lidia(l1,l2,l3);  *\/ 
+					
+					 	  // cpeds implementation 
+					 /\* 	  W3J=cpeds_W3jm0(l1,l2,l3); *\/ 
+					 /\* 	  W3J=W3J*W3J; *\/ 
+					
+					 	  // matpack implementation 
+					 /\* 	  if (cpeds_W3jm0_non_zero(l1,l2,l3)) {W3J=W3jt[k1]*W3jt[k1]; k1++; } *\/ 
+					 	  W3J=0; 
+					 	  if (cpeds_W3jm0_lcond(l1,l2,l3,0)) {W3J=W3jt[k1]*W3jt[k1]; k1++; } 
+					
+					 /\* 	  W3J=W3jt[l3]*W3jt[l3]; *\/ 
+					 /\* 	  if (cpeds_W3jm0_non_zero) W3J++; *\/ 
+					
+					
+ // test 
+ 		if (cpeds_W3jm0_non_zero(l1,l2,l3)) {
+ 	    d1=cpeds_W3jm0(l1,l2,l3);   
+ 	    d2=cpeds_W3jm0_lidia(l1,l2,l3);  
+ 	    d3=W3jt[k1-1];  
+ 	    if (abs(d1-d2)>1e-5 || abs(d1-d3)>1e-5 || abs(d2-d3)>1e-5) printf("----- roznica: cpeds: %lE lidia: %lE: matpack: %lE,  l1 l2 l3 %li %li %li\n",d1,d2,d3,l1,l2,l3);  
+ 	    //if (abs(d1-d3)>1e-5 ) printf("----- roznica: cpeds: %lE lidia: %lE: matpack: %lE,  l1 l2 l3 %li %li %li\n",d1,d2,d3,l1,l2,l3);  
+ 	  }
+					 
+					
+					// test 
+					
+					tmpd+=(double)(2*l3+1)*pseudoW->get_Cl(l3)*W3J; 
+					
+					printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); 
+					if (l1 == 186 && l2 == 186) printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); 
+					if (l1 == 400 && l2 >= 286) printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); 
+					if (l1 >= 250 && l2 >= 540) printf("--------> l1: %li l2: %li, l3: %li    tmpch: %lE W3J^2: %lE\n",l1,l2,l3,tmpd, W3J); 
+					
+				} 
+				tmpd*=(2*(double)l2+1)/(4*PI);	(*M)(l1,l2)=tmpd; 
+				printf("l1=%li l2=%li\r",l1,l2); 
+			} 
+			printf("l1=%li\r",l1); 
+		}
+		
+		delete [] W3jt; 
+		printf("|%s>  -- DONE\n",object_name.c_str());  
+		sprintf(tmpch,"%s--lmax_%li-Mll.mat",Mllinfo.c_str(),lmax_loc);   printf("|%s>  -- saving window kernel matrix to temporary file: %s\n",object_name.c_str(),tmpch); 
+		Mscs_matrix_save(M,tmpch); 
+		
+		printf("|%s>  -- inverting mode to mode coupling matrix...\n",object_name.c_str()); 
+		*Mi = !(*M);  
+		
+		sprintf(tmpch,"%s--lmax_%li-invMll.mat",Mllinfo.c_str(),lmax_loc); printf("|%s>  -- saving inverse window kernel matrix to temporary file: %s (you probably don't need this)\n",object_name.c_str(),tmpch); 
+		Mscs_matrix_save(Mi,tmpch); 
+		printf("|%s>  -- DONE\n",object_name.c_str());     
+	} 
+	else { (*Mi)=(*M); } 
+	
+	// ****************************************** 
+	// deriving the full inverse coupling matrix 
+	// ****************************************** 
+	printf("|%s>  -- deriving the full coupling matrix\n",object_name.c_str()); 
+	for (l1=0;l1<=lmax_loc;l1++) {  
+		for (l2=0;l2<=lmax_loc;l2++) { (*Mi)(l2,l1) = (*M)(l2,l1)*(*Bl)(l2,0); }} 
+	
+	sprintf(tmpch,"%s--lmax_%li-Kll.mat",Mllinfo.c_str(),lmax_loc); printf("|%s>  -- saving kernel matrix to temporary file: %s\n",object_name.c_str(),tmpch);
+	Mscs_matrix_save(Mi,tmpch); 
+	printf("|%s>  -- inverting the full coupling matrix\n",object_name.c_str());
+	(*Mi)=!(*Mi); 
+	sprintf(tmpch,"%s--lmax_%li-invKll.mat",Mllinfo.c_str(),lmax_loc);   printf("|%s>  -- saving kernel matrix to temporary file: %s\n",object_name.c_str(),tmpch);
+	Mscs_matrix_save(Mi,tmpch); 
+	
+	// ****************************************** 
+	// deriving the full sky C_l estimator 
+	// ****************************************** 
+	
+	printf("|%s>  -- deriving the full sky power spectrum estimator\n",object_name.c_str()); 
+	Cfs = new power_spectrum(lmax_loc+1);  
+	*Cl-=*N;  // subtract estimated pseudo noise 
+	(*Cl)=(*Mi)*(*Cl); 
+	
+	// copy onto Clfs 
+	for (l1=0;l1<=lmax_loc;l1++) { Cfs->set_Cl(l1, (*Cl)(l1,0) );   Cfs->set_l(l1,(double)l1); } 
+	
+	// ****************************************** 
+	// setting out the inverse mode-mode coupling matrix for output 
+	// ****************************************** 
+	(*M)=(*Mi); 
+	
+	// ****************************************** 
+	// deriving the full sky noise estimator 
+	// ****************************************** 
+	printf("|%s>  -- deriving the full sky noise power spectrum\n",object_name.c_str()); 
+	(*N)=(*Mi)*(*N);   
+	// copy onto Nfs 
+	for (l1=0;l1<=lmax_loc;l1++) { Nfs->set_Cl(l1, (*N)(l1,0) );   Nfs->set_l(l1,(double)l1); } 
+	
+	// ****************************************** 
+	// deriving the estimated C_l covariance matrix  
+	// ****************************************** 
+	printf("|%s>  -- deriving the covariance matrix of the full sky power spectrum\n",object_name.c_str()); 
+	Nsim = (long)(C->ColNo());  
+	printf("|%s>  -- data matrix has %li cols and %li rows\n",object_name.c_str(),(long)C->ColNo(),(long)C->RowNo()); 
+	D = new double[Nsim*(lmax_loc+1)]; 
+	m=0; 
+	for (k=0;k<Nsim;k++) { 
+		for (l=0;l<=lmax_loc;l++) { D[m]=(*C)(l,k); m++;}} 
+	
+	DD = cpeds_calculate_covariance_matrix(D,lmax_loc+1,Nsim); 
+	
+	// copy the cov matrix onto the C matrix structure 
+	(*C).SetSize(lmax_loc+1,lmax_loc+1); 
+	m=0; 
+	for (k=0;k<=lmax_loc;k++) { 
+		for (l=0;l<=lmax_loc;l++) { (*C)(l,k)=DD[m]; m++; }} 
+	printf("|%s>  -- data matrix has now %li cols and %li rows\n",object_name.c_str(),(long)C->ColNo(),(long)C->RowNo()); 
+	
+	// freeing space 
+	
+	if (noMll) delete Mi; 
+	delete N; delete Cl; delete Bl; delete [] D; delete [] DD;  
+	
+*/
+	return Cfs; 
+} 
 
 //************************************************************************
 void mscsMap::shift_mean_to(double val, bool calc_stats) {
@@ -2908,7 +2912,7 @@ void mscsMap::norm_by_variance() { // divides the map by it's variance
 	long pix_num = pixNum();
 	double var;
 	//  double var=varianceT; // commented out on 2009-01-15
-
+	
 	msgs->say("normalizing the temperature map by variance", Medium);
 	var = calculate_varianceT();
 	if (maskLoaded()) {
@@ -3027,7 +3031,7 @@ void mscsMap::logarithmT(double base) {
 	if (maskLoaded()) {
 		for (i = 0; i < pix_num; i++) {
 			if (get_T(i) != 0.0 && !isMasked(i)) T(i) = log(fabs(T(i)))
-					/ logBase;
+							/ logBase;
 		}
 	} else {
 		for (i = 0; i < pix_num; i++) {
@@ -3070,7 +3074,7 @@ void mscsMap::set_map_coord(double db, double dl) {
 			"setting actual coordinates for the map for the pixelization system",
 			High);
 	/* if (pix_system == 1) { */
-
+	
 	if (isNested()) {
 		coord_file = MSCS_DATA_DIR + MSCS_GLOBAL__NESTED_COORDINATES_PREF
 				+ msgs->toStr(nside()) + MSCS_GLOBAL__NESTED_COORDINATES_SUFF;
@@ -3083,7 +3087,7 @@ void mscsMap::set_map_coord(double db, double dl) {
 	if (ret != 0) { // this works only for the nest ordering for now --- RING IS TO BE IMPLEMENTED !!!
 		msgs->say(
 				"could not open the coordinates file: " + coord_file
-						+ ", will calculate the coords (this is slow)", Medium);
+				+ ", will calculate the coords (this is slow)", Medium);
 		n().setLength(coordNum());
 		for (i = 0; i < coordNum(); i++) {
 			cpeds_pix2ang_healpix(nside(), i, &th, &phi,
@@ -3105,7 +3109,7 @@ void mscsMap::make_gaussian_map(double m, double s, int method, cpedsRNG *rns) {
 	bool rnsWasNull;
 	msgs->say(
 			"generating random gaussian map with mean: " + msgs->toStr(m)
-					+ " and variance: " + msgs->toStr(s), High);
+			+ " and variance: " + msgs->toStr(s), High);
 	if (rns == NULL) {
 		rns = new cpedsRNG("gaussian", "double");
 		rnsWasNull = true;
@@ -3261,7 +3265,7 @@ int mscsMap::rotate_map_directions(cpedsDirectionSet& X, int axis, double ang) {
 		X[i] = Ry(X[i], sinang, cosang); // rotate around y
 	if (axis == 3) for (i = 0; i < pix_num; i++)
 		X[i] = Rz(X[i], sinang, cosang); // rotate around z
-
+	
 	return 0;
 }
 //************************************************************************
@@ -3330,15 +3334,15 @@ void mscsMap::set_nside(long n) {
 	if ((mapLoaded()) && (nside() != n)) {
 		msgs->warning(
 				"the map with nside=" + msgs->toStr(nside())
-						+ " is already loaded", High);
+				+ " is already loaded", High);
 	}
 	mapInfo.nside = n;
 	mapInfo.pix_num = 12 * n * n;
 	mapInfo.coord_num = pixNum();
 	msgs->say(
 			"Set map nside to: " + msgs->toStr(nside()) + " and pix_num to: "
-					+ msgs->toStr(pixNum()) + " and coord_num to: "
-					+ msgs->toStr(coordNum()), High);
+			+ msgs->toStr(pixNum()) + " and coord_num to: "
+			+ msgs->toStr(coordNum()), High);
 }
 
 //************************************************************************
@@ -3347,14 +3351,14 @@ void mscsMap::set_pixNum(long n) {
 	double ns = sqrt(double(n) / 12.0);
 	if (n % 12 != 0) msgs->warning(
 			"set_pixNum: the requested number of pixels doesn't convert to a valid nside value ("
-					+ msgs->toStr(ns) + ").", High);
+			+ msgs->toStr(ns) + ").", High);
 	if (sqrt(n / 12) != long(ns)) msgs->warning(
 			"set_pixNum: the requested number of pixels doesn't convert to a valid nside value ("
-					+ msgs->toStr(ns) + ").", High);
+			+ msgs->toStr(ns) + ").", High);
 	mapInfo.nside = long(ns);
 	msgs->say(
 			"Setting map nside to: " + msgs->toStr(nside())
-					+ " and pix_num to: " + msgs->toStr(pixNum()), High);
+			+ " and pix_num to: " + msgs->toStr(pixNum()), High);
 }
 //************************************************************************
 void mscsMap::set_ordering(mapOrderings ord) {
@@ -3385,8 +3389,8 @@ void mscsMap::copy_map(mscsMap *map_from, mscsMap *map_to,
 	long i;
 	long N;
 	// make sure to hava enough space in the destination map
-//	*map_to = *map_from; // this assignment is too much, it 
-						 // screws up the map flags and other internal data so don't do that
+	//	*map_to = *map_from; // this assignment is too much, it 
+	// screws up the map flags and other internal data so don't do that
 	// convert using the conversion array
 	if (conv_tab != NULL) {
 		N = map_from->T().size();

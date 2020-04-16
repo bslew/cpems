@@ -819,16 +819,16 @@ class mscsMap : public mscsObject {
   */
   mscsCorrelationFunction calculate_Sth(double theta_min, double theta_max, double resolution);
 
-  /* /\*! */
-  /*   \brief extracts the power spectrum from the loaded map using MASTER method */
-  /*   \details  */
-  /*   @param */
-  /*   @return */
+   /*! 
+     \brief extracts the power spectrum from the loaded map using MASTER method 
+     \details  
+     @param 
+     @return 
 
-  /*   \date 2009/06/03 16:55:28  */
-  /*   \author Bartosz Lew */
-  /* *\/ */
-  /* mscsPowerSpectrum * extract_C_l(const mscsMap long lmax_loc, mscsPowerSpectrum * Blsq, mscsPowerSpectrum * pseudoN, mscsPowerSpectrum * pseudoW, matrix <double>* M, matrix <double>* C, mscsPowerSpectrum * Nfs, string Mllinfo); */
+     \date 2009/06/03 16:55:28  
+     \author Bartosz Lew 
+   */ 
+  mscsAngularPowerSpectrum extract_C_l(long lmax_loc, mscsAngularPowerSpectrum* Blsq, mscsAngularPowerSpectrum* pseudoN, mscsAngularPowerSpectrum* pseudoW, matrix <double>* M, matrix <double>* C, mscsAngularPowerSpectrum* Nfs, string Mllinfo); 
   double calculate_circ_statistics(cpeds_direction C, double r); // calculates the circle correlation function around a given dircection -- dedicated to TSZ
   //void calculate_3P_corr_function();
   //void calculate_bispectrum();

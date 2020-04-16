@@ -8,6 +8,10 @@
 #include "cpeds-common.h"
 #include <sstream>
 
+std::vector<std::string> cpeds_strsplit(std::string cmd,char delim) {
+	return cpeds_strToVec(cmd,delim);
+}
+
 std::vector<std::string> cpeds_strToVec(std::string cmd,char delim) {
     std::stringstream ss(cmd);
     std::string token;

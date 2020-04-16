@@ -94,19 +94,19 @@ parser.add_option("", "--testFmt", action="store_true", dest="testFmt", default=
 if option.test:
     dt='2017-10-27 09:10:11.23'
     val=cpedsPythCommon.cal2jd(date_time_str=dt,offset=option.offset)
-    print dt,' UTC is %.15f' % val
+    print(dt,' UTC is %.15f' % val)
     shouldBe=2458053.882074421271682
-    print 'should be: %.15f' % shouldBe
-    print 'diff: ',val-shouldBe
+    print('should be: %.15f' % shouldBe)
+    print('diff: ',val-shouldBe)
     sys.exit()
 
 if option.testFmt:
     dt='2017 10 27 09 10 11.23'
     val=cpedsPythCommon.cal2jd(date_time_str=dt,offset=option.offset,DT_FMT=option.fmt)
-    print dt,' UTC is %.15f' % val
+    print(dt,' UTC is %.15f' % val)
     shouldBe=2458053.882074421271682
-    print 'should be: %.15f' % shouldBe
-    print 'diff: ',val-shouldBe
+    print('should be: %.15f' % shouldBe)
+    print('diff: ',val-shouldBe)
     sys.exit()
 
 from matplotlib.dates import strpdate2num
@@ -115,7 +115,7 @@ data=np.loadtxt(args[0], dtype="string")
 np.set_printoptions(precision=15,suppress=True)
 
 Nspaces=len(option.fmt.split(' '))
-dt=data[:,range(option.col,option.col+Nspaces,1)]
+dt=data[:,list(range(option.col,option.col+Nspaces,1))]
 # print dt
 # dt=map(' '.join, zip(dt[:,0],dt[:,1]))
 

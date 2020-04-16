@@ -106,6 +106,7 @@ typedef enum { cpedsSuccess=0, cpedsNoSuchFile, cannotOpenFile, wrongFormat, cpe
 #include <vector>
 #include <string>
 
+std::vector<std::string> cpeds_strsplit(std::string cmd,char delim);
 std::vector<std::string> cpeds_strToVec(std::string s,char delim=',');
 
 

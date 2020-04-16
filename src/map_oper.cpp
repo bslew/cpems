@@ -94,7 +94,25 @@ void multiply_value(vector<string> _infiles, double val);
 	\author Bartosz Lew
 */
 void smooth_gaussian(mscsMap& map, double fwhm, mscsAlms* Alm=0);
-void calculate_pseudoCl(vector<string> infiles, string maskFile, string outfile);
+/*!
+	\brief calculate pseudo Cl
+	\details 
+	@param infiles - vector of input files (HP, nested, binary format)
+	@param maskFile - mask file to use (HP, nested, binary format)
+	@param output file prefix
+	@param cmd - calculation modifier string. Possible values are:
+		"" - default, will return Cl
+		norm=llp1o2pi - will multiply Cl by l(l+1)/2pi
+		
+		lmax=l - maximal multipole number. 
+			Default: 2*ns, where ns is input map n_side parameter.
+		
+	@return
+
+	\date Apr 7, 2020, 8:35:48 AM
+*/
+void calculate_pseudoCl(vector<string> infiles, string maskFile, string outfile, string cmd);
+//void calculate_pseudoCl_mask(vector<string> infiles, string mask, string outfile);
 /*!
 	\brief performs selection and set operations on input map files
 	\details 
@@ -110,6 +128,21 @@ void calculate_pseudoCl(vector<string> infiles, string maskFile, string outfile)
 	\date Feb 20, 2020, 2:52:13 PM
 */
 void make_mask(string cmd,vector<string> infiles, string maskFile, string outfile);
+
+/* ******************************************************************************************** */
+mscsMap mkNewMap(std::map<string,string> kv) {
+	long nside=stol(kv["ns"]);
+	double T=0;
+	if (kv.find("T")!=kv.end()) {
+		T=std::stod(kv["T"]);
+		std::cout << "will set map value to " << T << std::endl;
+	}
+	mscsMap m1(nside);
+	m1.makekill_space_manager("make","T");
+	m1.T()=T;
+	return m1;
+}
+/* ******************************************************************************************** */
 /*!
 	\brief generate new healpix nested map
 	\details 
@@ -146,8 +179,10 @@ int main(int argc, char **argv) {
 	if (_cmd.contains("make"))  { mkNewMap(_cmd.toStdString(),_outfile);	}
 	if (_cmd.contains("smoothG"))  { smoothG(_infiles);	}
 	if (_cmd.contains("smoothB"))  { smoothB(_infiles);	}
-	if (_cmd.contains("pseudoCl"))  { calculate_pseudoCl(_infiles, _mask_file, _outfile); }
 	if (_cmd.contains("mask"))  { make_mask(_cmd.toStdString(),_infiles, _mask_file, _outfile); }
+	if (_cmd.contains("pseudoCl"))  { calculate_pseudoCl(_infiles, _mask_file, _outfile, _cmd.toStdString()); }
+//	if (_cmd.contains("pseudoCl") and 
+//			_cmd.contains("mask") )  { calculate_pseudoCl_mask(_infiles,_cmd.toStdString(), _outfile); }
 	if (_cmd=="sub")  { subtract_files(_infiles);	}
 	if (_cmd=="mul")  { multiply_files(_infiles);	}
 	if (_cmd=="mulV")  { multiply_value(_infiles,_const_value);	}
@@ -491,27 +526,65 @@ void thresold_map(vector<string> _infiles,QString cmd) {
 
 }
 /* ******************************************************************************************** */
-void calculate_pseudoCl(vector<string> infiles, string maskFile, string outfile) {
+void calculate_pseudoCl(vector<string> infiles, string maskFile, string outfile, string cmd) {
 	mscsMap m1;
+	std::map<string,string> kv=parseKeyValue(cmd);
 
 	for (unsigned long i = 0; i < infiles.size(); i++) {
 		printf("loading %s\n",infiles[i].c_str());
 		m1.loadbinT(infiles[i]);
 		if (maskFile!="") {
+			std::cout << "Loading mask from file: " << maskFile << std::endl;
 			m1.loadbinm(maskFile);
 		}
 		
 		printf("SHanalysis\n");
 		long lmax=2*m1.nside();
+		if (kv.find("lmax")!=kv.end()) {
+			lmax=std::stol(kv["lmax"]);
+		}
 		mscsAlms Alm=m1.SH_analysis(lmax);
 		mscsAngularPowerSpectrum Cl=Alm.get_Cl(0,lmax);
 
+		if (kv.find("norm")!=kv.end()) {
+			if (kv["norm"]=="llp1o2pi") Cl.multiply_llpotwoPI();
+		}
+		
 		printf("saving to file: %s\n",outfile.c_str());
 		Cl.save(outfile);
 		
 		return;
 	}
 	
+}
+/* ******************************************************************************************** */
+//void calculate_pseudoCl_mask(vector<string> infiles, string mask, string outfile) {
+//	mscsMap m1;
+//
+//	for (unsigned long i = 0; i < infiles.size(); i++) {
+//		printf("loading %s\n",infiles[i].c_str());
+//		m1.loadbinT(infiles[i]);
+//		if (maskFile!="") {
+//			m1.loadbinm(maskFile);
+//		}
+//		
+//		printf("SHanalysis\n");
+//		long lmax=2*m1.nside();
+//		mscsAlms Alm=m1.SH_analysis(lmax);
+//		mscsAngularPowerSpectrum Cl=Alm.get_Cl(0,lmax);
+//
+//		printf("saving to file: %s\n",outfile.c_str());
+//		Cl.save(outfile);
+//		
+//		return;
+//	}
+//	
+//}
+/* ******************************************************************************************** */
+mscsMap make_mask(string maskcmd) {
+	mscsMap m;
+	
+	return m;
 }
 /* ******************************************************************************************** */
 void make_mask(string cmd, vector<string> _infiles, string maskFile, string outfile) {
@@ -529,7 +602,7 @@ void make_mask(string cmd, vector<string> _infiles, string maskFile, string outf
 		if (kv.find("below_b")!=kv.end()) {
 			m1.set_map_coord();
 			double b=std::stod(kv["below_b"])*PI180;
-			for (unsigned long i = 0; i < m1.pixNum(); i++) {
+			for (long i = 0; i < m1.pixNum(); i++) {
 				if (m1.get_C(i).b()<b) m1.set_T(i,0);
 			}
 		}
@@ -549,8 +622,6 @@ void mkNewMap(string cmd, string outfile) {
 		T=std::stod(kv["T"]);
 		std::cout << "will set map value to " << T << std::endl;
 	}
-	mscsMap m1(nside);
-	m1.makekill_space_manager("make","T");
-	m1.T()=T;
+	mscsMap m1=mkNewMap(kv);
 	m1.savebinT(outfile);
 }

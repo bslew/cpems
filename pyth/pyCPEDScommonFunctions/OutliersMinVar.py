@@ -161,7 +161,7 @@ class OutliersMinMAD(OutliersMinVar):
 
         cont=True
         outlierCount=0
-        print 'Size of data: ',len(dataCol)
+        print('Size of data: ',len(dataCol))
         if len(dataCol)==self.dataMinimalLength:
             cont=False
             

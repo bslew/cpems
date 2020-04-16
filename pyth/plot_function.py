@@ -2014,7 +2014,11 @@ def formatXaxisDates(figIdx):
     ax = gca()
     print((option.dateFmtPlot))
 #     yearsFmt = mdates.DateFormatter("%Y-%m-%d\n%H:%M:%S")
-    yearsFmt = mdates.DateFormatter(option.dateFmtPlot.decode("unicode_escape"))
+    if isinstance(option.dateFmtPlot, str):
+        yearsFmt = mdates.DateFormatter(option.dateFmtPlot)
+    else:
+        yearsFmt = mdates.DateFormatter(option.dateFmtPlot.decode("unicode_escape"))
+        
     ax.xaxis.set_major_formatter(yearsFmt)
     # format the ticks
     ax.xaxis.set_major_locator(days)
@@ -3781,7 +3785,11 @@ def makeFunctionPlot(inFile):
             if option.plotType[plotTypeIdx] == 'ts':
                 if len(option.label) > 0:
                     if option.label[i % len(option.label)] != "None":
-                        plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
+                        if isinstance(option.label[i % len(option.label)], str):
+                            plotLegendLabel = option.label[i % len(option.label)]
+                        else:
+                            plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
+                            
                     else:
                         plotLegendLabel = None
                 else:
@@ -4530,7 +4538,10 @@ def makeFunctionPlot(inFile):
                     print('title: ', option.title)
                     print('title: ', option.title[figIdx % len(option.title)])
                     if option.title[figIdx % len(option.title)] != "":
-                        tit = option.title[figIdx % len(option.title)].decode('utf8')
+                        if isinstance(option.title[figIdx % len(option.title)], str):
+                            tit = option.title[figIdx % len(option.title)]
+                        else:
+                            tit = option.title[figIdx % len(option.title)].decode('utf8')
                         title(tit, fontsize=option.fontSizeTitle, horizontalalignment=option.titleAlignH, verticalalignment=option.titleAlignV)
 
 #                if i % option.dsPerPlot == 0:

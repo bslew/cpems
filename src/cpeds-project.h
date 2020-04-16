@@ -123,7 +123,7 @@ class cpedsProject {
   /*!
     \brief projects the set of points onto a sphere
     \details 
-    @param n - direction of the tangent plane
+    @param n - direction of the tangent plane [deg]
 
     The plane is assumed to be tangent to the sphere in point towards direction n
     @return - returns a set of projected points
