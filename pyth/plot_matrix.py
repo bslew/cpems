@@ -3,17 +3,9 @@
 import sys
 from pylab import *
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.mlab
 import os
 import re
-from matplotlib.ticker import FuncFormatter
 
-import matplotlib.pyplot as plt
-import matplotlib.path as mpath
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
 
 #from matplotlib.collections import PatchCollection
 #import matplotlib.path as mpath
@@ -169,6 +161,7 @@ The circle center will be placed where you asked according to the specified axes
 coincides with these new coordinates orientation by using apropriate matrix transformations like --flip[XY] or --transpose options.
 Typically inverting vertical axes may be needed (--flipY) when ymin > ymax to force y-values increase upwards.''')
 parser.add_option("", "--joinPlots", action="store_true", dest="joinPlots", default=False, help="do not close figure (plot) after every plot. Plot data on the same plot (useful for eg image + contours on the same plot)")
+parser.add_option("", "--scriptMode", action="store_true", dest="scriptMode", default=False, help="flag to indicate that we are working in script mode for generating pictures and without GUI.")
 
 
 # movie options
@@ -180,6 +173,21 @@ parser.add_option("", "--fps", dest="fps", default=10, type="int", help='frames 
 cpedsPythCommon.saveHowWeWereCalled()
 
 (option, args) = parser.parse_args()
+
+if option.scriptMode:
+    import matplotlib
+    matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt
+import matplotlib.mlab
+from matplotlib.ticker import FuncFormatter
+import matplotlib.path as mpath
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
+from matplotlib.collections import PatchCollection
+
+
+
 if option.enumSlices and option.title=="":
     print("WARNING: title was not given, enumeration will take no effect.\nUse space for title if you want to enforce single number enumeration.")
 
