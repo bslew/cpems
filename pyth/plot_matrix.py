@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 #!/usr/bin/env python
 import sys
-from pylab import *
 import numpy as np
 import os
 import re
@@ -178,6 +177,7 @@ if option.scriptMode:
     import matplotlib
     matplotlib.use('Agg')
 
+from pylab import *
 import matplotlib.pyplot as plt
 import matplotlib.mlab
 from matplotlib.ticker import FuncFormatter
