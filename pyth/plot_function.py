@@ -4480,7 +4480,7 @@ def makeFunctionPlot(inFile):
                     formatXaxisDates(figIdx)
 
                 if option.plotType[plotTypeIdx] == 'ts':
-                    xmin, xmax, ymin, ymax = getDataMinMaxValues(ax, datax, datay, i)
+#                     xmin, xmax, ymin, ymax = getDataMinMaxValues(ax, datax, datay, i)
 #                     if option.xmin[figIdx % len(option.xmin)]!=-1:
 #                         xmin=option.xmin[figIdx % len(option.xmin)]
 #                     if option.xmax[figIdx % len(option.xmax)]!=-1:

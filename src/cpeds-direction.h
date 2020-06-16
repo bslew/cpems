@@ -249,6 +249,8 @@ class cpedsDirection {
     return cpedsDirection(cpeds_cart2sph(1,x3,y3,z3),PIsnd-cpeds_cart2sph(0,x3,y3,z3));
   }
   
+  const cpedsDirection& toRad();
+  const cpedsDirection& toDeg();
   cpedsDirection& subtract(const cpedsDirection& rhs);
   cpedsDirection& add(const cpedsDirection& rhs);
   

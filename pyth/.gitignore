@@ -1,1 +1,5 @@
 /build/
+/plot_function.py.bak
+/plot_likelihood.py.bak
+/plot_matrix.py.bak
+/.plot_likelihood.py.log

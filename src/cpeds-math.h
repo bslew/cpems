@@ -20,7 +20,6 @@
 #include <gsl/gsl_rng.h>
 #include <tuple>
 
-
 #include "cpeds-common.h"
 #include "cpeds-consts.h"
 //#include "cpeds-templates.h"
@@ -383,6 +382,29 @@ long cpeds_get_pix_num_above_ring_healpix(long nside, long ring);
 long cpeds_get_healpix_pix_num(long nside);
 
 
+/*!
+	\brief get list of nested pixel IDs in ns resolution that are contained in the coarser 
+	parent pixel with id=pixID in the coarse_ns resolution
+	\details 
+	@param ns - HP ns parameter
+	@param coarse_ns - parent pixel ns parameter (must be < ns)
+	@param pixID - pixel ID in nested map of coarse_ns resolution
+	@return returns a pair of long values: 
+	
+	offset and Npix 
+	
+	where:
+	
+	 offset is the pixel id in the ns resolution of the first pixel 
+	 	 that belong to the coarse pixel and 
+	 	 
+	 Npix is the number of pixels that belong 
+	 	 to the coarse pixel. The numbering of the pixels that belong to the coarse
+	 	 pixel is continuous.
+
+	\date Jun 4, 2020, 5:03:03 PM
+*/
+std::pair<long,long> cpeds_get_healpix_nested_pixels(long ns, long coarse_ns, long pixID);
 
 
 
@@ -971,6 +993,32 @@ double cpeds_TSZEgnu_factor(double freq, double T0);
 	\author Bartosz Lew
 */
 double cpeds_refraction(double ZDobs, double alt, double T, double P, double H, double lambda, double lat, double Tlapse, double acc);
+
+/*!
+	\brief calculate refraction for the ZDspace direction
+	\details 
+	@param ZDspace - true (in space) zenith distance [deg]
+	@param alt - altitude above sea level [m]
+	@param T - temperature [C]
+	@param P - pressure [mbar]
+	@param hum - relative humidity [%]
+	@param lambda - wavelength [cm] 
+	@param lat - latitude of the observer [deg]
+	@param Tlapse temperature lapse in the troposphere [K/m] (suggested value: 0.0065)
+	@param acc - accuracy to terminate the the iteration [rad] (suggested value 1e-8)
+			Value passed to cpeds_refraction.
+	@return returns the refracted (observed) zenith distance [deg]
+	
+	The accuracy of this routine is as follows:
+	for ZDobs=80 deg error is ~3.3e-05 deg
+	for ZDobs=85 deg error is ~0.00026 deg
+	for ZDobs=89 deg error is ~0.0012 deg
+	
+
+	\date Apr 29, 2020, 5:54:53 PM
+*/
+double cpeds_refraction_space(double ZDspace, double alt, double T, double P, double H, double lambda, double lat, double Tlapse, double acc);
+
 extern "C" {
 	extern void* slarefro_(double *zobs, double* alt,double* T, double* P, double* hum, double* lambda, double* lat, double* Tlapse, double* acc, double* ref);
 

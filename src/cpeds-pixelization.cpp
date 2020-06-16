@@ -736,7 +736,19 @@ double* cpeds_get_ring_colatitudes_healpix(long int nside, long* N) {
 //double * cpeds_mk_ThetaVals_vect(long nside,
 
 
-
+/* ******************************************************************************************** */
+std::pair<long,long> cpeds_get_healpix_nested_pixels(long ns, long coarse_ns, long pixID) {
+//	std::vector<long> ids(Npix);
+	long Ngrades=log2(ns/coarse_ns);
+	long Npix=pow(4,Ngrades);
+	long Nshifts=Ngrades*2;
+	
+	long pixIDoffset=pixID << Nshifts;
+//	for (long i=0;i<Npix;i++) {
+//		ids[i]=pixIDoffset+i;
+//	}
+	return std::pair<long,long>(pixIDoffset,Npix);
+}
 
 
 

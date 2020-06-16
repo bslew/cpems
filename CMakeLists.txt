@@ -80,31 +80,32 @@ add_custom_target(extdir
     )
     
 add_custom_target(Lib_velKB
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/velKB ${PROJECT_BINARY_DIR}/external_packages
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/velKB ${PROJECT_BINARY_DIR}/external_packages\; fi'
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/velKB && make
     COMMENT "Building velKB"
-    VERBATIM
+#    VERBATIM
     )
 
 add_custom_target(Lib_slaRefr 
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/sla-refr ${PROJECT_BINARY_DIR}/external_packages
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/sla-refr ${PROJECT_BINARY_DIR}/external_packages\; fi'
+#    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/sla-refr ${PROJECT_BINARY_DIR}/external_packages
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/sla-refr && make
     COMMENT "Building sla-refr"
-    VERBATIM
+#    VERBATIM
     )
 
 add_custom_target(Lib_novas
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/novas ${PROJECT_BINARY_DIR}/external_packages
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/novas ${PROJECT_BINARY_DIR}/external_packages\; fi'
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/novas && make
     COMMENT "Building novas"
-    VERBATIM
+#    VERBATIM
     )
 
 add_custom_target(Lib_ccSHT3
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/ccSHT3 ${PROJECT_BINARY_DIR}/external_packages
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/ccSHT3 ${PROJECT_BINARY_DIR}/external_packages\; fi'
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ccSHT3 && make
     COMMENT "Building ccSHT3"
-    VERBATIM
+#    VERBATIM
     )
 
 add_custom_target(external
@@ -776,6 +777,7 @@ add_executable(test-hdf-openMP tests/test-hdf-openMP.cpp)
 
 add_executable(test-SPinterpolation-2d tests/test-SPinterpolation-2d.cpp)
 
+add_executable(test-cpeds_refraction_space tests/unit-tests/test-cpeds_refraction_space.cpp)
 
 #-------------------------------------------
 # test programs
@@ -1100,7 +1102,9 @@ target_link_libraries(test-cpedsMCMC-parabola_2param LINK_PUBLIC ${LIBRARIES} bo
 target_link_libraries(test-SPinterpolation-2d ${LIBRARIES})
 target_link_libraries(test-cpedsMCMC-2Dcontours ${LIBRARIES} boost_program_options)
 target_link_libraries(test-cpedsMCMC-gaussXY-independent ${LIBRARIES} boost_program_options)
+target_link_libraries(test-cpeds_refraction_space ${LIBRARIES})
 
+add_subdirectory(tests)
 
 ################################################################
 ################################################################

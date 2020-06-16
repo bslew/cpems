@@ -22,7 +22,7 @@
 #include "cpedsMCMC.h"
 #include "MscsPDF2D.h"
 
-#define CONFIG_FILE "test-cpedsMCMC-2Dcontours.cfg"
+#define PARAMETER_FILE "test-cpedsMCMC-2Dcontours.cfg"
 
 
 spdlog::logger getLogger();
@@ -96,7 +96,7 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 //		    ("version,V", po::bool_switch()->default_value(false), "print program version and exit")
 		    ("switch,s", po::bool_switch()->default_value(false), "switch option")
             ("help", "produce help message")
-            ("config,c", po::value<string>(&config_file)->default_value(CONFIG_FILE),
+            ("config,c", po::value<string>(&config_file)->default_value(PARAMETER_FILE),
                   "name of a file of a configuration.")
             ;
     

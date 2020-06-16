@@ -829,9 +829,50 @@ double cpeds_refraction(double ZDobs, double alt, double T, double P, double H, 
 	lambda*=1e4; // convert to um
 	lat*=PI180; // convert to rad
 	slarefro_(&ZDobs, &alt,&T,&P,&H,&lambda,&lat,&Tlapse, &acc,&ref);	
-	ref=(ZDobs+ref)*PI180inv;
-	return ref;
+	double ZDspace=(ZDobs+ref)*PI180inv;
+	return ZDspace;
 }
+/* ******************************************************************************************** */
+double cpeds_refraction_space(double ZDspace, double alt, double T, double P, double H, double lambda, double lat, double Tlapse, double acc) {
+	double ref;
+	T+=273.15; // convert to K
+	ZDspace*=PI180; // convert to rad
+	H/=100.0; // convert to range 0-1
+	lambda*=1e4; // convert to um
+	lat*=PI180; // convert to rad
+	
+	double ZDobs1=ZDspace-0.5*PI180;
+	double ZDobs2=ZDspace;
+	double ZDobs;
+//	double err;
+//	do {
+		double ref1,ref2;
+		slarefro_(&ZDobs1, &alt,&T,&P,&H,&lambda,&lat,&Tlapse, &acc,&ref1);	
+		slarefro_(&ZDobs2, &alt,&T,&P,&H,&lambda,&lat,&Tlapse, &acc,&ref2);	
+		
+		double ZDspace1=ZDobs1+ref1;
+		double ZDspace2=ZDobs2+ref2;
+		
+		// linear interpolation on the inverse function
+		ZDobs=cpeds_extrapolate_linear(ZDspace,ZDspace1,ZDobs1,ZDspace2,ZDobs2)*PI180inv;
+		
+		// calculate error
+//		double ZDspace=cpeds_refraction(ZDobs,alt,T,P,H,lambda,lat,Tlapse,acc);
+//		err=ZDspace-ZDobs;
+
+//		std::cout << "err: " << err << std::endl;
+
+//		ZDobs1=ZDspace-err;
+//		ZDobs2=ZDspace;
+		
+
+		
+//	} while (err*PI180>acc);
+	
+	return ZDobs;	
+}
+
+
 
 double ctgKB(double x) {
 	return 2.908882e-4/tan(x+2.227e-3/(x+0.07679));
@@ -3882,18 +3923,26 @@ const matrix<double> cpeds_matrix_load(string fileName, string how, long * resul
 	if (header) {    fscanf(f,"%li %li",&row,&col); }
 	else {
 		if (binary) {
+#ifdef DEBUG_CPEDS_MATH
 			printf("* binary read requested with no header information\n");
+#endif
 			struct stat64 s; stat64(fileName.c_str(),&s);
 			col=1;
 			if (fourbyte) {
+#ifdef DEBUG_CPEDS_MATH
 				printf("* requested 4-byte float type read\n");
+#endif
 				row=(long)s.st_size/(long)sizeof(float);
 			}
 			else {
+#ifdef DEBUG_CPEDS_MATH
 				printf("* assuming 8-byte float type read\n");
+#endif
 				row=(long)s.st_size/(long)sizeof(double);
 			}
+#ifdef DEBUG_CPEDS_MATH
 			printf("* assuming the matrix of size: rows %li cols %li\n",row,col);
+#endif
 		}
 		else {
 			col=0;
@@ -3905,11 +3954,15 @@ const matrix<double> cpeds_matrix_load(string fileName, string how, long * resul
 					row=(*finfo).get_size();    	  
 				}
 			}
+#ifdef DEBUG_CPEDS_MATH
 			printf("* assuming the matrix of size: rows %li cols %li\n",row,col);
+#endif
 		}
 		
 	}
+#ifdef DEBUG_CPEDS_MATH
 	printf("  -- reading matrix of size: %li rows, %li cols from file %s\n",row,col,fileName.c_str()); //exit(0);
+#endif
 	matrix<double> M; 
 	
 	if (col==0 or row==0) { if (result!=NULL) *result=-1; return M; }
