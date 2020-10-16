@@ -130,7 +130,14 @@ void cpeds_check_bl(double *l, double *b);
 
 //! checks the b coordinate for the correct value and returns the value from within range <-PIsnd...PIsnd>
 double cpeds_check_b(double b);
-//! Same as above but only for the phi coordinate
+/*!
+	\brief checks the phi coordinate for the correct value and returns the value from within range <0...2\pi>
+	\details 
+	@param pointer to allocated variable; the variable is modified inside the function
+	@return copy of the modified variable.
+
+	\date Jun 18, 2020, 2:35:26 PM
+*/
 double cpeds_check_phi(double *phi);
 double cpeds_check_phi(double phi);
 

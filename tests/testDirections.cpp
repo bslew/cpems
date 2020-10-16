@@ -11,6 +11,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <iostream>
 #include <tclap/CmdLine.h>
 #include <QtCore/QStringList>
 #include <QtCore/QString>
@@ -243,6 +244,7 @@ void calculateMoon(cpedsMsgs& msgs) {
 	moonNow.print_direction("radec (topocentric)");
 	moonNow.toJD(CPEDS_JD2000);
 	moonNow.print_direction("radec (topocentric)");
+	moonNow.toJD(JDutc);
 	DirectionAh moonNowAh=moonNow.toAh(obs,JDutc,0,0,0,_P,_T,false);
 	moonNowAh.check().print_direction("Ah (topocentric, no refraction, UT1=UTC, no polar motion)");
 	moonNowAh=moonNow.toAh(obs,JDutc,0,0,0,_P,_T,true);
@@ -332,6 +334,17 @@ void calculatePlanet(string planetName, cpedsMsgs& msgs) {
 	msgs.say("the planet %s is currently at:", planetName,High);
 	if (_JD==0) _JD=cpeds_julian_time();
 	double JDutc=_JD+_da;
+	long yyyy,mm,dd,HH,MM;
+	double SS;
+	cpeds_JDToYMDhms(JDutc,&yyyy,&mm,&dd,&HH,&MM,&SS);
+	std::cout << "JDutc: " << JDutc 
+			<< ", " << yyyy << "-";
+	std::cout.width(2);
+	std::cout.fill('0');
+	std::cout << mm << "-" << dd << " " << HH << ":" << MM << ":";
+	std::cout.setf(ios::showpoint);
+	std::cout << SS << " UTC\n";
+	
 	DirectionRaDec nowAt;
 	nowAt=planet.nowAtRaDec(JDutc, JDutc,true);
 	nowAt.check().print_direction("radec (geocentric)");
@@ -339,6 +352,7 @@ void calculatePlanet(string planetName, cpedsMsgs& msgs) {
 	nowAt.print_direction("radec (topocentric)");
 	nowAt.toJD(CPEDS_JD2000);
 	nowAt.print_direction("radec (topocentric)");
+	nowAt.toJD(JDutc);
 	DirectionAh nowAtAh=nowAt.toAh(obs,JDutc,0,0,0,_P,_T,false);
 	nowAtAh.check().print_direction("Ah (topocentric, no refraction, UT1=UTC, no polar motion)");
 	nowAtAh=nowAt.toAh(obs,JDutc,0,0,0,_P,_T,true);

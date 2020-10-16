@@ -95,6 +95,7 @@ DirectionRaDec cpedsMoonDirection::nowAtRaDec(double JD, double epochJD, double 
 	if (error!=0) { 
 		printf("cannot load the file: %s\n",_COproperties.ephemeridesFile.c_str());
 		printf("the ephem_open error ws: %i\n",error);
+		printf("make sure to set CPEDS_DIR environment variable to point to the source directory of the CPEMS package\n");
 		exit(-1);
 	}
 #ifdef DEBUG

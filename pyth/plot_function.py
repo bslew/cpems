@@ -3555,7 +3555,10 @@ def makeFunctionPlot(inFile):
 
     #                global scatterGlobalData
     #                scatterGlobalData=map
-                    scatter(x, y, c=map, s=sizeData, cmap=palette, norm=matplotlib.colors.normalize(vmin=levels[0], vmax=levels[-1], clip=True), lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)] , marker=option.pt[i % len(option.pt)], label=plotLegendLabel)
+#                     scatter(x, y, c=map, s=sizeData, cmap=palette, norm=matplotlib.colors.normalize(vmin=levels[0], vmax=levels[-1], clip=True), lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)] , marker=option.pt[i % len(option.pt)], label=plotLegendLabel)
+                    scatter(x, y, c=map, s=sizeData, cmap=palette, 
+                            vmin=levels[0], vmax=levels[-1], 
+                            lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)] , marker=option.pt[i % len(option.pt)], label=plotLegendLabel)
     #                scatter(x,y, c=map, s=40, lw=option.markerEdgeWidth , marker=option.pt[i % len(option.pt)])
     
                 if option.plotLabelsFromFile != "":
@@ -5406,7 +5409,9 @@ while 1:
                     if option.plotType[plotTypeIdx] == 'map':
                         cmd = ''
                         if args[i][-7:] == '-Tn-bin':
-                            cmd = 'draw_maps %s -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                            cmd = 'draw_maps %s -o lonlat --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                            if option.reverseLon:
+                                cmd+=' --reverse_l '
                             cpedsPythCommon.sayAndExecute("Exporting data from binary file", cmd, 1)
                         if args[i][-5:] == '.fits':
                             if option.fileFormat[i % len (option.fileFormat)] == 'fitsWMAP':
