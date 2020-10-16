@@ -1113,7 +1113,7 @@ class mscsMap : public mscsObject {
 		  setLoadedMaskFileName(rhs.getLoadedMaskFileName());
 		  setLoadedMapFileName(rhs.getLoadedMapFileName());
 
-		  this->mscsObject::operator=(rhs); 
+//		  this->mscsObject::operator=(rhs); 
 	  }
 	  return *this; 
   }
