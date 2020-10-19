@@ -156,7 +156,6 @@ void mscsMap::set_object_initial_variables() {
 	
 	//************************************************************************
 	// program directories stuff
-#pragma omp critical
 	Mscs_initiate_global_variables();
 	/* strcpy(data_path,PROGRAM_DIRS[7]); // hope this works */
 	

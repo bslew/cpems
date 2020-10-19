@@ -163,10 +163,11 @@ double mscsMap::get_T(double l, double b) const { // returns the temperature fro
 // depending on the max parameter; it is assumed that the statistics of the map are
 // up to date; the returned coordinates are in radians
 cpedsDirection mscsMap::get_TminmaxCoord(bool max) {
+	printf("not implemented\n"); exit(0);
 	cpedsDirection n;
 	double th,phi;
 	bool wasRing=false;
-	long i;
+	long i=0;
 	
 	if (mapInfo.ordering == ring) { conv_ring2nest(); wasRing=true; }
 	else { wasRing=false; }
@@ -986,6 +987,7 @@ long mscsMap::loadPLANCK_temp_fits(const string& fileName, string hduName) {
 	}
 	loaded.T=true;
 
+	return 0;
 }
 
 void mscsMap::list_fits_map_header(string fileName) {

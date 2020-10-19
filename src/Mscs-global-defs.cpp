@@ -58,10 +58,10 @@ string MSCS_WMAP_LOCAL_DIR;// = "/home/blew/programy/Mscs/WMAPstuff/";
 string MSCS_DATA_DIR;// =  "/home/blew/programy/Mscs/data/";
 
 
- /* string DAnames_nums[10];// = {"q1","q2","v1","v2","w1","w2","w3","w4"}; */
+/* string DAnames_nums[10];// = {"q1","q2","v1","v2","w1","w2","w3","w4"}; */
 
- /* string DAnames[10];// = {"k","k","q","q","v","v","w","w","w","w"}; */
- /* long DAnums[10];// = {1,2,1,2,1,2,1,2,3,4}; */
+/* string DAnames[10];// = {"k","k","q","q","v","v","w","w","w","w"}; */
+/* long DAnums[10];// = {1,2,1,2,1,2,1,2,3,4}; */
 
 // definitions of extern files to be used in programs
 
@@ -83,30 +83,34 @@ string GLOBAL_Plmsfile_inverse;
 
 
 void Mscs_initiate_global_variables() {
-
-  Mscs_version =  (string)_Mscs_version_;
-  Mscs_initiate_directories();
-  /* Mscs_initiate_WMAP_DAs(); */
-
-  GLOBAL_fourier_method_num=8;
-  GLOBAL_fourier_forward_method_num=8;
-  GLOBAL_fourier_backward_method_num=8;
-
-  strcpy(MSCS_GLOBAL__RUN_SIMULATION_SHM_KEY,"/MSCS_RUN_SIMULATION_SHM_KEY");
+	
+#pragma omp critical
+	{
+		Mscs_version =  (string)_Mscs_version_;
+		Mscs_initiate_directories();
+		/* Mscs_initiate_WMAP_DAs(); */
+		
+		GLOBAL_fourier_method_num=8;
+		GLOBAL_fourier_forward_method_num=8;
+		GLOBAL_fourier_backward_method_num=8;
+		
+		strcpy(MSCS_GLOBAL__RUN_SIMULATION_SHM_KEY,"/MSCS_RUN_SIMULATION_SHM_KEY");
+	}
 }
 
 void Mscs_initiate_global_variables(long _nside, long _lmax) {
-  Mscs_version =  (string)_Mscs_version_;
-  Mscs_initiate_directories();
-  /* Mscs_initiate_WMAP_DAs(); */
-
-  GLOBAL_fourier_method_num=7;  GLOBAL_fourier_forward_method_num=7;  GLOBAL_fourier_backward_method_num=7;
-  /* Mscs_initiate_fourier_variables(_nside,_lmax); */
-
-  //initiation of some other variables (eg. files for fourier transforms )
-  /* string __tmp__; */
-  /* make_detailed_file_name(&__tmp__,"",_nside,_lmax,"","",0,"",0,"","",GLOBAL_fourier_method_num); */
-
+	throw "this part of the code is depreciated and should not be used";
+	Mscs_version =  string(_Mscs_version_);
+	Mscs_initiate_directories();
+	/* Mscs_initiate_WMAP_DAs(); */
+	
+	GLOBAL_fourier_method_num=7;  GLOBAL_fourier_forward_method_num=7;  GLOBAL_fourier_backward_method_num=7;
+	/* Mscs_initiate_fourier_variables(_nside,_lmax); */
+	
+	//initiation of some other variables (eg. files for fourier transforms )
+	/* string __tmp__; */
+	/* make_detailed_file_name(&__tmp__,"",_nside,_lmax,"","",0,"",0,"","",GLOBAL_fourier_method_num); */
+	
 }
 
 
@@ -148,98 +152,42 @@ void Mscs_print_global_variables() {
 	printf("MSCS_GLOBAL__RING_COORDINATES_SUFF:   %s\n",MSCS_GLOBAL__RING_COORDINATES_SUFF.c_str());
 	printf("\n\n");
 	/* printf(":   %s\n",.c_str()); */
-
+	
 }
 
 
 void  Mscs_initiate_directories() {
-
-//	MSCS_GLOBAL__ENV_PROC_NUM="MSCS_GLOBAL__ENV_PROC_NUM";
-//	MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_PREF="MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_PREF";
-//	MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_SUFF="MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_SUFF";
-
-
-  MSCS_GLOBAL__HEALPIX_PIXTF_PREF="wl-";
-  MSCS_GLOBAL__N2R_CONV_TAB_PREF="n2r-convtab-";
-  MSCS_GLOBAL__R2N_CONV_TAB_PREF="r2n-convtab-";
-  MSCS_GLOBAL__N2R_CONV_TAB_SUFF_TXT="";
-  MSCS_GLOBAL__R2N_CONV_TAB_SUFF_TXT="";
-  MSCS_GLOBAL__R2N_CONV_TAB_SUFF_BIN=".bin";
-  MSCS_GLOBAL__N2R_CONV_TAB_SUFF_BIN=".bin";
-
-  MSCS_GLOBAL__NESTED_COORDINATES_PREF="";
-  MSCS_GLOBAL__NESTED_COORDINATES_SUFF="-Cng-bin";
-  MSCS_GLOBAL__RING_COORDINATES_PREF="";
-  MSCS_GLOBAL__RING_COORDINATES_SUFF="-Crg-bin";
-
-  char* cstr;
-  cstr=getenv("HOME");
-  if (cstr!=NULL)  HOME_DIR=cstr; else HOME_DIR=".";   HOME_DIR+="/";
-//  printf("********************** %s\n",cstr);
-  cstr=getenv("MSCS_PROGRAM_DIR");
-//  printf("********************** %s\n",cstr);
-  MSCS_PROGRAM_DIR=HOME_DIR+".cpems/"; 
-  MSCS_WMAP_DATA_DIR=HOME_DIR+"cosmo-data/wmap/";
-  /* strcpy(tmpWMAPdata_dir,"programy/Mscs/"); */
-  /* strcpy(program_dir,"/home/blew/programy/Mscs/"); */
-  MSCS_WMAP_LOCAL_DIR=MSCS_PROGRAM_DIR+"WMAPstuff/";
-  /* strcpy(WMAPcalc_dir_alms,"/home/blew/programy/Mscs/WMAPstuff/alms/"); */
-  /* strcpy(WMAPcalc_dir_maps,"/home/blew/programy/Mscs/WMAPstuff/maps/"); */
-  /* strcpy(WMAPcalc_dir_mink,"/home/blew/programy/Mscs/WMAPstuff/mink/"); */
-  /* strcpy(WMAPcalc_dir1,"/home/blew/programy/Mscs/WMAPstuff/cut-sky-test/"); */
-  MSCS_DATA_DIR=MSCS_PROGRAM_DIR+"data/";
-
-  /* strcpy(WMAPsim_dir,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/"); */
-  /* strcpy(WMAPsim_dirINC,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/INC/"); */
-  /* strcpy(WMAPsim_dirILC,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/ILC/"); */
-  /* strcpy(WMAPsim_dirINCmink,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/INC/mink/"); */
-  /* strcpy(WMAPsim_dirK1,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-k1/"); */
-  /* strcpy(WMAPsim_dirK2,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-k2/"); */
-  /* strcpy(WMAPsim_dirQ1,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-q1/"); */
-  /* strcpy(WMAPsim_dirQ2,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-q2/"); */
-  /* strcpy(WMAPsim_dirV1,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-v1/"); */
-  /* strcpy(WMAPsim_dirV2,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-v2/"); */
-  /* strcpy(WMAPsim_dirW1,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-w1/"); */
-  /* strcpy(WMAPsim_dirW2,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-w2/"); */
-  /* strcpy(WMAPsim_dirW3,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-w3/"); */
-  /* strcpy(WMAPsim_dirW4,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/DA-w4/"); */
-  /* strcpy(WMAPsim_dirINC_K,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/INC_k/"); */
-  /* strcpy(WMAPsim_dirINC_Q,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/INC_q/"); */
-  /* strcpy(WMAPsim_dirINC_V,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/INC_v/"); */
-  /* strcpy(WMAPsim_dirINC_W,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/INC_w/"); */
-  /* strcpy(WMAPsim_dirINCmaps,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/INC/maps/"); */
-  /* strcpy(WMAPsim_diralms,"/home/blew/nao3/minstat/version_3-bigger-dipoles/gaussian_simulations/wmap5/alms/"); */
-
-  /* strcpy(PROGRAM_DIRS[0], WMAPdata_dir); */
-  /* strcpy(PROGRAM_DIRS[1], tmpWMAPdata_dir); */
-  /* strcpy(PROGRAM_DIRS[2], program_dir); */
-  /* strcpy(PROGRAM_DIRS[3], WMAPcalc_dir); */
-  /* strcpy(PROGRAM_DIRS[4], WMAPcalc_dir_alms); */
-  /* strcpy(PROGRAM_DIRS[5], WMAPcalc_dir_maps); */
-  /* strcpy(PROGRAM_DIRS[6], WMAPcalc_dir1); */
-  /* strcpy(PROGRAM_DIRS[7], data_dir); */
-  /* strcpy(PROGRAM_DIRS[8], WMAPsim_dir); */
-  /* strcpy(PROGRAM_DIRS[9], WMAPsim_dirINC); */
-  /* strcpy(PROGRAM_DIRS[10],WMAPsim_dirQ1); */
-  /* strcpy(PROGRAM_DIRS[11],WMAPsim_dirQ2); */
-  /* strcpy(PROGRAM_DIRS[12],WMAPsim_dirV1); */
-  /* strcpy(PROGRAM_DIRS[13],WMAPsim_dirV2); */
-  /* strcpy(PROGRAM_DIRS[14],WMAPsim_dirW1); */
-  /* strcpy(PROGRAM_DIRS[15],WMAPsim_dirW2); */
-  /* strcpy(PROGRAM_DIRS[16],WMAPsim_dirW3); */
-  /* strcpy(PROGRAM_DIRS[17],WMAPsim_dirW4); */
-  /* strcpy(PROGRAM_DIRS[18], WMAPsim_dirINCmink); */
-  /* strcpy(PROGRAM_DIRS[19], WMAPcalc_dir_mink); */
-  /* strcpy(PROGRAM_DIRS[20], WMAPsim_dirINCmaps); */
-  /* strcpy(PROGRAM_DIRS[21], WMAPsim_diralms); */
-  /* strcpy(PROGRAM_DIRS[22], WMAPsim_dirINC_Q); */
-  /* strcpy(PROGRAM_DIRS[23], WMAPsim_dirINC_V); */
-  /* strcpy(PROGRAM_DIRS[24], WMAPsim_dirINC_W); */
-  /* strcpy(PROGRAM_DIRS[25], WMAPsim_dirINC_K); */
-  /* strcpy(PROGRAM_DIRS[26],WMAPsim_dirK1); */
-  /* strcpy(PROGRAM_DIRS[27],WMAPsim_dirK2); */
-  /* strcpy(PROGRAM_DIRS[28],WMAPsim_dirILC); */
-
+	
+	//	MSCS_GLOBAL__ENV_PROC_NUM="MSCS_GLOBAL__ENV_PROC_NUM";
+	//	MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_PREF="MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_PREF";
+	//	MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_SUFF="MSCS_GLOBAL__ENV_SIMULATION_RUN_FILE_SUFF";
+	
+	
+	MSCS_GLOBAL__HEALPIX_PIXTF_PREF="wl-";
+	MSCS_GLOBAL__N2R_CONV_TAB_PREF="n2r-convtab-";
+	MSCS_GLOBAL__R2N_CONV_TAB_PREF="r2n-convtab-";
+	MSCS_GLOBAL__N2R_CONV_TAB_SUFF_TXT="";
+	MSCS_GLOBAL__R2N_CONV_TAB_SUFF_TXT="";
+	MSCS_GLOBAL__R2N_CONV_TAB_SUFF_BIN=".bin";
+	MSCS_GLOBAL__N2R_CONV_TAB_SUFF_BIN=".bin";
+	
+	MSCS_GLOBAL__NESTED_COORDINATES_PREF="";
+	MSCS_GLOBAL__NESTED_COORDINATES_SUFF="-Cng-bin";
+	MSCS_GLOBAL__RING_COORDINATES_PREF="";
+	MSCS_GLOBAL__RING_COORDINATES_SUFF="-Crg-bin";
+	
+	char* cstr;
+	cstr=getenv("HOME");
+	if (cstr!=NULL)  HOME_DIR=cstr; 
+	else HOME_DIR=".";   
+	HOME_DIR+="/";
+//	cstr=getenv("MSCS_PROGRAM_DIR");
+	MSCS_PROGRAM_DIR=HOME_DIR+".cpems/"; 
+	MSCS_WMAP_DATA_DIR=HOME_DIR+"cosmo-data/wmap/";
+	MSCS_WMAP_LOCAL_DIR=MSCS_PROGRAM_DIR+"WMAPstuff/";
+	
+	MSCS_DATA_DIR=MSCS_PROGRAM_DIR+"data/";
+	
 }
 
 /* void Mscs_initiate_WMAP_DAs() { */
@@ -351,12 +299,12 @@ void  Mscs_initiate_directories() {
 //--------------------
 
 void Mscs_matrix_print(matrix<double> *M) {
-  unsigned long i,j;
-
-  for (i=0;i<(*M).RowNo();i++) {
-    for (j=0;j<(*M).ColNo();j++)  printf("%lE ",(*M)(i,j));
-    printf("\n");
-  }
+	unsigned long i,j;
+	
+	for (i=0;i<(*M).RowNo();i++) {
+		for (j=0;j<(*M).ColNo();j++)  printf("%lE ",(*M)(i,j));
+		printf("\n");
+	}
 }
 
 /* void Mscs_matrix_save(matrix <double> *M, strarg where) { */
@@ -484,51 +432,51 @@ void Mscs_matrix_print(matrix<double> *M) {
 // binned matrix pointer is returned.
 // work_mode defines the amount of printouts during execution: 0 - no proints 1 - print
 matrix<double>* Mscs_matrix_bin(matrix <double> *M, long dx, long dy, long work_mode) {
-  matrix <double>* Mb = new matrix<double>;
-  long Mx,My,Mbx, Mby;
-  long i,j,k,l,p,q,w,lmax,kmax;
-
-
-
-  // find out the size of the new matrix
-  Mx = M->ColNo(); My = M->RowNo();
-  if (Mx % dx == 0) Mbx = Mx/dx; else Mbx = Mx/dx + 1;
-  if (My % dy == 0) Mby = My/dy; else Mby = My/dy + 1;
-  Mb->SetSize(Mby,Mbx);
-  if (work_mode==1) printf(" new matrix X,Y size is: %li %li\n",Mbx,Mby);
-
-  q=0; j=0;
-  while (j<My) {
-    //for (j=0;j<My;j++) {
-    p=0; i=0;
-    while (i<Mx) {
-      //for (i=0;i<Mx;i++) {
-/*       if (j!=0 &&Mbx!=24) { printf("p: %li q: %li\n",p,q); exit(0); } */
-      (*Mb)(q,p)=0; w=0;
-
-      if (j+dy > My) lmax = My-j; else lmax = dy;
-      for (l=0;l<lmax;l++) {
-	if (i+dx > Mx) kmax = Mx-i; else kmax = dx;
-	for (k=0;k<kmax;k++) {
-	  w++;
-	  (*Mb)(q,p)+=(*M)(j+l,i+k);
-	  //if (j>=800) printf("p %li q %li, i %li j %li, k %li l %li\n",p,q,i,j,k,l);
-
+	matrix <double>* Mb = new matrix<double>;
+	long Mx,My,Mbx, Mby;
+	long i,j,k,l,p,q,w,lmax,kmax;
+	
+	
+	
+	// find out the size of the new matrix
+	Mx = M->ColNo(); My = M->RowNo();
+	if (Mx % dx == 0) Mbx = Mx/dx; else Mbx = Mx/dx + 1;
+	if (My % dy == 0) Mby = My/dy; else Mby = My/dy + 1;
+	Mb->SetSize(Mby,Mbx);
+	if (work_mode==1) printf(" new matrix X,Y size is: %li %li\n",Mbx,Mby);
+	
+	q=0; j=0;
+	while (j<My) {
+		//for (j=0;j<My;j++) {
+		p=0; i=0;
+		while (i<Mx) {
+			//for (i=0;i<Mx;i++) {
+			/*       if (j!=0 &&Mbx!=24) { printf("p: %li q: %li\n",p,q); exit(0); } */
+			(*Mb)(q,p)=0; w=0;
+			
+			if (j+dy > My) lmax = My-j; else lmax = dy;
+			for (l=0;l<lmax;l++) {
+				if (i+dx > Mx) kmax = Mx-i; else kmax = dx;
+				for (k=0;k<kmax;k++) {
+					w++;
+					(*Mb)(q,p)+=(*M)(j+l,i+k);
+					//if (j>=800) printf("p %li q %li, i %li j %li, k %li l %li\n",p,q,i,j,k,l);
+					
+				}
+			}
+			i+=kmax;
+			//printf("shit1\n");
+			(*Mb)(q,p)/=(double)w;
+			p++;
+			
+		}
+		/*     printf("---- j:%li\n",j); */
+		j+=lmax;
+		q++;
 	}
-      }
-      i+=kmax;
-      //printf("shit1\n");
-      (*Mb)(q,p)/=(double)w;
-      p++;
-
-    }
-/*     printf("---- j:%li\n",j); */
-    j+=lmax;
-    q++;
-  }
-/*  if (Mbx!=24) exit(0); */
-  //      printf("shit2\n");
-  return Mb;
+	/*  if (Mbx!=24) exit(0); */
+	//      printf("shit2\n");
+	return Mb;
 }
 
 /* bool Mscs_get_mask_filename(string in_file, string in_dir,) { */
@@ -536,26 +484,26 @@ matrix<double>* Mscs_matrix_bin(matrix <double> *M, long dx, long dy, long work_
 
 
 bool Mscs_contains_str(string s, const char* c, long nc) {
-  if (s.find(c,0,nc) == string::npos) return false;
-  else return true;
+	if (s.find(c,0,nc) == string::npos) return false;
+	else return true;
 }
 
 string Mscs_basename_noext(string file,string ext) {
-  string base;
-  size_t pos;
-
-  // get the basename
-  pos = file.rfind("/",string::npos);
-  if (pos != string::npos) { file.erase(0,pos+1); }
-
-  // remove the requested extension
-  if (ext != "") {
-    if (file.find(ext,file.size()-ext.size()) != string::npos) { file.erase(file.size()-ext.size(),ext.size()); }
-  }
-  // remove standard extension
-  ext="-Tn-bin";
-  if (file.find(ext,file.size()-ext.size()) != string::npos) { file.erase(file.size()-ext.size(),ext.size()); }
-  return file;
+	string base;
+	size_t pos;
+	
+	// get the basename
+	pos = file.rfind("/",string::npos);
+	if (pos != string::npos) { file.erase(0,pos+1); }
+	
+	// remove the requested extension
+	if (ext != "") {
+		if (file.find(ext,file.size()-ext.size()) != string::npos) { file.erase(file.size()-ext.size(),ext.size()); }
+	}
+	// remove standard extension
+	ext="-Tn-bin";
+	if (file.find(ext,file.size()-ext.size()) != string::npos) { file.erase(file.size()-ext.size(),ext.size()); }
+	return file;
 }
 
 string Mscs_basename(string name) {
@@ -571,7 +519,7 @@ string Mscs_basename(string name) {
 			base+=".";
 	}
 	return base.toStdString();
-
+	
 }
 
 string Mscs_getExtension(string name) {
@@ -592,14 +540,14 @@ vector<string> Mscs_stringToList(string str, string sep) {
 		v.push_back(qsl[i].toStdString());
 	}
 	return v;
-
+	
 }
 
 vector<double> Mscs_stringToDoubleList(string str, string sep) {
 	vector<string> sl=Mscs_stringToList(str,sep);
 	vector<double> dl;
 	QString sv;
-
+	
 	for (unsigned long i = 0; i < sl.size(); i++) {
 		sv=sl[i].c_str();
 		dl.push_back(sv.toDouble());
@@ -610,7 +558,7 @@ vector<long> Mscs_stringToLongList(string str, string sep) {
 	vector<string> sl=Mscs_stringToList(str,sep);
 	vector<long> dl;
 	QString sv;
-
+	
 	for (unsigned long i = 0; i < sl.size(); i++) {
 		sv=sl[i].c_str();
 		dl.push_back(sv.toLong());
