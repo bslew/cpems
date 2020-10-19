@@ -324,7 +324,7 @@ int mscsMap::load_conv_tabs(long ns, string type) {
 	// load new tabs
 	// reading for nested2ring conversion
 	if (type == "n2r") {
-#pragma omp critical MSCS_GLOBAL_DIRS
+#pragma omp critical ( MSCS_GLOBAL_DIRS )
 		{
 		fileName = MSCS_DATA_DIR + MSCS_GLOBAL__N2R_CONV_TAB_PREF
 				+ msgs->toStr(ns) + MSCS_GLOBAL__N2R_CONV_TAB_SUFF_BIN;
@@ -352,7 +352,7 @@ int mscsMap::load_conv_tabs(long ns, string type) {
 	
 	// reading for ring2nested conversion
 	if (type == "r2n") {
-#pragma omp critical MSCS_GLOBAL_DIRS
+#pragma omp critical ( MSCS_GLOBAL_DIRS )
 		{
 		fileName = MSCS_DATA_DIR + MSCS_GLOBAL__R2N_CONV_TAB_PREF
 				+ msgs->toStr(ns) + MSCS_GLOBAL__R2N_CONV_TAB_SUFF_BIN;
@@ -3081,12 +3081,12 @@ void mscsMap::set_map_coord(double db, double dl) {
 	/* if (pix_system == 1) { */
 	
 	if (isNested()) {
-#pragma omp critical MSCS_GLOBAL_DIRS
+#pragma omp critical ( MSCS_GLOBAL_DIRS )
 		coord_file = MSCS_DATA_DIR + MSCS_GLOBAL__NESTED_COORDINATES_PREF
 				+ msgs->toStr(nside()) + MSCS_GLOBAL__NESTED_COORDINATES_SUFF;
 	}
 	if (isRing()) {
-#pragma omp critical MSCS_GLOBAL_DIRS
+#pragma omp critical ( MSCS_GLOBAL_DIRS )
 		coord_file = MSCS_DATA_DIR + MSCS_GLOBAL__RING_COORDINATES_PREF
 				+ msgs->toStr(nside()) + MSCS_GLOBAL__RING_COORDINATES_SUFF;
 	}
