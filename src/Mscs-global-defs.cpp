@@ -84,7 +84,7 @@ string GLOBAL_Plmsfile_inverse;
 
 void Mscs_initiate_global_variables() {
 	
-#pragma omp critical MSCS_GLOBAL_DIRS
+#pragma omp critical ( MSCS_GLOBAL_DIRS )
 	{
 		Mscs_version =  (string)_Mscs_version_;
 		Mscs_initiate_directories();
