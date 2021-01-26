@@ -33,6 +33,9 @@
 #ifndef _NO_NAMESPACE
 using namespace std;
 using namespace math;
+using namespace cpems; 
+
+// for inside header file implementations
 //using namespace MATPACK; // BLcomment (Apr 14, 2011, 6:35:43 PM): see above comment
 /* using namespace LiDIA; */
 #define STD std

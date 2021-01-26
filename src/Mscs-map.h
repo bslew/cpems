@@ -50,6 +50,7 @@ typedef struct {
 /* **************************************************************************************************** */
 
 using namespace std; // for inside header file implementations
+using namespace cpems; // for inside header file implementations
 
 /* **************************************************************************************************** */
 /* CLASS DECLARATION */

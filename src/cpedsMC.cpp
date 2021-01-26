@@ -8,6 +8,9 @@
 #include "cpeds-templates.h"
 #include <iostream>
 #include <fstream>
+
+using namespace cpems;
+
 cpedsMC::cpedsMC() {
 	// TODO Auto-generated constructor stub
 	

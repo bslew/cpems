@@ -418,7 +418,7 @@ def cal2jd(date_time_str, offset=0.0, DT_FMT='iso'):
 #         for x in date_time_str:
 #             print x
 #             dt=datetime.strptime(x, DT_FMT)
-            
+        dt=None
         try:
             dt = [datetime.strptime(x, DT_FMT) for x in date_time_str]
         except:

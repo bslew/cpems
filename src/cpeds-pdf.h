@@ -6,6 +6,7 @@
 #include "cpeds-templates.h"
 
 using namespace std;
+using namespace cpems;
 
 /*!
   \class cpeds_PDF

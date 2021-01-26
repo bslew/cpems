@@ -32,6 +32,8 @@
 /* using namespace LiDIA; */
 using namespace std;
 using namespace math;
+using namespace cpems;
+
 #define STD std
 #else
 #define STD

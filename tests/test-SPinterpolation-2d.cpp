@@ -11,6 +11,9 @@
 #include "Mscs-function3dregc.h"
 #include "pointsDensity.h"
 
+//using namespace cpems; 
+
+
 int main(int argc, char** argv) {
 	
 	mscsFunction3dregc f("field");

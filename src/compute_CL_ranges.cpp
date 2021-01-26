@@ -251,8 +251,8 @@ void makeGaussTest(cpeds_queue<double>& X, cpeds_queue<double>& Y) {
 	printf("(-3,3)\n");
 	
 	double* tmp=sample.extractArguments();
-	X.import_array(tmp,sample.pointsCount());
+	X.import_C_array(tmp,sample.pointsCount());
 	delete [] tmp;
 	tmp=sample.extractValues();
-	Y.import_array(tmp,sample.pointsCount());
+	Y.import_C_array(tmp,sample.pointsCount());
 }

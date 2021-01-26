@@ -9,6 +9,8 @@
 #include "cpeds-templates.h"
 #include <assert.h>
 
+using namespace cpems;
+
 /***************************************************************************************/
 MClink::MClink() {
 	_theta=NULL;

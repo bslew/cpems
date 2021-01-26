@@ -22,7 +22,7 @@
 
 #include "cpeds-common.h"
 #include "cpeds-consts.h"
-//#include "cpeds-templates.h"
+#include "cpeds-templates.h"
 //#include "cpeds-pdf.h"
 #include "matrix.h"
 //#include <fftw3.h>
@@ -31,6 +31,7 @@
 /* using namespace LiDIA; */
 using namespace std;
 using namespace math;
+//using namespace cpems;
 #define STD std
 #else
 #define STD
@@ -1941,6 +1942,7 @@ long long cpeds_get_txt_file_lines_count(string fName);
 ////! This routine checks the txt file given by fn, and returns the cpeds_queue object that contains the
 ////! number of columns (space separated words) in each row of the file and much other useful info.
 //cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn);
+cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn, long scanRowsMax=-1);
 
 //! checks if the file exists
 bool cpeds_fileExists(string fname);

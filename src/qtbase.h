@@ -16,7 +16,6 @@
 
 #define QT_INC_DIR
 
-#include QT_INC_DIR"QtCore/QStringList"
 #include QT_INC_DIR"QtCore/QString"
 #include QT_INC_DIR"QtCore/QStringList"
 #include QT_INC_DIR"QtCore/QtAlgorithms"
