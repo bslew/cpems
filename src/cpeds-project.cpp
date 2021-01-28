@@ -48,7 +48,10 @@ cpedsPointSet3D cpedsProject::projectOnPlane(const cpedsDirection& n, string pro
 	
 	//  printf("proj string: %s\n",tmpch);
 	s=tmpch;
-	pj = pj_init_plus(s.c_str());
+
+	projCtx ctx = pj_ctx_alloc();
+	pj=pj_init_plus_ctx(ctx, s.c_str());
+//	pj = pj_init_plus(s.c_str());
 	
 	// if (projection == "stere" ) { maxX=0.707106799968253; maxY=0.707106799968253; }
 	// x=cpeds_get_min(x,endX);      x=cpeds_get_max(x,startX);
@@ -82,6 +85,7 @@ cpedsPointSet3D cpedsProject::projectOnPlane(const cpedsDirection& n, string pro
 		// }
 	}
 	pj_free(pj);
+    pj_ctx_free( ctx );
 
 	return _ps;  
 }
