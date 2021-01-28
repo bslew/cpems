@@ -179,7 +179,7 @@ find_package(NOVA )
 
 #find_package(m REQUIRED)
 
-find_package(PROJ)
+find_package(PROJ 4.8)
 #    PROJ_INCLUDE_DIR
 #    PROJ_LIBRARY
 
