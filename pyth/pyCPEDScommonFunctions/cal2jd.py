@@ -47,9 +47,9 @@ parser = OptionParser(description=programDescription)
 #options
 # parser.add_option("", "--data", dest="data", default="", type="string", help='name of the data file: if gauss3000 then 3000 gaussian samples is generated internally', metavar="STRING")
 parser.add_option("-c", "--col", dest="col", default=0, type="int", help='column in data file to look for date. ', metavar="VAL")
-parser.add_option("-o", "", dest="outfile", default="", type="string", help='output file name', metavar="STRING")
+parser.add_option("-o", "", dest="outfile", default="", type=str, help='output file name', metavar="STRING")
 parser.add_option("", "--offset", dest="offset", default=0, type="float", help='time offset to apply to the converted times [JD]', metavar="VALUE")
-parser.add_option("", "--fmt", dest="fmt", default="iso", type="string", help='''input file time 
+parser.add_option("", "--fmt", dest="fmt", default="iso", type=str, help='''input file time 
     format (default: %Y-%m-%d %H:%M:%S). To read time with fraction of seconds you can used eg.
     %Y %m %d %H %M %S.%f''', metavar="STRING")
 
@@ -110,7 +110,7 @@ if option.testFmt:
     sys.exit()
 
 from matplotlib.dates import strpdate2num
-data=np.loadtxt(args[0], dtype="string")
+data=np.loadtxt(args[0], dtype=str)
 # print data
 np.set_printoptions(precision=15,suppress=True)
 

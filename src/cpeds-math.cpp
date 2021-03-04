@@ -475,6 +475,19 @@ double cpeds_local_sidereal_time_novas(double jd_ut1, double ut1_utc, double Del
 	if (lst>86400) lst-=86400;
 	return lst;
 }
+/* ******************************************************************************************** */
+double cpeds_cal2jd(std::string dtstr, std::string fmt) {
+	struct tm tm;
+	char buf[255];
+	
+	memset(&tm, 0, sizeof(tm));
+	strptime(dtstr.c_str(), fmt.c_str(), &tm);
+//	cout << tm.tm_year+1900 <<" "<< tm.tm_mon+1 <<" "<< tm.tm_mday << " ";
+//	cout << tm.tm_hour <<" "<< tm.tm_min<<" "<< tm.tm_sec << "\n";
+	return cpeds_julian_time(tm.tm_year+1900,tm.tm_mon+1,tm.tm_mday,
+			double(tm.tm_hour)+double(tm.tm_min)/60+double(tm.tm_sec)/3600);
+}
+
 /****************************************************************************************************************/
 double cpeds_julian_time(long year, long month, long day, double hour) {
 	return cpeds_julian_local_time(year,month,day,hour,0);

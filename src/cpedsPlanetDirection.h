@@ -85,7 +85,6 @@ class cpedsPlanetDirection: public cpedsMoonDirection {
 		const cpedsPlanetDirection& operator=(const cpedsMoonDirection& rhs);
 
 		
-		
 		virtual double angularSize(double JD=0, int which=0);
 	protected:
 		void setPlanetProperties(string planetName);

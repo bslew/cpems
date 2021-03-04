@@ -665,6 +665,7 @@ long cpeds_JDToYear(double JD=-1e9);
  * */
 double cpeds_julian_time(long year, long month, long day, double hour);
 
+double cpeds_cal2jd(std::string dtstr, std::string fmt="%Y-%0m-%0dT%0H:%0M:%0S");
 //! same as cpeds_julian_time (long year, long month, long day, double hour) but for the current system time expressed in UTC time: i.e. for the current UTC time
 double cpeds_julian_time();
 

@@ -40,8 +40,10 @@ setup(name='pyCPEDScommonFunctions',
       url='',
       package_dir = {'': ''},
       packages = ['pyCPEDScommonFunctions'],
-      scripts=['pyCPEDScommonFunctions/confidenceRange.py','pyCPEDScommonFunctions/cal2jd.py',
-               'pyCPEDScommonFunctions/jd2cal.py', 'pyCPEDScommonFunctions/join_interpolate.py'],
+      scripts=['pyCPEDScommonFunctions/confidenceRange.py',
+               'pyCPEDScommonFunctions/cal2jd.py',
+               'pyCPEDScommonFunctions/jd2cal.py', 
+               'pyCPEDScommonFunctions/join_interpolate.py'],
       ext_modules=[cpedsRotation]
      )
 

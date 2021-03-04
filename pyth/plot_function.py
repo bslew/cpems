@@ -279,6 +279,7 @@ parser.add_option("", "--noaxes", action="store_true", dest="noAxes", default=Fa
 parser.add_option("", "--axesSwitch", action="append", dest="axesSwitch", type='int', help="switches axes on or off on each of the subplots.")
 parser.add_option("", "--interactive", action="store_true", dest="interactive", default=False, help="enters interactive mode allowing data selection from the plot.")
 # parser.add_option("", "--inter", action="store_true", dest="inter", default=False, help="enters a new interactive mode allowing data selection from the plot.")
+parser.add_option("",'--CSVheader',type=int,default=0,help='''Number of CSV header lines (only when loading csv files)''')
 parser.add_option("", "--big", action="store_true", dest="big", default=False, help="flag to indicate that we are loading a big file. This will optimize the loading and plotting")
 parser.add_option("", "--asCol", action="store_true", dest="asCol", default=False, help="flag to indicate that we are loading a column data. Normally the load does not recognise verctor between column or row alignment, so this option helps to define which is it.")
 parser.add_option("", "--scriptMode", action="store_true", dest="scriptMode", default=False, help="flag to indicate that we are working in script mode for generating pictures and without GUI.")
@@ -2429,7 +2430,10 @@ def loadDataFromUDP(UDPparams):
     return adata 
     
 def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples=-1, colx=0, coly=1, badX='None', badY='None'):
-    d = np.loadtxt(args[i])
+    if fname.endswith('.csv'):
+        d=np.genfromtxt(fname, delimiter=',', skip_header=option.CSVheader)
+    else:
+        d = np.loadtxt(fname)
     print(startFrom, rowsCount, loadEvery)
     if rowsCount == 0:
         d = d[startFrom::loadEvery]
