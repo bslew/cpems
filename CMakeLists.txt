@@ -1169,6 +1169,10 @@ install (FILES
 #	DESTINATION "${INSTALL_INCLUDE_DIR}/cpems"
 #	COMPONENT dev)
 
+install (DIRECTORY 
+	${PROJECT_BINARY_DIR}/external_packages/ccSHT3/include/
+	DESTINATION include/ccSHT3)
+
 
 install (FILES
     ${PROJECT_BINARY_DIR}/external_packages/velKB/libvelKB.a

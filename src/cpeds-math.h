@@ -1675,7 +1675,7 @@ const matrix<double> cpeds_array2matrix(const double* t, long size, long vecSize
 void cpeds_change_matrix_ordering_from_rows_to_cols_major(double *M, long rows, long cols);
 
 /*! 
-	\brief Calculates the covariance matrix of the measured data in Dvec table
+	\brief Calculates the unbiased estimator of the covariance matrix of the measured data in Dvec table
 	\details 
 	@param Dvec - pointer to linear array of size vec_size*vec_num
 	@param vec_num - number of vectors in the Dvec array
@@ -1692,8 +1692,6 @@ void cpeds_change_matrix_ordering_from_rows_to_cols_major(double *M, long rows, 
 		
 	The array pointed by the returned pointer need not be allocated. It is allocated in this function.
 		
-	TODO: add option of calculate un-biased estimator of the covariance matrix
-
 	\date Jan 29, 2011, 1:31:33 PM
 	\author Bartosz Lew
 */

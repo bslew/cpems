@@ -61,6 +61,7 @@ parser.add_option("", "--Rxlabels", dest="Rxlabels", default=0, type="float", he
 parser.add_option("", "--Rylabels", dest="Rylabels", default=0, type="float", help='rotate yticklabels by this angle [deg]', metavar="VALUE")
 #parser.add_option("", "--ylabelsPos", dest="ylabelsPos", default="left", type="float", help='rotate yticklabels by this angle [deg]', metavar="VALUE")
 parser.add_option("", "--ylabels", dest="ylabels", default="", type="string", help='comma separated list of yticklabels ', metavar="VALUE")
+parser.add_option("", "--xlabels", dest="xlabels", default="", type="string", help='comma separated list of xticklabels ', metavar="VALUE")
 parser.add_option("", "--title", dest="title", default='', type="string", help='plot title', metavar="STRING")
 parser.add_option("", "--xlabel", dest="xlabel", default='x', type="string", help='plot x label', metavar="STRING")
 parser.add_option("", "--ylabel", dest="ylabel", default='y', type="string", help='plot y label', metavar="STRING")
@@ -196,6 +197,10 @@ if option.ylabels!='':
     ylabels=option.ylabels.split(',')
     print(ylabels)
 
+xlabels=list()
+if option.xlabels!='':
+    xlabels=option.xlabels.split(',')
+    print(xlabels)
 
 # the input parameters are integers
 def getSymmetricTicks(Asize,step):
@@ -303,6 +308,7 @@ def getMatInfo(boxSlice):
     print("mean: %E" % np.mean(boxSlice))
     print("st.dev: %E" % np.std(boxSlice))
     print("max absolute: ",maxabs)
+    print_mat_stats(boxSlice)
     print("------------------")
     return vmin,vmax,maxabs
 
@@ -688,18 +694,22 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
             option.ymax=dY/2.0
         
         if option.xmin!=-1 or option.xmax!=-1:
-            if option.centerXextent:
-#                 xticks(getSymmetricTicks(option.xmin, option.xmax, option.xticks))
-#                 xticks(getSymmetricTicks(0, Nx, option.xticks))
-                xticks(getSymmetricTicks(Nx, option.xticks))
+            if option.xlabels!='':
+                print('changing xlabels')
+                xticks(arange(0,Nx,option.xticks), xlabels)
             else:
-                xticks(arange(0,Nx+1,option.xticks))
-            ax.xaxis.set_major_formatter(formatterX)
-            print('formatting x ticks:')
-            xt= arange(option.xmin,option.xmax,option.xticks)
-            print(xt)
-            if len(xt)==0:
-                print('WARNING: something wrong with xticks ? if the ticks are now what you wanted consider changing/setting option.xticks')        
+                if option.centerXextent:
+    #                 xticks(getSymmetricTicks(option.xmin, option.xmax, option.xticks))
+    #                 xticks(getSymmetricTicks(0, Nx, option.xticks))
+                    xticks(getSymmetricTicks(Nx, option.xticks))
+                else:
+                    xticks(arange(0,Nx+1,option.xticks))
+                ax.xaxis.set_major_formatter(formatterX)
+                print('formatting x ticks:')
+                xt= arange(option.xmin,option.xmax,option.xticks)
+                print(xt)
+                if len(xt)==0:
+                    print('WARNING: something wrong with xticks ? if the ticks are now what you wanted consider changing/setting option.xticks')        
             setp( gca().get_xticklabels(), rotation=option.Rxlabels, horizontalalignment='center', verticalalignment='top')
         else:
             if option.ticks==-1:
@@ -865,6 +875,25 @@ def loadData(fname, sliceNo=0):
     return slice
     
 
+def print_mat_stats(slice):
+#     slice=np.array(slice)
+    print('size: {}'.format(slice.size))
+    print('Sum of diagomal terms: {}'.format(np.sum(slice.diagonal())))
+#     print('1^T x C x 1/n^2: {}'.format(np.mean(slice.diagonal())))
+    print('Sum of off-diagomal terms: {}'.format(np.sum(slice)-np.sum(slice.diagonal())))
+    print('square root of mean diagomal term: {}'.format(np.sqrt(np.mean(slice.diagonal()))))
+    print('sqrt( 1^T x C x 1/n^2 ): {}'.format(
+        np.sqrt(np.sum(slice))/slice.diagonal().size))
+    print('sqrt( diag(C) x 1/size(diag(C))^2 ): {}'.format(
+        np.sqrt(
+            np.sum(
+                slice.diagonal()
+                ))/slice.diagonal().size))
+
+    offdiag_sum=np.sum(slice)-np.sum(slice.diagonal())
+    
+    print('off-diag dev: {}'.format(
+        np.sqrt(offdiag_sum)/slice.diagonal().size))
 
 def binMatrix(slice,dim,binSize):
 #    s=arange(20)
@@ -877,7 +906,7 @@ def binMatrix(slice,dim,binSize):
     if dim==0:
         # perform binning along X direction
         n=len(slice[0])
-        Nbin=float(n)/binSize
+        Nbin=int(float(n)/binSize)
         binslice=array([])
         for i in arange(Nbin):
             if option.binMethod=='mean':
@@ -887,8 +916,9 @@ def binMatrix(slice,dim,binSize):
             else:
                 print('unknown bin method')
                 sys.exit(-1)
-            binslice=np.append(binslice,tmp,axis=1)
-        slice=transpose(binslice.reshape(Nbin,-1))
+#             binslice=np.append(binslice,tmp,axis=1)
+            binslice=np.append(binslice,tmp)
+        return transpose(binslice.reshape(Nbin,-1))
 #        print slice
 #        sys.exit()
     if dim==1:
@@ -896,7 +926,7 @@ def binMatrix(slice,dim,binSize):
         print("perform binning along Y direction")
 #        slice=transpose(binMatrix(transpose(slice),0,binSize))
         n=len(slice[:,0])
-        Nbin=float(n)/binSize
+        Nbin=int(float(n)/binSize)
         binslice=array([])
         for i in arange(Nbin):
             if option.binMethod=='mean':
@@ -906,8 +936,9 @@ def binMatrix(slice,dim,binSize):
             else:
                 print('unknown bin method')
                 sys.exit(-1)
-            binslice=np.append(binslice,tmp,axis=1)
-        slice=binslice.reshape(Nbin,len(slice[0]))
+#             binslice=np.append(binslice,tmp,axis=1)
+            binslice=np.append(binslice,tmp)
+        return binslice.reshape(Nbin,len(slice[0]))
 #        print slice
     return slice
 

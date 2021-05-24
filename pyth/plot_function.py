@@ -175,7 +175,7 @@ parser.add_option("", "--circ", dest="circ", type="string", default='', help='ci
 parser.add_option("", "--rect", dest="rect", type="string", help='rectangles to plot defined as x,y,dx,dy,angle where x,y is the center point and dx,dy width,height. eg. --rect 10,20,5,6,0 for a rectangle at x=10 y=20 and width=5 and height=6. .', action="append", metavar="STRING")
 parser.add_option("", "--gridColor", dest="gridColor", type="string", default='0.5', help='grid color', metavar="STRING")
 parser.add_option("", "--dateFmt", dest="dateFmt", type="string", default='', help='date format for ts type plots: eg "%Y-%m-%d %H:%M:%S"', metavar="STRING")
-parser.add_option("", "--dateFmtPlot", dest="dateFmtPlot", type="string", default='%Y-%m-%d %H:%M:%S', help='date format for ts type plots used for plotting: eg "%Y-%m-%d %H:%M:%S"', metavar="STRING")
+parser.add_option("", "--dateFmtPlot", dest="dateFmtPlot", type="string", default='concise', help='date format for ts type plots used for plotting: eg "%Y-%m-%d %H:%M:%S", default (concise)', metavar="STRING")
 parser.add_option("", "--Rxlabels", dest="Rxlabels", default=0, type="float", help='rotate xticklabels by this angle [deg]', metavar="VALUE")
 parser.add_option("", "--Rylabels", dest="Rylabels", default=0, type="float", help='rotate yticklabels by this angle [deg]', metavar="VALUE")
 parser.add_option("", "--removeXtickLabels", dest="removeXtickLabels", type="int", help='if 0 - not used; if single value - plot every this tick label; if coma-separated list - indexes of labels to be removed (NOT implemented yet). Useful for time series plots', action="append", metavar="VALUE")
@@ -2019,11 +2019,30 @@ def formatXaxisDates(figIdx):
         yearsFmt = mdates.DateFormatter(option.dateFmtPlot)
     else:
         yearsFmt = mdates.DateFormatter(option.dateFmtPlot.decode("unicode_escape"))
-        
-    ax.xaxis.set_major_formatter(yearsFmt)
-    # format the ticks
-    ax.xaxis.set_major_locator(days)
-    ax.xaxis.set_major_formatter(yearsFmt)
+
+
+    if option.dateFmtPlot=='concise':
+        '''
+        '''
+        import matplotlib.dates as mdates
+        import matplotlib.units as munits
+        try:
+            converter = mdates.ConciseDateConverter()
+            munits.registry[np.datetime64] = converter
+            munits.registry[datetime.date] = converter
+            munits.registry[datetime.datetime] = converter
+            locator = mdates.AutoDateLocator(minticks=5, maxticks=7)
+            dateFormatter = mdates.ConciseDateFormatter(locator)
+            ax.xaxis.set_major_locator(locator)
+            ax.xaxis.set_major_formatter(dateFormatter)
+        except:
+            raise
+            pass
+    else:
+        ax.xaxis.set_major_formatter(yearsFmt)
+        # format the ticks
+        ax.xaxis.set_major_locator(days)
+        ax.xaxis.set_major_formatter(yearsFmt)
 #                 ax.xaxis.set_minor_locator(hours)
 #                 ax.xaxis.set_minor_locator(None)
 
@@ -2433,7 +2452,9 @@ def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples
     if fname.endswith('.csv'):
         d=np.genfromtxt(fname, delimiter=',', skip_header=option.CSVheader)
     else:
-        d = np.loadtxt(fname)
+        d = np.loadtxt(fname, dtype=str)
+        
+#         if option.dateFmt
     print(startFrom, rowsCount, loadEvery)
     if rowsCount == 0:
         d = d[startFrom::loadEvery]
@@ -3801,9 +3822,14 @@ def makeFunctionPlot(inFile):
                         plotLegendLabel = None
                 else:
                     plotLegendLabel = None
-                
-                datax = inFile[i][:, 0]
-                datay = inFile[i][:, 1]
+
+                if option.big:
+                    datax = inFile[i][:, 0]
+                    datay = inFile[i][:, 1]
+                else:
+                    datax = inFile[i][:, option.colx[i % len(option.colx)]]
+                    datay = inFile[i][:, option.coly[i % len(option.coly)]]
+                    
                 import matplotlib.dates as mdates
                 import time
                 datex = list()
@@ -3841,15 +3867,40 @@ def makeFunctionPlot(inFile):
                 days = mdates.DayLocator()
                 years = mdates.YearLocator()  # every year
                 months = mdates.MonthLocator()  # every month
-#                yearsFmt = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
-                yearsFmt = mdates.DateFormatter(option.dateFmtPlot)
-                ax.xaxis.set_major_formatter(yearsFmt)
-                # format the ticks
-                ax.xaxis.set_major_locator(days)
-                ax.xaxis.set_major_formatter(yearsFmt)
-#                 ax.xaxis.set_minor_locator(hours)
-#                 ax.xaxis.set_minor_locator(None)
 
+                if option.dateFmtPlot=='concise':
+                    '''
+                    '''
+                    import matplotlib.dates as mdates
+                    import matplotlib.units as munits
+                    try:
+                        converter = mdates.ConciseDateConverter()
+                        munits.registry[np.datetime64] = converter
+                        munits.registry[datetime.date] = converter
+                        munits.registry[datetime.datetime] = converter
+                        locator = mdates.AutoDateLocator(minticks=5, maxticks=7)
+                        dateFormatter = mdates.ConciseDateFormatter(locator)
+                        ax.xaxis.set_major_locator(locator)
+                        ax.xaxis.set_major_formatter(dateFormatter)
+                    except:
+                        raise
+                        pass
+
+                    
+#                     fmt_year = mdates.YearLocator()
+#                     ax.xaxis.set_minor_locator(fmt_year)
+
+                else:
+
+    #                dateFormatter = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
+                    dateFormatter = mdates.DateFormatter(option.dateFmtPlot)
+                    ax.xaxis.set_major_formatter(dateFormatter)
+                    # format the ticks
+                    ax.xaxis.set_major_locator(days)
+                    ax.xaxis.set_major_formatter(dateFormatter)
+    #                 ax.xaxis.set_minor_locator(hours)
+    #                 ax.xaxis.set_minor_locator(None)
+    
                 if option.years:
                     ax.xaxis.set_major_locator(years)
                     if option.minorTicks:
@@ -4250,7 +4301,9 @@ def makeFunctionPlot(inFile):
                     # map type histogram
                     ###############################################################################################
 #                    print datax
-                    hist(datax, color=option.lc[i % len(option.lc)], bins=option.histNbin, label=plotLegendLabel, cumulative=option.histCuml, normed=option.histNormed)
+                    hist(datax, color=option.lc[i % len(option.lc)], bins=option.histNbin, label=plotLegendLabel, cumulative=option.histCuml, 
+#                          normed=option.histNormed
+                         )
 
 #                elif option.plotType[plotTypeIdx]=='ts':
 #                    datax=inFile[i][:,0]
@@ -5357,7 +5410,7 @@ while 1:
                             else:
                                 if args[i] == "stdin":
                                     if globalStdInData == '':
-                                        globalStdInData = np.loadtxt(sys.stdin)
+                                        globalStdInData = np.loadtxt(sys.stdin, dtype=str)
         #                            inFile.append(np.loadtxt(sys.stdin))
                                     inFile.append(globalStdInData)
                                 elif 'UDP=' in args[i]:

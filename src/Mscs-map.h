@@ -34,7 +34,7 @@
 // interdependent headers
 /* #include "Mscs-colormap.h" */
 #include "Mscs-alms.h"
-#include "ccSHT3.h"
+#include "ccSHT3/ccSHT3.h"
 #include "Cthwisdom.h"
 #include <vector>
 

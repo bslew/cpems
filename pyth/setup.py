@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
+# from distutils.core import setup, Extension
 import os
 
 os.environ["CC"] = "c++" 
@@ -38,6 +39,13 @@ setup(name='pyCPEDScommonFunctions',
       author='Bartosz Lew',
       author_email='blew@astro.umk.pl',
       url='',
+      install_requires=[
+          'scipy',
+          'matplotlib',
+          'pyfits',
+          'pyhdf5',
+          'astropy',
+      ],      
       package_dir = {'': ''},
       packages = ['pyCPEDScommonFunctions'],
       scripts=['pyCPEDScommonFunctions/confidenceRange.py',
