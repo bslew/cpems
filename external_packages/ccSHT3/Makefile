@@ -47,11 +47,16 @@ tidy :
 	rm -f *.o 
 
 install:
-	sudo cp libccSHT3.a $(INSTALL_PATH)
-	sudo cp include/ccSHT3.h $(INSTALL_PATH)/../ccSHT3/include
-	sudo cp include/fftw_complex_helper.h $(INSTALL_PATH)/../include/ccSHT3/
-	sudo cp include/generalTools.h $(INSTALL_PATH)/../include/ccSHT3/
-	sudo cp include/sizedType.h $(INSTALL_PATH)/../include/ccSHT3/
+	sudo install -m 644 libccSHT3.a $(INSTALL_PATH)
+	sudo install -m 644 include/ccSHT3.h $(INSTALL_PATH)/../include/ccSHT3
+	sudo install -m 644 include/fftw_complex_helper.h $(INSTALL_PATH)/../include/ccSHT3/
+	sudo install -m 644 include/generalTools.h $(INSTALL_PATH)/../include/ccSHT3/
+	sudo install -m 644 include/sizedType.h $(INSTALL_PATH)/../include/ccSHT3/
+#	sudo cp libccSHT3.a $(INSTALL_PATH)
+#	sudo cp include/ccSHT3.h $(INSTALL_PATH)/../include/ccSHT3
+#	sudo cp include/fftw_complex_helper.h $(INSTALL_PATH)/../include/ccSHT3/
+#	sudo cp include/generalTools.h $(INSTALL_PATH)/../include/ccSHT3/
+#	sudo cp include/sizedType.h $(INSTALL_PATH)/../include/ccSHT3/
 
 FFTW = -I$(FFTWINCLUDE) -L$(FFTWLIBRARY)
 CFLAGS2 = $(CFLAGS) -fPIC
