@@ -36,7 +36,7 @@ INSTALL_PATH=/usr/local/lib
 
 #.PHONY : all serial library executable clean tidy
 
-all : libccSHT3.a 
+all : libccSHT3.a install
 #ccSHTx libccSHTmpi.a ccSHTmpix tidy
 
 
@@ -48,10 +48,10 @@ tidy :
 
 install:
 	sudo cp libccSHT3.a $(INSTALL_PATH)
-	sudo cp include/ccSHT3.h $(INSTALL_PATH)/../include
-	sudo cp include/fftw_complex_helper.h $(INSTALL_PATH)/../include
-	sudo cp include/generalTools.h $(INSTALL_PATH)/../include
-	sudo cp include/sizedType.h $(INSTALL_PATH)/../include
+	sudo cp include/ccSHT3.h $(INSTALL_PATH)/../ccSHT3/include
+	sudo cp include/fftw_complex_helper.h $(INSTALL_PATH)/../include/ccSHT3/
+	sudo cp include/generalTools.h $(INSTALL_PATH)/../include/ccSHT3/
+	sudo cp include/sizedType.h $(INSTALL_PATH)/../include/ccSHT3/
 
 FFTW = -I$(FFTWINCLUDE) -L$(FFTWLIBRARY)
 CFLAGS2 = $(CFLAGS) -fPIC

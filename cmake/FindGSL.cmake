@@ -101,7 +101,8 @@ ELSE(WIN32)
       EXEC_PROGRAM(${GSL_CONFIG}
         ARGS --prefix
         OUTPUT_VARIABLE GSL_PREFIX)
-      SET(GSL_INCLUDE_DIR ${GSL_PREFIX}/include CACHE STRING INTERNAL)
+      SET(GSL_INCLUDE_DIR ${GSL_PREFIX}/include)
+      # CACHE STRING INTERNAL)
 
       # set link libraries and link flags
       #SET(GSL_LIBRARIES "`${GSL_CONFIG} --libs`")

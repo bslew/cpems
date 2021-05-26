@@ -103,7 +103,7 @@ add_custom_target(Lib_novas
 
 add_custom_target(Lib_ccSHT3
     COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/ccSHT3 ${PROJECT_BINARY_DIR}/external_packages\; fi'
-    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ccSHT3 && make
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ccSHT3 && make -B
     COMMENT "Building ccSHT3"
 #    VERBATIM
     )
@@ -452,6 +452,7 @@ include_directories(
 #	"${PROJECT_BINARY_DIR}/src"
     src
 	external_packages/novas
+	external_packages/ccSHT3
 	external_packages/ccSHT3/include
 	${CFITSIO_INCLUDE_DIR}
 	${GSL_INCLUDE_DIR}
@@ -991,6 +992,7 @@ add_definitions(
 	-DHAVE_OPENMP 
 #    -DDEBUG_MCMC_PDF
     -DDEBUG_MCMC_PDF2
+	-DACCEPT_USE_OF_DEPRECATED_PROJ_API_H
 #    -Wall
 	)
 # add -DCMAKE_CXX_FLAGS=-pg when calling cmake to generate gprof-ready binaries

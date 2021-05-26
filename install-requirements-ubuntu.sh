@@ -29,3 +29,26 @@ apt install libnova-0.16-0 libnova-dev
 apt install gfortran libx11-dev
 # parser
 apt install libtclap-dev
+
+#
+# below stuff updated on ubuntu 20.04
+#
+# logger
+apt install libspdlog1/focal libspdlog-dev/focal
+# gmp
+apt install libgmp-dev/focal libgmp10/focal
+# CGAL
+apt install libcgal-dev/focal libcgal-qt5-dev/focal libcgal-ipelets/focal
+# math
+apt install libarmadillo-dev/focal libarmadillo9/focal libproj-dev/focal libproj15/focal libgsl23/focal libgsl-dev/focal  
+
+# HDF5
+apt install libhdf5-103 libhdf5-cpp-103 libhdf5-dev libhdf5-openmpi-103
+#cmake 
+apt install extra-cmake-modules/focal cmake-extras/focal cmake-data/focal
+
+
+
+
+
+
