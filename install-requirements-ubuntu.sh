@@ -47,6 +47,8 @@ apt install libhdf5-103 libhdf5-cpp-103 libhdf5-dev libhdf5-openmpi-103
 #cmake 
 apt install extra-cmake-modules/focal cmake-extras/focal cmake-data/focal
 
+#boost
+apt install libboost-test1.71.0/focal libboost-test1.71-dev/focal libboost-filesystem1.71-dev/focal libboost-filesystem1.71.0/focal
 
 
 
