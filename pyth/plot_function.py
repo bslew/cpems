@@ -3132,12 +3132,12 @@ def makeFunctionPlot(inFile):
 
 
                 if option.logX:
-                    data = data[data[:, colx] > 0]
+                    data = data[data[:, colx].astype(float) > 0.]
                     if option.absX == False:
-                        data = data[data[:, colx] > 0]
+                        data = data[data[:, colx].astype(float) > 0.]
                 if option.logY:
                     if option.absY == False:
-                        data = data[data[:, coly] > 0]
+                        data = data[data[:, coly].astype(float) > 0.]
 
 
                 colxerr = ''

@@ -82,10 +82,11 @@ void cpedsRNG::setRNsType(string distr) {
 								if (distr=="gaussianPowerLaw_fft") {		_distr=gaussian_power_law_fft;	} else 
 									if (distr=="invCDF") {		_distr=from_array_invCDF;	} else 
 										if (distr=="invCDF2d") {		_distr=from_array_invCDF2d;	} else 
-										{						
-											printf("unknown distribution: %s\n. Please check the code. Will exit now - this is to force debugging.\n",distr.c_str());
-											exit(0);
-										}
+											if (distr=="invCDF_sample") { _distr=from_array_invCDF_sample; } else
+											{						
+												printf("unknown distribution: %s\n. Please check the code. Will exit now - this is to force debugging.\n",distr.c_str());
+												exit(0);
+											}
 }
 /***************************************************************************************/
 void cpedsRNG::setRNsType(distrType distr) {
@@ -151,6 +152,20 @@ void cpedsRNG::setPDF(long size, double* x, double *p) {
 	for (i=0;i<gCDFsize;i++) {	    p[i]/= p[last];	  }
 //	delete [] cdf;
 }
+/* ******************************************************************************************** */
+void cpedsRNG::setCDF(long size, double* x, double *p) {
+	long i;
+	if (size!=0) { killGCDF(); }
+	gCDFsize=size-1;
+	gCDF=p;
+	CDFargs=x;
+	double dxo2=0.5*(x[1]-x[0]);	
+	
+	// normalization of the CDF
+	long last=gCDFsize-1;
+	for (i=0;i<gCDFsize;i++) {	    p[i]/= p[last];	  }	
+}
+
 /***************************************************************************************/
 void cpedsRNG::setPDF2d(long sizeX, double* x, long sizeY, double *y, double *p) {
 	long i,j;
@@ -546,6 +561,42 @@ double* cpedsRNG::getRN(long n) {
 	  }
 	}
 	/***************************************************************************************/
+	/***************************************************************************************/
+	if (_distr==from_array_invCDF_sample) {
+	  double x,xp,xi,xf,yi,yf; 
+
+	  // generate uniformly distributed numbers
+	  _distr=uniform;
+	  setMinMax(gCDF[0],gCDF[gCDFsize-1]);
+	  t=random_sample.toCarray();
+	  _distr=from_array_invCDF;
+	  
+	  // convert to requested PDF according to the CDF table
+	  long k;
+	  
+//	  cpeds_save_matrix(gCDF,gCDFsize,1,"gCDF",false,false);
+	  for (long j=0;j<n;j++) {
+		  
+		  // find the point in the cdf array
+		  k=cpeds_find_value(t[j],gCDF,gCDFsize,0,gCDFsize);		  
+		  x=t[j];
+		  xp=gCDF[k];
+//		  if (k==0 or k==1) printf("x: %lE k: %li, xp: %lE\n",x,k,xp);
+//		  printf("x: %lE k: %li, xp: %lE\n",x,k,xp);
+		  
+//		  // linear interpolation between the selected points
+		  if (x > xp) { xi = CDFargs[k]; xf = CDFargs[k+1]; yi = xp; yf = gCDF[k+1];}
+		  if (x < xp) { 
+			  xi = CDFargs[k-1]; xf = CDFargs[k]; yi = gCDF[k-1]; yf = gCDF[k];
+//			  if (k==0) xi=0;
+//		  	  if (k==0) printf("warning x: %lE k: %li, xp: %lE, xi:%lE, xf:%lE, yi:%lE yd:%lE\n\n",t[j],k,xp,  xi,xf,yi,yf);		  
+		  }
+		  
+		  t[j] = (x-yi)*(xf-xi)/(yf-yi) + xi;
+//		  if (k==0 or k==1) 		  printf("int x: %lE k: %li, xp: %lE, xi:%lE, xf:%lE, yi:%lE yd:%lE\n\n",t[j],k,xp,  xi,xf,yi,yf);
+//		  t[j]=CDFargs[k]; // case for no interpolation
+	  }
+	}
 	
 	return t;
 }
@@ -711,3 +762,6 @@ double cpedsRNG::sumOOfNumbers_t2(long n) {
 	return s;
 }
 // ****************************************************************************************************
+void cpedsRNG::setRandomSample(cpedsList<double> sample) {
+	random_sample=sample;
+}
