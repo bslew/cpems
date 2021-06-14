@@ -80,7 +80,8 @@ class cpedsRNG {
   */
   cpedsRNG(string distr="uniform", string rn="double", const gsl_rng_type* generator=gsl_rng_mt19937, long seed_ini=0, long seed_offset=0) {
     _seed=seed_ini;
-    _seed=random();
+//    srand (time(NULL));
+//    _seed=rand();
     _seed_offset=seed_offset;
     initiateRNG(distr, rn, generator);
   }
