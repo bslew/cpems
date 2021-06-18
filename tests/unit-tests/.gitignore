@@ -1,2 +1,6 @@
 /Makefile
 /cmake_install.cmake
+/CMakeFiles/
+/cpeds_get_healpix_nested_pixels
+/test-cpeds-templates
+/test-smoothing
