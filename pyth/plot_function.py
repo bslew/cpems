@@ -382,7 +382,11 @@ import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 import csv
 import h5py
-import pyfits
+try:
+    import pyfits
+except ModuleNotFoundError:
+    import fitsio as pyfits
+
 import re
 
 

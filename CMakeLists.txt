@@ -85,8 +85,15 @@ macro(build_CGAL)
     execute_process(
     COMMAND /bin/bash -c "cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz CGAL-4.11.1.tar.gz"
 	)
+# compile
+#	set(Ncore 
+#	echo "`cat /proc/cpuinfo |grep processor|wc -l`*2" | bc)
     execute_process(
-    COMMAND /bin/bash -c "cd ${PROJECT_BINARY_DIR}/external_packages/cgal-releases-CGAL-4.11.1 && cmake . && make && sudo make install"
+    COMMAND /bin/bash -c "cd ${PROJECT_BINARY_DIR}/external_packages/cgal-releases-CGAL-4.11.1 && cmake . && make -j`cat /proc/cpuinfo |grep processor|wc -l` && sudo make install"
+    )
+# clean up
+    execute_process(
+    COMMAND /bin/bash -c "rm ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz"
     )
 endmacro()
 
