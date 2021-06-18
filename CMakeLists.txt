@@ -16,7 +16,7 @@ project (cpems CXX C)
 
 set(CPEMSLIB_VERSION_MAJOR 0)
 set(CPEMSLIB_VERSION_MINOR 2)
-set(CPEMSLIB_VERSION_PATCH 10)
+set(CPEMSLIB_VERSION_PATCH 11)
 set(CPEMSLIB_VERSION_STRING ${CPEMSLIB_VERSION_MAJOR}.${CPEMSLIB_VERSION_MINOR}.${CPEMSLIB_VERSION_PATCH})
 
 set (CPEMS_VERSION ${CPEMSLIB_VERSION_STRING})
@@ -73,6 +73,24 @@ set (CPEMS_SEARCH_PATHS
 #        VERBATIM
 #    )
 
+
+macro(build_CGAL)
+    MESSAGE(STATUS "Building CGAL 4.11")
+    execute_process(
+	COMMAND	/bin/bash -c "curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz"
+    )
+    execute_process(
+    COMMAND /bin/bash -c "mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; "
+    )
+    execute_process(
+    COMMAND /bin/bash -c "cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz CGAL-4.11.1.tar.gz"
+	)
+    execute_process(
+    COMMAND /bin/bash -c "cd ${PROJECT_BINARY_DIR}/external_packages/cgal-releases-CGAL-4.11.1 && cmake . && make && sudo make install"
+    )
+endmacro()
+
+
 #set (VELKB_LIB_DIR "external_packages/velKB") 
 
 add_custom_target(extdir
@@ -96,7 +114,7 @@ add_custom_target(Lib_slaRefr
 
 add_custom_target(Lib_novas
     COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/novas ${PROJECT_BINARY_DIR}/external_packages\; fi'
-    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/novas && make
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/novas && make -B
     COMMENT "Building novas"
 #    VERBATIM
     )
@@ -108,6 +126,15 @@ add_custom_target(Lib_ccSHT3
 #    VERBATIM
     )
 
+add_custom_target(Lib_CGAL
+    COMMENT "Building CGAL 4.11"
+	COMMAND /bin/bash -c 'curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz'
+    COMMAND /bin/bash -c 'mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz CGAL-4.11.1.tar.gz 
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/cgal-releases-CGAL-4.11.1 && cmake . && make && sudo make install
+#    VERBATIM
+    )
+
 add_custom_target(external
     COMMENT "Building external_packages"
     )
@@ -116,7 +143,9 @@ add_dependencies(Lib_velKB extdir)
 add_dependencies(Lib_slaRefr extdir)
 add_dependencies(Lib_novas extdir)
 add_dependencies(Lib_ccSHT3 extdir)
+#add_dependencies(Lib_CGAL extdir)
 add_dependencies(external extdir Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
+#add_dependencies(all external)
 
 #add_custom_target(gsl18
 #    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/gsl-1.8 && ./configure && make -j10
@@ -230,11 +259,13 @@ endif()
 
 
 
-find_package(CGAL )
+find_package(CGAL 4.11 REQUIRED )
 # CGAL_INCLUDE_DIRS
 # CGAL_LIBRARIES_DIR
 # CGAL_MODULES_DIR
 if (NOT CGAL_FOUND)
+	build_CGAL()
+	find_package(CGAL 4.11 REQUIRED )
 	find_library (CGAL_LIBRARIES_DIR CGAL
 		PATHS
 		${CPEMS_SEARCH_PATHS}

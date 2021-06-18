@@ -4303,6 +4303,7 @@ def makeFunctionPlot(inFile):
 #                    print datax
                     hist(datax, color=option.lc[i % len(option.lc)], bins=option.histNbin, label=plotLegendLabel, cumulative=option.histCuml, 
 #                          normed=option.histNormed
+                        alpha=0.5
                          )
 
 #                elif option.plotType[plotTypeIdx]=='ts':
