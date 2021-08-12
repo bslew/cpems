@@ -3187,6 +3187,7 @@ def makeFunctionPlot(inFile):
                 datay = ''
                 if option.plotType[plotTypeIdx] != 'hist':
                     datay = data[:, coly]
+                    datay = np.asanyarray(datay, dtype='float')
                 if option.plotType[plotTypeIdx] == 'yerr' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'vect':
                     datayerr = data[:, colyerr]
                     if colyerr2 != '':
@@ -3842,7 +3843,7 @@ def makeFunctionPlot(inFile):
                 try:
                     [ datex.append(datetime.datetime.strptime(str(tmpdate), option.dateFmt)) for tmpdate in datax ]
                 except ValueError as msg:
-                    print(tmpdate)
+#                    print(tmpdate)
                     print(msg)
                     raise(ValueError)
 #                print 'date X'
