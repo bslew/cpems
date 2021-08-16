@@ -3320,8 +3320,9 @@ double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, lon
 #pragma omp critical
 			{
 			done+=1;
+			printf("done: %li/%li\n",done,vec_size);
 			}
-			if (omp_get_thread_num()==0) printf("done: %li/%li\n",done,vec_size);
+
 		}
 	}
 	delete [] av;
