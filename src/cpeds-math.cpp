@@ -26,6 +26,7 @@
 #include "cpeds-templates.h"
 //#include "matrix.h"
 #include <fftw3.h>
+#include <omp.h>
 #include "../external_packages/novas/novas.h"
 
 #ifndef _NO_NAMESPACE
@@ -3268,6 +3269,59 @@ double * cpeds_calculate_covariance_matrix(double *Dvec, long vec_size, long vec
 	delete [] av;
 	return cov;
 }
+/* ******************************************************************************************** */
+double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long vec_num, bool diagonal) {
+	long i,k,l;
+	long idxC,idxD;
+	double *cov;
+	
+	if (diagonal) cov= new double[vec_size];
+	else cov= new double[vec_size*vec_size];
+	
+	double *av = new double[vec_size];
+	double tmp,Nleo;
+	/*   long vec_num_loc=vec_num-NCovst; */
+	Nleo=double(vec_num-1);
+	if (Nleo==0) { printf("too few (1) data vectors given for covariance matrix computations. Will stop now."); exit(0); }
+	
+	// calculate average vectors first
+	printf("calculating mean vectors\n");
+#pragma omp parallel for private(k,i)
+	for (k=0;k<vec_size;k++) {
+		av[k] = 0;
+		for (i=0;i<vec_num;i++) { av[k] += Dvec[i*vec_size+k]; }
+		av[k]/=(double)vec_num;
+	}
+	
+	printf("calculating covariances\n");
+	long done=0;
+	if (diagonal) { // only the diagonal elements are stored
+#pragma omp parallel for private(k,i,tmp,idxD) reduction(+:done)
+		for (k=0;k<vec_size;k++) {
+			cov[k] = 0;
+			for (i=0;i<vec_num;i++) { idxD=i*vec_size;  tmp=Dvec[idxD+k]-av[k]; cov[k] += tmp*tmp; }
+			cov[k] /= Nleo;
+			done+=1;
+			printf("done: %li/%li\n",done,vec_size);
+		}
+	}
+	else {  
+#pragma omp parallel for private(k,l,i,idxC,idxD) reduction(+:done)
+		for (k=0;k<vec_size;k++) {
+			for (l=0;l<=k;l++) {
+				idxC=k*vec_size+l;      cov[idxC] = 0;
+				for (i=0;i<vec_num;i++) { idxD=i*vec_size;  cov[idxC] += (Dvec[idxD+k]-av[k])*(Dvec[idxD+l]-av[l]); }
+				cov[idxC] /= Nleo;
+				cov[l*vec_size+k] = cov[idxC]; //symetrize
+			}
+			done+=1;
+			if (omp_get_thread_num()==0) printf("done: %li/%li\n",done,vec_size);
+		}
+	}
+	delete [] av;
+	return cov;
+}
+
 /****************************************************************************************************************/
 //! Calculates the two-sided, upper-tail quantile probability of getting value x, based on values given in array t of size ts which probe the underlying PDF. */
 /*! The probability is that of getting a measurment deviating in absolute value from second quartile (Q24) by more than the measured value x. */

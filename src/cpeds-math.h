@@ -1696,6 +1696,7 @@ void cpeds_change_matrix_ordering_from_rows_to_cols_major(double *M, long rows, 
 	\author Bartosz Lew
 */
 double * cpeds_calculate_covariance_matrix(double *Dvec, long vec_size, long var_num, bool diagonal=false);
+double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long var_num, bool diagonal=false);
 
 //! Returns the quantile probability of occurance of x value in the t array of data of size ts
 /*! Calculates the quantile probability of getting value x from distr given in t of size ts */

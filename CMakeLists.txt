@@ -229,7 +229,7 @@ if (FFTW_FOUND)
 	MESSAGE(STATUS "FFTW_LIBRARIES: " ${FFTW_LIBRARIES})
 endif()
 
-find_package(Boost)
+find_package(Boost REQUIRED)
 #if (Boost_FOUND)
 	MESSAGE(STATUS "Boost_INCLUDE_DIR: " ${Boost_INCLUDE_DIR})
 	MESSAGE(STATUS "Boost_INCLUDES: " ${Boost_INCLUDES})
@@ -763,6 +763,7 @@ add_executable(interpolate src/interpolate.cpp )
 add_executable(compute_CL_ranges src/compute_CL_ranges.cpp )
 add_executable(bin_function src/bin_function.cpp )
 add_executable(coco src/coco.cpp )
+add_executable(cpeds_calculate_cov src/cpeds_calculate_cov.cpp )
 
 # there are many more programs in the package and much more tests that also should be compiled somewhere
 
@@ -993,6 +994,11 @@ set (SLAREFR_LIB slaRefr)
 set (NOVAS_LIB novas)
 set (CCSHT3_LIB ccSHT3)
 
+set (LIBRARIES_BOOST
+	boost_program_options
+	boost_filesystem
+	boost_system
+	)
     
 
 
@@ -1108,6 +1114,7 @@ target_link_libraries(interpolate ${LIBRARIES})
 target_link_libraries(compute_CL_ranges ${LIBRARIES})
 target_link_libraries(bin_function ${LIBRARIES})
 target_link_libraries(coco ${LIBRARIES})
+target_link_libraries(cpeds_calculate_cov ${LIBRARIES} ${LIBRARIES_BOOST})
 
 
 # Link Mscs targets

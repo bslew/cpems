@@ -2454,7 +2454,10 @@ mscsFunction mscsFunction::powerSpectrum(mscsFunction* re, mscsFunction* im, dou
 	//	debug_time1=clock();
 #endif
 	
+//#pragma omp critical
+//	{
 	p=fftw_plan_dft_1d(N, t,t, dir, FFTW_ESTIMATE); 
+//	}
 	for (i=0;i<N;i++) { t[i][0]=f(i); t[i][1]=0.0; }
 	fftw_execute(p);
 #ifdef DEBUG
@@ -2496,8 +2499,10 @@ mscsFunction mscsFunction::powerSpectrum(mscsFunction* re, mscsFunction* im, dou
 	//	P.f(0)/=double(2.0); // zero'th frequency does not get the factor of 2 bacause its a real number
 	//	if (N%2==0) // divide the Nyquist frequency by 2 when it doesn't have its negative counterpart (i.e. when N is even)
 	//		P.f(M-1)/=double(2.0);
-	
+#pragma omp critical
+	{
 	fftw_destroy_plan(p);
+	}
 #ifdef DEBUG_USING_FFTW2AND3
 	delete [] t;
 #else
@@ -2523,8 +2528,9 @@ mscsFunction mscsFunction::inverseFFT(mscsFunction& re, mscsFunction& im, double
 	
 	double *sig=fft_1D_c2r(re.extractValues(),im.extractValues(),re.pointsCount(),pointsNum,true);
 	clearFunction();
-	importFunction(x,sig,pointsNum);
-	if (deleteX) delete [] x;
+	importFunction(x,sig,pointsNum,false);
+	if (deleteX and x!=0) delete [] x;
+	delete [] sig;
 	return *this;
 }
 
