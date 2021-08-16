@@ -3296,17 +3296,20 @@ double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, lon
 	printf("calculating covariances\n");
 	long done=0;
 	if (diagonal) { // only the diagonal elements are stored
-#pragma omp parallel for private(k,i,tmp,idxD) reduction(+:done)
+#pragma omp parallel for private(k,i,tmp,idxD) 
 		for (k=0;k<vec_size;k++) {
 			cov[k] = 0;
 			for (i=0;i<vec_num;i++) { idxD=i*vec_size;  tmp=Dvec[idxD+k]-av[k]; cov[k] += tmp*tmp; }
 			cov[k] /= Nleo;
+#pragma omp critical
+			{
 			done+=1;
-			printf("done: %li/%li\n",done,vec_size);
+			}
+			if (omp_get_thread_num()==0) printf("done: %li/%li\n",done,vec_size);
 		}
 	}
 	else {  
-#pragma omp parallel for private(k,l,i,idxC,idxD) reduction(+:done)
+#pragma omp parallel for private(k,l,i,idxC,idxD) 
 		for (k=0;k<vec_size;k++) {
 			for (l=0;l<=k;l++) {
 				idxC=k*vec_size+l;      cov[idxC] = 0;
@@ -3314,7 +3317,10 @@ double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, lon
 				cov[idxC] /= Nleo;
 				cov[l*vec_size+k] = cov[idxC]; //symetrize
 			}
+#pragma omp critical
+			{
 			done+=1;
+			}
 			if (omp_get_thread_num()==0) printf("done: %li/%li\n",done,vec_size);
 		}
 	}
