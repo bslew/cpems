@@ -22,13 +22,18 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <cpems/Mscs-function.h>
 #include <cpems/Mscs-function3dregc.h>
+//#include <Eigen/Geometry>
+//#include <Eigen/Dense>
+#include <Eigen/LU>
+//#include <Eigen/Eigen>
+//#include <eigen3/Eigen/Eigen>
 //#include <yaml-cpp/yaml.h>
 
 
 #define PARAMETER_FILE "input.par"
 
 using namespace std;
-
+using namespace Eigen;
 
 spdlog::logger getLogger(int verbosity);
 string getCmdString(int argc, char** argv);
@@ -41,6 +46,51 @@ int test_direction(boost::program_options::variables_map &opt,spdlog::logger& lo
 	logger.info("dt [UTC]: {}",opt["dtSt"].as<string>());
 	return 0;
 	
+}
+
+
+int save_matrix(Eigen::MatrixXd M, std::string fname) {
+	int rows,cols;
+	std::ofstream ofs;
+	ofs.open(fname,std::ofstream::out);
+		
+	for (long i = 0; i < M.rows(); i++) {
+		for (long j = 0; j < M.cols(); j++) {
+			ofs << M(i,j) << " ";
+		}
+		ofs << "\n";
+	}
+	ofs << "\n";
+	ofs.close();
+	return 0;
+}
+
+Eigen::MatrixXd load_matrix(std::string fname) {
+	int rows,cols;
+	char ch='\n';
+	cols=cpeds_get_cols_num_first_ln(fname.c_str(),&ch);
+	rows=cpeds_get_txt_file_lines_count(fname);
+
+	cout << "The input file has " << rows << " rows and " << cols << " columns\n";
+	Eigen::MatrixXd C(1,1);
+	C.resize(rows, cols);
+	
+	double val;
+	long i=0,r=0,c=0;
+	std::ifstream ifs(fname);
+	while (ifs >> val) {
+		C(r,c)=val;
+#ifdef DEBUG_CPEDS_CALCULATE_COV
+		cout << "read " << val <<" into (r,c)=(" << r << "," << c << ")\n";
+#endif
+
+		i++;
+		c=i%cols;
+		r=i/cols;
+	}
+	ifs.close();
+
+	return C;
 }
 
 /* ******************************************************************************************** */
@@ -56,13 +106,14 @@ int main(int argc, char **argv) {
 	logger.info(getCmdString(argc,argv));
 	
 	std::string infile;
+	std::string outfile;
 //	std::cout << opt["input_file"].as< vector<string> >() << std::endl;
 	if (opt.count("input-file")) {
 		vector<string> input_files=opt["input-file"].as< vector<string> >();
 		if (input_files.size()>=1) infile=input_files[0];
+		if (input_files.size()>=2) outfile=input_files[1]; 
 	}
 	
-	std::ifstream ifs(infile);
 	//
 	// save yaml config file for the dataset
 	//
@@ -78,16 +129,16 @@ int main(int argc, char **argv) {
 	//	fout.close();
 	
 	
-	if (opt["test"].as<bool>()) {
-		auto ret=test_direction(opt,logger);
-		exit(ret);
-	}
+//	if (opt["test"].as<bool>()) {
+//		auto ret=test_direction(opt,logger);
+//		exit(ret);
+//	}
 	
 	//
 	// iterate over all input files in parallel
 	//
 	//	vector<string>::const_iterator fIt;
-	long i=0;
+//	long i=0;
 	//#pragma omp parallel for private(i) firstprivate(channels) 
 	//	for (auto infile : input_files) {
 	//	for (fIt=input_files.begin(); fIt!=input_files.end();++fIt) {
@@ -99,7 +150,23 @@ int main(int argc, char **argv) {
 	//	}
 	
 	
-	// prepare data for sasving
+	Eigen::initParallel();
+//	Eigen::Matrix<double,rows,cols> C;
+//	C.resize
+//	cov=cpeds_matrix_load(infile.c_str());
+	Eigen::MatrixXd C,Cinv;
+
+//	if (opt["test"].as<bool>()) {
+//		C=Eigen::Ran
+//	}
+	C=load_matrix(infile);
+	Cinv=C.inverse();
+	save_matrix(Cinv, outfile);
+
+	
+	
+	
+	// prepare data for saving
 	
 //	mscsFunction3dregc sun_data;
 //	sun_data.setSize(4,sun_elev_avg.pointsCount());
@@ -165,6 +232,7 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 					//            ("include-path,I", 
 					//                 po::value< vector<string> >()->composing(), 
 					//                 "include path")
+					("test", po::value<bool>()->default_value(false), "generate matrix and invert")
 					("ofile,o", po::value<string>()->default_value("cov.txt"), "output file name")
 					("MJD", po::value<bool>()->default_value(false), "output MJD instead of JD")
 					("dtEn", po::value<string>()->default_value("2021-01-01T10:00:00"), "Ending UTC date and time for generating "

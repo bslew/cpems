@@ -3270,13 +3270,22 @@ double * cpeds_calculate_covariance_matrix(double *Dvec, long vec_size, long vec
 	return cov;
 }
 /* ******************************************************************************************** */
-double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long vec_num, bool diagonal) {
+double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long vec_num, 
+		bool diagonal,
+		long max_n_diagonals) {
 	long i,k,l;
 	long idxC,idxD;
 	double *cov;
+
+	long cov_size;
+	if (diagonal)  cov_size=vec_size; 
+	else cov_size=vec_size*vec_size; 
+	cov= new double[cov_size];
+	// initialize cov
+	for (k=0;k<vec_size;k++) {		cov[k]=0;	}
+
 	
-	if (diagonal) cov= new double[vec_size];
-	else cov= new double[vec_size*vec_size];
+	if (max_n_diagonals==-1) max_n_diagonals=vec_size;
 	
 	double *av = new double[vec_size];
 	double tmp,Nleo;
@@ -3286,7 +3295,7 @@ double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, lon
 	
 	// calculate average vectors first
 	printf("calculating mean vectors\n");
-#pragma omp parallel for private(k,i)
+#pragma omp parallel for private(k,i) schedule(dynamic)
 	for (k=0;k<vec_size;k++) {
 		av[k] = 0;
 		for (i=0;i<vec_num;i++) { av[k] += Dvec[i*vec_size+k]; }
@@ -3296,7 +3305,7 @@ double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, lon
 	printf("calculating covariances\n");
 	long done=0;
 	if (diagonal) { // only the diagonal elements are stored
-#pragma omp parallel for private(k,i,tmp,idxD) 
+#pragma omp parallel for private(k,i,tmp,idxD) schedule(dynamic)
 		for (k=0;k<vec_size;k++) {
 			cov[k] = 0;
 			for (i=0;i<vec_num;i++) { idxD=i*vec_size;  tmp=Dvec[idxD+k]-av[k]; cov[k] += tmp*tmp; }
@@ -3304,14 +3313,16 @@ double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, lon
 #pragma omp critical
 			{
 			done+=1;
+			printf("done: %li/%li\n",done,vec_size);
 			}
-			if (omp_get_thread_num()==0) printf("done: %li/%li\n",done,vec_size);
 		}
 	}
 	else {  
-#pragma omp parallel for private(k,l,i,idxC,idxD) 
+#pragma omp parallel for private(k,l,i,idxC,idxD) schedule(dynamic)
 		for (k=0;k<vec_size;k++) {
-			for (l=0;l<=k;l++) {
+			long lmin=cpeds_get_max(0,k-max_n_diagonals);
+//			printf("lmin: %li\n",lmin);
+			for (l=lmin;l<=k;l++) {
 				idxC=k*vec_size+l;      cov[idxC] = 0;
 				for (i=0;i<vec_num;i++) { idxD=i*vec_size;  cov[idxC] += (Dvec[idxD+k]-av[k])*(Dvec[idxD+l]-av[l]); }
 				cov[idxC] /= Nleo;

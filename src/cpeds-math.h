@@ -1696,7 +1696,32 @@ void cpeds_change_matrix_ordering_from_rows_to_cols_major(double *M, long rows, 
 	\author Bartosz Lew
 */
 double * cpeds_calculate_covariance_matrix(double *Dvec, long vec_size, long var_num, bool diagonal=false);
-double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long var_num, bool diagonal=false);
+
+/*!
+	\brief as cpeds_calculate_covariance_matrix but openMP parallel implementation
+	\details 
+	@param max_n_diagonals =[0,var_num-1] - Determines limit 
+	of diagonals that should be calculated. -1 (default) means that the full matrix is calculated.
+	Positive integers indicate how many near-diagonal elements should be calculated.
+	max_n_diagonals=1 is equivalent with diagonal covariance matrix. 
+	If max_n_diagonals==1 then the diagonal and the sub-diagonal closest to the diagonal is calculated.
+	More specifically if max_n_diagonals=n then the following covariance matrix elements are calculated
+	
+	c_i,i c_i+1,i c_i+2,i ... c_i+n,i	
+	
+	If diagonal=false then the return matrix size is var_num*var_num otherwise it's a vector of size
+	var_num.
+	
+	@return pointer to the covariance matrix
+
+	
+	
+
+	\date Aug 17, 2021, 1:03:35 PM
+*/
+double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long var_num, 
+		bool diagonal=false,
+		long max_n_diagonals=-1);
 
 //! Returns the quantile probability of occurance of x value in the t array of data of size ts
 /*! Calculates the quantile probability of getting value x from distr given in t of size ts */

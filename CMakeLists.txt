@@ -183,6 +183,14 @@ if (CFITSIO_FOUND)
 	MESSAGE(STATUS "CFITSIO_LIBRARIES: " ${CFITSIO_LIBRARIES})
 endif()
 
+FIND_PACKAGE(Eigen3)
+if (EIGEN3_FOUND)
+	MESSAGE(STATUS "EIGEN3_INCLUDE_DIR: " ${EIGEN3_INCLUDE_DIR})
+	MESSAGE(STATUS "EIGEN3_INCLUDE_DIR: " ${EIGEN3_INCLUDE_DIRS})
+	MESSAGE(STATUS "EIGEN3_ROOT_DIR: " ${EIGEN3_ROOT_DIR})
+#	MESSAGE(STATUS "EIGEN_LIBRARIES: " ${EIGEN_LIBRARIES})
+endif()
+
 FIND_PACKAGE(GSL 2 )
 # GSL_INCLUDE_DIR      = where to find headers 
 # GSL_LIBRARIES   = full path to the libraries
@@ -504,6 +512,7 @@ include_directories(
 #	${MSCS_INCLUDE_DIR}
     /usr/include/python2.7
     ${Boost_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
 	)
 
 #add_subdirectory(external_packages/novas)
@@ -1114,7 +1123,7 @@ target_link_libraries(interpolate ${LIBRARIES})
 target_link_libraries(compute_CL_ranges ${LIBRARIES})
 target_link_libraries(bin_function ${LIBRARIES})
 target_link_libraries(coco ${LIBRARIES})
-target_link_libraries(cpeds_calculate_cov ${LIBRARIES} ${LIBRARIES_BOOST})
+target_link_libraries(cpeds_calculate_cov ${LIBRARIES} ${LIBRARIES_BOOST} )
 
 
 # Link Mscs targets
