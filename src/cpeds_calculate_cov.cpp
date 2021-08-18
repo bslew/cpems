@@ -72,7 +72,6 @@ Eigen::MatrixXd load_matrix(std::string fname,
 	int rows,cols,max_rows=-1,max_cols=-1;
 //	char ch='\n';
 
-	if (logger!=0) logger->info("File {} has (rows,cols)=({},{})\n",fname, max_rows,max_cols);
 	if (opt["Nrows"].as<long>()>0) {
 		rows=opt["Nrows"].as<long>();
 		if (logger!=0) logger->info("Ignoring counting file rows");
@@ -90,6 +89,8 @@ Eigen::MatrixXd load_matrix(std::string fname,
 		max_cols=cpeds_get_file_cols_num_first_ln(fname);
 		cols=max_cols;
 	}
+	if (logger!=0) logger->info("File {} has (rows,cols)=({},{})\n",fname, max_rows,max_cols);
+
 	if (rows>max_rows and max_rows!=-1) rows=max_rows;
 	if (cols>max_cols and max_cols!=-1) cols=max_cols;
 	
@@ -116,7 +117,7 @@ Eigen::MatrixXd load_matrix(std::string fname,
 		
 		if (r==rows) break;
 		if (opt["verbosity"].as<int>()>1) {
-			if (logger!=0 and (r % promptEvery==0)) logger->info("Loaded {}/{} rows",r,rows);
+			if (logger!=0 and c==0 and (r % promptEvery==0)) logger->info("Loaded {}/{} rows",r,rows);
 		}
 	}
 	ifs.close();
