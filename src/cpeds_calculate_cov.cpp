@@ -69,29 +69,36 @@ int save_matrix(Eigen::MatrixXd M, std::string fname) {
 Eigen::MatrixXd load_matrix(std::string fname, 
 		boost::program_options::variables_map& opt,
 		spdlog::logger* logger=0) {
-	int rows,cols,max_rows,max_cols;
+	int rows,cols,max_rows=-1,max_cols=-1;
 //	char ch='\n';
-	max_cols=cpeds_get_file_cols_num_first_ln(fname);
-	max_rows=cpeds_get_txt_file_non_empty_lines_count(fname);
 
 	if (logger!=0) logger->info("File {} has (rows,cols)=({},{})\n",fname, max_rows,max_cols);
 	if (opt["Nrows"].as<long>()>0) {
 		rows=opt["Nrows"].as<long>();
+		if (logger!=0) logger->info("Ignoring counting file rows");
 	}
-	else rows=max_rows;
+	else {
+		max_rows=cpeds_get_txt_file_non_empty_lines_count(fname);
+		rows=max_rows;
+	}
 	
 	if (opt["Ncols"].as<long>()>0) {
 		cols=opt["Ncols"].as<long>();
+		if (logger!=0) logger->info("Ignoring counting file cols");
 	}
-	else cols=max_cols;
-	if (rows>max_rows) rows=max_rows;
-	if (cols>max_cols) cols=max_cols;
+	else {
+		max_cols=cpeds_get_file_cols_num_first_ln(fname);
+		cols=max_cols;
+	}
+	if (rows>max_rows and max_rows!=-1) rows=max_rows;
+	if (cols>max_cols and max_cols!=-1) cols=max_cols;
 	
 	if (logger!=0) logger->info("Will load (rows,cols)=({},{})",rows,cols);
 	
 	Eigen::MatrixXd M(1,1);
 	M.resize(rows, cols);
 	
+	long promptEvery=long(pow(10,long(log10(rows)-1)));
 	double val;
 	long i=0,r=0,c=0;
 	std::ifstream ifs(fname);
@@ -108,6 +115,9 @@ Eigen::MatrixXd load_matrix(std::string fname,
 		r=i/cols;
 		
 		if (r==rows) break;
+		if (opt["verbosity"].as<int>()>1) {
+			if (logger!=0 and (r % promptEvery==0)) logger->info("Loaded {}/{} rows",r,rows);
+		}
 	}
 	ifs.close();
 
@@ -125,8 +135,10 @@ int main(int argc, char **argv) {
 	boost::program_options::variables_map opt=parseOptions(argc,argv);
 	
 	spdlog::logger logger=getLogger(opt["verbosity"].as<int>());
-	logger.info("cpeds_calculate_cov - NEW RUN");
-	logger.info(getCmdString(argc,argv));
+	if (opt["verbosity"].as<int>()>0) {
+		logger.info("cpeds_calculate_cov - NEW RUN");
+		logger.info(getCmdString(argc,argv));
+	}
 	
 	std::string infile;
 	std::string outfile=opt["ofile"].as<string>();
@@ -152,6 +164,29 @@ int main(int argc, char **argv) {
 	//	fout.close();
 	Eigen::initParallel();
 	
+	if (opt["sliceCrossDiag"].as<bool>()) {
+		Eigen::MatrixXd M;
+		M=load_matrix(infile,opt);
+		long cd=opt["i"].as<long>();
+		long j=0;
+		for (long i=M.rows()-cd-1;i>=0;i--) {
+			if (j>0 and i>0) std::cout << j << " " << M(i,j) << "\n";
+			j++;
+		}
+		return 0;
+	}
+	
+	if (opt["sliceDiag"].as<bool>()) {
+		Eigen::MatrixXd M;
+		M=load_matrix(infile,opt);
+		long cd=opt["i"].as<long>();
+		long j=0;
+		for (long i=cd;i<M.rows();i++) {
+			if (j>0 and i>0) std::cout << j << " " << M(i,j) << "\n";
+			j++;
+		}
+		return 0;
+	}
 	
 	if (opt["cov"].as<bool>()) {
 		Eigen::MatrixXd dcov,C;
@@ -271,6 +306,10 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 					//                 po::value< vector<string> >()->composing(), 
 					//                 "include path")
 					("test", po::value<bool>()->default_value(false), "generate matrix and invert")
+					("sliceCrossDiag", po::value<bool>()->default_value(false), "slice matrix along cross"
+							"diagonal. Use option -i to specify distance from the main diagonal.")
+					("sliceDiag", po::value<bool>()->default_value(false), "slice matrix along a"
+							"diagonal. Use option -i to specify distance from the main diagonal.")
 					("cond", po::value<bool>()->default_value(false), "condition number of input matrix")
 					("invert", po::value<bool>()->default_value(false), "invert input matrix")
 					("cov", po::value<bool>()->default_value(false), "calculate covariance matrix."
@@ -285,6 +324,8 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 							"Load only Nrows from input file. -1 loads the entire file (default)")
 					("Ncols", po::value<long>()->default_value(-1), ""
 							"Load only Ncols from input file. -1 loads all columns (default)")
+					("i,id", po::value<long>()->default_value(0), ""
+							"slicing parameter (default)")
 					;
 		
 		// Hidden options, will be allowed both on command line and
@@ -326,7 +367,7 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 		// process config file
 		ifstream ifs(config_file.c_str());
 		if (!ifs) {
-			cout << "cannot open config file: " << config_file << "\n";
+			cerr << "cannot open config file: " << config_file << "\n";
 			//            return 0;
 		}
 		else {
@@ -338,7 +379,7 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 		// process parameter file 
 		ifs.open(parameter_file.c_str());
 		if (!ifs.is_open()) {
-			cout << "cannot open parameter file: " << parameter_file << "\n";
+			cerr << "cannot open parameter file: " << parameter_file << "\n";
 			//            return 0;
 		}
 		else {
@@ -376,7 +417,7 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
         }
 		 */
 		
-		cout << "Verbosity level is " << opt << "\n";                
+		if (opt>0) cout << "Verbosity level is " << opt << "\n";                
 	}
 	catch(exception& e)
 	{
