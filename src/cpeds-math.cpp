@@ -23,6 +23,7 @@
 //#include <ncarg/ngmath.h>
 #include "sys/stat.h"
 #include "cpeds-math.h"
+#include "StringParser.h"
 #include "cpeds-templates.h"
 //#include "matrix.h"
 #include <fftw3.h>
@@ -3282,10 +3283,13 @@ double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, lon
 	else cov_size=vec_size*vec_size; 
 	cov= new double[cov_size];
 	// initialize cov
-	for (k=0;k<vec_size;k++) {		cov[k]=0;	}
+	for (k=0;k<cov_size;k++) {		cov[k]=0;	}
 
 	
 	if (max_n_diagonals==-1) max_n_diagonals=vec_size;
+	else {
+		if (max_n_diagonals>vec_size) max_n_diagonals=vec_size;
+	}
 	
 	double *av = new double[vec_size];
 	double tmp,Nleo;
@@ -3833,6 +3837,19 @@ long cpeds_get_cols_num_first_ln(strarg fn,char * lastc) {
 	
 	return cols;
 }
+/* ******************************************************************************************** */
+long cpeds_get_file_cols_num_first_ln(string fname) {
+	std::ifstream ifs(fname);
+	std::string fstline;
+	
+	std::getline(ifs,fstline);
+	ifs.close();
+	if (fstline[fstline.size()-1]=='\n') {
+		fstline.erase(fstline.end()-1,fstline.end());
+	}
+	cpeds::StringParser::rtrim(fstline);
+	return cpeds::StringParser::count_spaces(fstline)+1;
+}
 //***************************************************************************************************
 long cpeds_get_cols_num_first_ln(strarg fn, bool commentedFile, long maxLineSize) {
 	ifstream f;
@@ -3939,6 +3956,17 @@ long long cpeds_get_txt_file_lines_count(string fName) {
             ++number_of_lines;
     fclose(infile);
     return number_of_lines;
+}
+/* ******************************************************************************************** */
+long long cpeds_get_txt_file_non_empty_lines_count(string fName) {
+	std::ifstream ifs(fName);
+	std::string s;
+	long long n=0;
+	while (std::getline(ifs, s)) {
+		if (s[0]!='\n') n++;
+	}
+	ifs.close();
+	return n;
 }
 //***************************************************************************************************
 // this routine checks the txt file fn and returns an cpeds_queue object that contains the

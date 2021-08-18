@@ -20,11 +20,12 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#include <cpems/Mscs-function.h>
-#include <cpems/Mscs-function3dregc.h>
+#include "cpeds-math.h"
+//#include <cpems/Mscs-function3dregc.h>
 //#include <Eigen/Geometry>
 //#include <Eigen/Dense>
 #include <Eigen/LU>
+#include <Eigen/SVD>
 //#include <Eigen/Eigen>
 //#include <eigen3/Eigen/Eigen>
 //#include <yaml-cpp/yaml.h>
@@ -42,11 +43,11 @@ boost::program_options::variables_map  parseOptions(int argc, char** argv);
 
 
 
-int test_direction(boost::program_options::variables_map &opt,spdlog::logger& logger) {
-	logger.info("dt [UTC]: {}",opt["dtSt"].as<string>());
-	return 0;
-	
-}
+//int test_direction(boost::program_options::variables_map &opt,spdlog::logger& logger) {
+//	logger.info("dt [UTC]: {}",opt["dtSt"].as<string>());
+//	return 0;
+//	
+//}
 
 
 int save_matrix(Eigen::MatrixXd M, std::string fname) {
@@ -60,37 +61,59 @@ int save_matrix(Eigen::MatrixXd M, std::string fname) {
 		}
 		ofs << "\n";
 	}
-	ofs << "\n";
+//	ofs << "\n";
 	ofs.close();
 	return 0;
 }
 
-Eigen::MatrixXd load_matrix(std::string fname) {
-	int rows,cols;
-	char ch='\n';
-	cols=cpeds_get_cols_num_first_ln(fname.c_str(),&ch);
-	rows=cpeds_get_txt_file_lines_count(fname);
+Eigen::MatrixXd load_matrix(std::string fname, 
+		boost::program_options::variables_map& opt,
+		spdlog::logger* logger=0) {
+	int rows,cols,max_rows,max_cols;
+//	char ch='\n';
+	max_cols=cpeds_get_file_cols_num_first_ln(fname);
+	max_rows=cpeds_get_txt_file_non_empty_lines_count(fname);
 
-	cout << "The input file has " << rows << " rows and " << cols << " columns\n";
-	Eigen::MatrixXd C(1,1);
-	C.resize(rows, cols);
+	if (logger!=0) logger->info("File {} has (rows,cols)=({},{})\n",fname, max_rows,max_cols);
+	if (opt["Nrows"].as<long>()>0) {
+		rows=opt["Nrows"].as<long>();
+	}
+	else rows=max_rows;
+	
+	if (opt["Ncols"].as<long>()>0) {
+		cols=opt["Ncols"].as<long>();
+	}
+	else cols=max_cols;
+	if (rows>max_rows) rows=max_rows;
+	if (cols>max_cols) cols=max_cols;
+	
+	if (logger!=0) logger->info("Will load (rows,cols)=({},{})",rows,cols);
+	
+	Eigen::MatrixXd M(1,1);
+	M.resize(rows, cols);
 	
 	double val;
 	long i=0,r=0,c=0;
 	std::ifstream ifs(fname);
 	while (ifs >> val) {
-		C(r,c)=val;
-#ifdef DEBUG_CPEDS_CALCULATE_COV
-		cout << "read " << val <<" into (r,c)=(" << r << "," << c << ")\n";
-#endif
+		M(r,c)=val;
+		if (opt["verbosity"].as<int>()>2)
+			cout << "read " << val <<" into (r,c)=(" << r << "," << c << ")\n";
 
 		i++;
+
+		if (c+1==cols) ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
 		c=i%cols;
 		r=i/cols;
+		
+		if (r==rows) break;
 	}
 	ifs.close();
 
-	return C;
+	if (logger!=0) logger->info("Loaded matrix of size (rows,cols)=({},{})",M.rows(),M.cols());
+
+	return M;
 }
 
 /* ******************************************************************************************** */
@@ -106,12 +129,12 @@ int main(int argc, char **argv) {
 	logger.info(getCmdString(argc,argv));
 	
 	std::string infile;
-	std::string outfile;
+	std::string outfile=opt["ofile"].as<string>();
 //	std::cout << opt["input_file"].as< vector<string> >() << std::endl;
 	if (opt.count("input-file")) {
 		vector<string> input_files=opt["input-file"].as< vector<string> >();
 		if (input_files.size()>=1) infile=input_files[0];
-		if (input_files.size()>=2) outfile=input_files[1]; 
+//		if (input_files.size()>=2) outfile=input_files[1]; 
 	}
 	
 	//
@@ -127,44 +150,59 @@ int main(int argc, char **argv) {
 	//	std::ofstream fout(opt["odir"].as<string>()+"/config.yaml");
 	//	fout << config;
 	//	fout.close();
-	
-	
-//	if (opt["test"].as<bool>()) {
-//		auto ret=test_direction(opt,logger);
-//		exit(ret);
-//	}
-	
-	//
-	// iterate over all input files in parallel
-	//
-	//	vector<string>::const_iterator fIt;
-//	long i=0;
-	//#pragma omp parallel for private(i) firstprivate(channels) 
-	//	for (auto infile : input_files) {
-	//	for (fIt=input_files.begin(); fIt!=input_files.end();++fIt) {
-	//	for (i=0;i<input_files.size();i++) {
-	//		string infile=input_files[i];
-	//    	logger.info("Processing file: {}", infile);
-	//    	logger.debug("loading data...");
-	
-	//	}
-	
-	
 	Eigen::initParallel();
-//	Eigen::Matrix<double,rows,cols> C;
-//	C.resize
-//	cov=cpeds_matrix_load(infile.c_str());
-	Eigen::MatrixXd C,Cinv;
-
-//	if (opt["test"].as<bool>()) {
-//		C=Eigen::Ran
-//	}
-	C=load_matrix(infile);
-	Cinv=C.inverse();
-	save_matrix(Cinv, outfile);
-
 	
 	
+	if (opt["cov"].as<bool>()) {
+		Eigen::MatrixXd dcov,C;
+		dcov=load_matrix(infile,opt,&logger);
+		long N=dcov.size();
+		double* D = new double[N];
+		for (long i = 0; i < dcov.rows(); i++) {
+			for (long j = 0; j < dcov.cols(); j++) {
+				D[dcov.cols()*i+j]=dcov(i,j);
+			}
+		}
+//		double* Cov = cpeds_calculate_covariance_matrix_para(D,dcov.cols(),dcov.rows(),false,
+//				opt["max_diag"].as<long>());
+		logger.info("Calculating {} diagonals",opt["max_diag"].as<long>());
+		double* Cov = cpeds_calculate_covariance_matrix_para(D,dcov.cols(),dcov.rows(),false,
+				opt["max_diag"].as<long>());
+
+		delete [] D;
+		
+		C.resize(dcov.cols(),dcov.cols());
+		for (long i = 0; i < dcov.cols(); i++) {
+			for (long j = 0; j < dcov.cols(); j++) {
+				C(i,j)=Cov[dcov.cols()*i+j];
+			}
+		}
+		delete [] Cov;
+		
+		logger.info("saving covariance matrix to: {}",outfile);
+		save_matrix(C, outfile);
+		return 0;
+	}
+	
+	if (opt["invert"].as<bool>()) {
+		Eigen::MatrixXd C,Cinv;
+
+		C=load_matrix(infile,opt,&logger);
+		Cinv=C.inverse();
+		save_matrix(Cinv, outfile);
+		logger.info("saving inverted matrix to: {}",outfile);
+		return 0;
+	}	
+	
+	if (opt["cond"].as<bool>()) {
+		Eigen::MatrixXd C=load_matrix(infile,opt,&logger);
+		
+		BDCSVD<MatrixXd> svd(C);
+		double cond = svd.singularValues()(0) 
+		    / svd.singularValues()(svd.singularValues().size()-1);		
+		logger.info("matrix condition number: {}",cond);
+		return 0;
+	}
 	
 	// prepare data for saving
 	
@@ -227,22 +265,26 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 		// config file
 		po::options_description config("Configuration");
 		config.add_options()
-            		("verbosity,v", po::value<int>(&opt)->default_value(2), 
+            		("verbosity,v", po::value<int>(&opt)->default_value(1), 
             				"verbosity level")
 					//            ("include-path,I", 
 					//                 po::value< vector<string> >()->composing(), 
 					//                 "include path")
 					("test", po::value<bool>()->default_value(false), "generate matrix and invert")
+					("cond", po::value<bool>()->default_value(false), "condition number of input matrix")
+					("invert", po::value<bool>()->default_value(false), "invert input matrix")
+					("cov", po::value<bool>()->default_value(false), "calculate covariance matrix."
+							"Rows in input file should contain complete observations of all variables.")
 					("ofile,o", po::value<string>()->default_value("cov.txt"), "output file name")
-					("MJD", po::value<bool>()->default_value(false), "output MJD instead of JD")
-					("dtEn", po::value<string>()->default_value("2021-01-01T10:00:00"), "Ending UTC date and time for generating "
-							"list of sun positions. (eg. 2000-01-01T10:00:00)")
-					("Navg", po::value<int>()->default_value(144), ""
-							"Averaging scale - number of calculations"
-							"that should be averaged for saving "
-							"(eg. dt=10 and avg=144 means that position"
-							"is calculated every 10 minutes and every 144"
-							"positions aver averaged (1-day) before saving)")
+					("max_diag", po::value<long>()->default_value(-1), "--cov suboption. "
+							"Number of sub-diagonals to calculate."
+							"-1 - calculates the full covariance matrix. "
+							"0 - calculates only the diagonal, "
+							"1 - calculates up to 1st sub-diagonal (inclusive)")
+					("Nrows", po::value<long>()->default_value(-1), ""
+							"Load only Nrows from input file. -1 loads the entire file (default)")
+					("Ncols", po::value<long>()->default_value(-1), ""
+							"Load only Ncols from input file. -1 loads all columns (default)")
 					;
 		
 		// Hidden options, will be allowed both on command line and

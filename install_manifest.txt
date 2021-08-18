@@ -33,6 +33,7 @@
 /usr/local/include/cpems/qtbase.h
 /usr/local/include/cpems/cpeds-common.h
 /usr/local/include/cpems/cpeds-consts.h
+/usr/local/include/cpems/StringParser.h
 /usr/local/include/cpems/cpeds-rng.h
 /usr/local/include/cpems/cpeds-math.h
 /usr/local/include/cpems/cpeds-cosmo.h

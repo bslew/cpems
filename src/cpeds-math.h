@@ -1685,7 +1685,8 @@ void cpeds_change_matrix_ordering_from_rows_to_cols_major(double *M, long rows, 
 	@return pointer to the covariance matrix
 	
 	Calculates the covariance matrix of the measured data in Dvec table, organized in vec_num vectors 1-row vectors, each of size vec_size and form (1___x___vec_size) 
-	If i=0..vec_num-1 iterates vector index and j=0..vec_size-1 iterates variate in i'th vector then the ordering of the Dvec array is i-major: i.e. vector index major.
+	If i=0..vec_num-1 iterates vector index and j=0..vec_size-1 iterates variate in i'th vector then 
+	the ordering of the Dvec array is i-major: i.e. vector index major.
 	Hence the Dvec is a set of vectors where each row-vector is a single measurement of all variates
 	The resulting cov matrix is a square var_num___x___var_num size symmetric matrix 
 	given by pointer cov.
@@ -1924,6 +1925,7 @@ double cpeds_getMinAbs3(double v1, double v2, double v3);
 /*! it works good whether or not the last line in file ends with \n (this doesn't matter here since it's only for the first line) */
 /*! if you run it on some strange stuff then you better check the results. */
 long cpeds_get_cols_num_first_ln(strarg fn,char * lastc);
+long cpeds_get_file_cols_num_first_ln(string fname);
 
 /*!
   \brief returns the number of columns in the first line of the file
@@ -1963,6 +1965,7 @@ long cpeds_get_cols_num(FILE *f,char * lastc);
 long long cpeds_get_file_size(string fName);
 
 long long cpeds_get_txt_file_lines_count(string fName);
+long long cpeds_get_txt_file_non_empty_lines_count(string fName);
 
 ////! This routine checks the txt file given by fn, and returns the cpeds_queue object that contains the
 ////! number of columns (space separated words) in each row of the file and much other useful info.

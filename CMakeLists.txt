@@ -544,6 +544,7 @@ set (CPEDSLIB_HEADERS
     src/qtbase.h
     src/cpeds-common.h
 	src/cpeds-consts.h
+	src/StringParser.h
 	src/cpeds-rng.h
 	src/cpeds-math.h 
 	src/cpeds-cosmo.h 
@@ -583,6 +584,7 @@ set (CPEDSLIB_SOURCES
     ${CPEDSLIB_HEADERS}
 	src/cpeds-common.cpp
 	src/cpeds-consts.cpp
+	src/StringParser.cpp
 	src/cpeds-rng.cpp
 	src/cpeds-math.cpp 
 	src/cpeds-pixelization.cpp
@@ -1169,6 +1171,7 @@ add_subdirectory(tests)
 #
 set (CPEMS_EXECUTABLES
 	bin_function 
+	cpeds_calculate_cov
 	coco 
 	compute_CL_ranges 
 	cosmocalc 
