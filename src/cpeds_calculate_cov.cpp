@@ -21,6 +21,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include "cpeds-math.h"
+#include "cpeds-list.h"
 //#include <cpems/Mscs-function3dregc.h>
 //#include <Eigen/Geometry>
 //#include <Eigen/Dense>
@@ -176,6 +177,26 @@ int main(int argc, char **argv) {
 		}
 		return 0;
 	}
+
+	if (opt["diagStats"].as<bool>()) {
+		Eigen::MatrixXd M;
+		M=load_matrix(infile,opt);
+		std::ofstream ofs(outfile);
+		
+		for (long i=0;i<M.rows();i++) {
+			cpedsList<double> d;
+			long j=0;
+			long ii=i;
+			while (j<M.cols() and ii<M.rows()) {
+				d.append(M(ii++,j++));
+			}
+			ofs << i << " " << d.median() << " " << d.std() << "\n";
+		}
+		ofs.close();
+		return 0;
+		
+	}
+	
 	
 	if (opt["sliceDiag"].as<bool>()) {
 		Eigen::MatrixXd M;
@@ -239,7 +260,17 @@ int main(int argc, char **argv) {
 		logger.info("matrix condition number: {}",cond);
 		return 0;
 	}
-	
+
+	if (opt["det"].as<bool>()) {
+		Eigen::MatrixXd C=load_matrix(infile,opt,&logger);
+		
+//		BDCSVD<MatrixXd> svd(C);
+		double det = C.determinant();
+		logger.info("det: {}",det);
+		logger.info("ln det: {}",log(det));
+		return 0;
+	}
+
 	// prepare data for saving
 	
 //	mscsFunction3dregc sun_data;
@@ -311,7 +342,10 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 							"diagonal. Use option -i to specify distance from the main diagonal.")
 					("sliceDiag", po::value<bool>()->default_value(false), "slice matrix along a"
 							"diagonal. Use option -i to specify distance from the main diagonal.")
+					("diagStats", po::value<bool>()->default_value(false), "calculate diagonal "
+							"statistics (median value and std) and save to output file")
 					("cond", po::value<bool>()->default_value(false), "condition number of input matrix")
+					("det", po::value<bool>()->default_value(false), "determinant of input matrix")
 					("invert", po::value<bool>()->default_value(false), "invert input matrix")
 					("cov", po::value<bool>()->default_value(false), "calculate covariance matrix."
 							"Rows in input file should contain complete observations of all variables.")

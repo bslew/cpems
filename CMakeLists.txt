@@ -775,6 +775,7 @@ add_executable(compute_CL_ranges src/compute_CL_ranges.cpp )
 add_executable(bin_function src/bin_function.cpp )
 add_executable(coco src/coco.cpp )
 add_executable(cpeds_calculate_cov src/cpeds_calculate_cov.cpp )
+add_executable(cpeds_row_average src/cpeds_row_average.cpp )
 
 # there are many more programs in the package and much more tests that also should be compiled somewhere
 
@@ -1126,6 +1127,7 @@ target_link_libraries(compute_CL_ranges ${LIBRARIES})
 target_link_libraries(bin_function ${LIBRARIES})
 target_link_libraries(coco ${LIBRARIES})
 target_link_libraries(cpeds_calculate_cov ${LIBRARIES} ${LIBRARIES_BOOST} )
+target_link_libraries(cpeds_row_average ${LIBRARIES} ${LIBRARIES_BOOST} )
 
 
 # Link Mscs targets
@@ -1172,6 +1174,7 @@ add_subdirectory(tests)
 set (CPEMS_EXECUTABLES
 	bin_function 
 	cpeds_calculate_cov
+	cpeds_row_average
 	coco 
 	compute_CL_ranges 
 	cosmocalc 

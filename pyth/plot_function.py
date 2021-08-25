@@ -4191,28 +4191,36 @@ def makeFunctionPlot(inFile):
                 elif option.plotType[plotTypeIdx] == 'err':
                     dataxerr = None
                     datayerr = None
-                    print()
+                    datax=np.asarray(datax,dtype=float)
+                    datay=np.asarray(datay,dtype=float)
+                    print(datax,datay)
                     print("plot %i" % i)
                     print("marker %s" % option.pt[i % len(option.pt)])
                     print("color %s" % option.pc[i % len(option.pc)])
                     if colyerr != '':
                         datayerr = data[:, colyerr]
+                        datayerr=np.asarray(datayerr,dtype=float)
                     if colyerr2 != '':
                         datayerr2 = data[:, colyerr2].T
 #                        datayerr=np.vstack([datayerr,datayerr2]).T
                         datayerr = data[:, [colyerr, colyerr2]].T
+                        datayerr=np.asarray(datayerr,dtype=float)
 #                        datayerr=np.concatenate([datayerr,datayerr2],axis=1)
                     if colxerr == -1:
                         dataxerr = np.zeros(len(data))
                     elif colxerr != '':
                         dataxerr = data[:, colxerr]
+                        dataxerr=np.asarray(dataxerr,dtype=float)
                     if colxerr2 != '':
                         dataxerr = data[:, [colxerr, colxerr2]].T
+                        dataxerr=np.asarray(dataxerr,dtype=float)
 #                        dataxerr=np.vstack([dataxerr,dataxerr2]).T
 #                    print dataxerr[:,0]
 #                    sys.exit()
 #                        dataxerr=np.concatenate([dataxerr,dataxerr2],axis=1)
 #                    datax, datay, datayerr = removeNans3(datax, datay, datayerr)
+
+
                     errorbar(datax, datay, xerr=dataxerr, yerr=datayerr, color=option.lc[i % len(option.lc)], ecolor=option.lc[i % len(option.lc)], elinewidth=option.width[i % len(option.width)], barsabove=False, capsize=3, fmt='-', lw=option.width[i % len(option.width)], marker=option.pt[i % len(option.pt)], linestyle=option.ls[i % len(option.ls)], markersize=option.ps[i % len(option.ps)], mew=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], mec=option.ec[i % len(option.ec)], mfc=option.pc[i % len(option.pc)], label=plotLegendLabel, zorder=option.zorder[i % len(option.zorder)])
 
                 elif option.plotType[plotTypeIdx] == 'fillbtwX':

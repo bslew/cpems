@@ -1,4 +1,5 @@
 /usr/local/bin/bin_function
+/usr/local/bin/cpeds_calculate_cov
 /usr/local/bin/coco
 /usr/local/bin/compute_CL_ranges
 /usr/local/bin/cosmocalc
