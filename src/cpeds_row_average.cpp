@@ -33,13 +33,18 @@ string getCmdString(int argc, char** argv);
 string getProgramVersionString();
 boost::program_options::variables_map  parseOptions(int argc, char** argv);
 
-template<typename T> T vec_mean(std::vector<T> v) {
+template<typename T> T vec_mean(std::vector<T> &v,long st,long en) {
 	T m=0;
 //	std::vector<T>::iterator it;
-	for (auto it=v.begin();it<v.end(); ++it) {
-		m+=*it;
+//	for (auto it=v.begin();it<v.end(); ++it) {
+//		m+=*it;
+//	}
+//	return m/v.size();
+	
+	for (auto it=st;it<en; ++it) {
+		m+=v[it];
 	}
-	return m/v.size();
+	return m/(en-st);
 }
 
 /* ******************************************************************************************** */
@@ -73,10 +78,24 @@ int main(int argc, char **argv) {
 //	fout.close();
 	
 	
+	long n=opt["n"].as<long>();
 	for (std::string line; std::getline(std::cin, line);) {
 			cpeds::StringParser p;
 			auto v=p.splitAs<double>(line, ' ');
-			std::cout << vec_mean(v) << std::endl;
+			long ist=0;
+			long ien=ist+n;
+			if (ien>v.size()) ien=v.size();
+			while (ist<v.size() and ist<ien-1) {
+				std::cout << vec_mean(v,ist,ien) << " ";
+				ist+=n;
+				ien+=n;
+				if (ien>v.size()) {
+					std::cout << std::endl;
+					break; 
+					//ien=v.size();
+				}
+			}
+			
 	}
 	
 	return 0;
@@ -134,7 +153,6 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 //					"Azimuth from south westwards")
 //		    ("show", po::value<bool>(&boolopt)->default_value(false), "shows the loaded image")
 			
-//		    ("hmin", po::value<double>(&dbl)->default_value(0), "Minimal elevation threshold.")
 			;
 
         // Hidden options, will be allowed both on command line and
@@ -142,6 +160,7 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
         po::options_description hidden("Hidden options");
         hidden.add_options()
             ("input-file", po::value< vector<string> >(), "input files")
+			("n", po::value<long>()->default_value(1), "Number of bins in each row.")
             ;
 
         
