@@ -135,8 +135,9 @@ add_custom_target(Lib_ccSHT3
 
 add_custom_target(Lib_CGAL
     COMMENT "Building CGAL 4.11"
-	COMMAND /bin/bash -c 'curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz'
-    COMMAND /bin/bash -c 'mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND /bin/bash -c 'if [ ! -f ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz ]\; then curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz\; fi'
+#    COMMAND /bin/bash -c 'curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz'
+#    COMMAND /bin/bash -c 'mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; fi'
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz CGAL-4.11.1.tar.gz 
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/cgal-releases-CGAL-4.11.1 && cmake . && make && sudo make install
 #    VERBATIM
@@ -150,8 +151,8 @@ add_dependencies(Lib_velKB extdir)
 add_dependencies(Lib_slaRefr extdir)
 add_dependencies(Lib_novas extdir)
 add_dependencies(Lib_ccSHT3 extdir)
-#add_dependencies(Lib_CGAL extdir)
-add_dependencies(external extdir Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
+add_dependencies(Lib_CGAL extdir)
+add_dependencies(external extdir Lib_CGAL Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
 #add_dependencies(all external)
 
 #add_custom_target(gsl18

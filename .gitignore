@@ -59,3 +59,6 @@
 /bin_function
 /libcpems.so.0.2.11
 /cpeds_calculate_cov
+/cpeds_row_average
+/.matrix_oper.last_run.log
+/cpeds_calculate_cov.log

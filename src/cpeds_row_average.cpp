@@ -152,6 +152,8 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
 //					"c,A,Z,r -- eg. c,-50,50,0.5 - will create a circular mask on sphere in deg."
 //					"Azimuth from south westwards")
 //		    ("show", po::value<bool>(&boolopt)->default_value(false), "shows the loaded image")
+			("n", po::value<long>()->default_value(1), "Bin size. Number of samples per bin. "
+					"Incomplete bins are ignored.")
 			
 			;
 
@@ -160,7 +162,6 @@ boost::program_options::variables_map parseOptions(int argc, char** argv) {
         po::options_description hidden("Hidden options");
         hidden.add_options()
             ("input-file", po::value< vector<string> >(), "input files")
-			("n", po::value<long>()->default_value(1), "Number of bins in each row.")
             ;
 
         

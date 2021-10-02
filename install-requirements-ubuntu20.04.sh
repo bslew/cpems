@@ -6,7 +6,7 @@ apt install cmake  cmake-data:all
 # open MPI
 apt install libopenmpi2 openmpi-common:all openmpi-bin mpi-default-bin libopenmpi-dev 
 # algebra and math
-apt install libblas3 liblapack3 libarmadillo libarmadillo-dev libgslcblas0 libblas-dev libgsl23 libgsl-dev libgmp-dev
+apt install libblas3 liblapack3 libarmadillo libarmadillo-dev libgslcblas0 libblas-dev libgsl23 libgsl-dev libgmp-dev libeigen3-dev/focal
 # data files
 apt install libhdf5-100 libhdf5-cpp-100 libhdf5-dev libhdf5-openmpi-100 libhdf5-openmpi-dev  libjsoncpp1 
 # graphics

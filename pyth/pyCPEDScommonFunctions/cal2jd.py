@@ -109,7 +109,7 @@ if option.testFmt:
     print('diff: ',val-shouldBe)
     sys.exit()
 
-from matplotlib.dates import strpdate2num
+# from matplotlib.dates import strpdate2num
 data=np.loadtxt(args[0], dtype=str)
 # print data
 np.set_printoptions(precision=15,suppress=True)

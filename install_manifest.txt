@@ -1,5 +1,6 @@
 /usr/local/bin/bin_function
 /usr/local/bin/cpeds_calculate_cov
+/usr/local/bin/cpeds_row_average
 /usr/local/bin/coco
 /usr/local/bin/compute_CL_ranges
 /usr/local/bin/cosmocalc
@@ -101,10 +102,10 @@
 /usr/local/include/cpems/Mscs-WMAPspecifications.h
 /usr/local/include/cpems/Mscs-WMAPsimulation.h
 /usr/local/include/cpems/MscsWMAPdata.h
-/usr/local/include/ccSHT3/generalTools.h
-/usr/local/include/ccSHT3/fftw_complex_helper.h
 /usr/local/include/ccSHT3/sizedType.h
 /usr/local/include/ccSHT3/ccSHT3.h
+/usr/local/include/ccSHT3/fftw_complex_helper.h
+/usr/local/include/ccSHT3/generalTools.h
 /usr/local/lib/libvelKB.a
 /usr/local/lib/libslaRefr.a
 /usr/local/lib/libnovas.a
@@ -117,4 +118,4 @@
 /usr/local/cpemsConfig.cmake
 /usr/local/cpemsConfigVersion.cmake
 /usr/local/cpemsTargets.cmake
-/usr/local/cpemsTargets-debug.cmake
+/usr/local/cpemsTargets-release.cmake
