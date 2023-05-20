@@ -791,7 +791,12 @@ int main(int argc, char **argv) {
 		
 	}
 	if (_cal2JD!="") {
-		printf("%.15lf\n",doCal2JDconversion(_cal2JD));
+		double jd = doCal2JDconversion(_cal2JD);
+		printf("JD: %.15lf\n",jd);
+		double st = cpeds_local_sidereal_time(jd, 0);
+		printf("ST [sec]: %.15lf\n",st/twoPI*86400);
+		double st_novas = cpeds_local_sidereal_time_novas(jd, 0, CPEDS_TAI_UTC, 0, 0);
+		printf("ST_novas [sec]: %.15lf\n",st_novas);
 	}
 	
 	if (_dou2cal) {

@@ -22,9 +22,31 @@ from optparse import OptionParser
 programDescription = """This is a simple function plotter.
 The input text files should be stored as a matrix of numbers.
 The chosen columns will be plotted.
+
+
 """
 
-parser = OptionParser(description=programDescription)
+usage='''
+EXAMPLE USAGE:
+
+- to plot csv with header data with date/time strings use eg.:
+id,dt,T_11,T_12,T_13,T_14,T_21,T_22,T_23,T_24,T_31,T_32,T_33,T_34,T_41,T_42,T_43,T_44,V_11,V_12,V_13,V_14,V_21,V_22,V_23,V_24,V_31,V_32,V_33,V_34,V_41,V_42,V_43,V_44
+1,2021-09-23T11:28:42,18.1514,18.165,18.2107,17.9171,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.006,445.131,445.586,442.66,0,0,0,0,0,0,0,0,0,0,0,0
+2,2021-09-23T11:29:43,18.1586,18.1721,18.2079,17.9143,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.08,445.194,445.566,442.634,0,0,0,0,0,0,0,0,0,0,0,0
+3,2021-09-23T11:30:41,18.1569,18.1769,18.2269,17.92,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.049,445.255,445.735,442.692,0,0,0,0,0,0,0,0,0,0,0,0
+4,2021-09-23T11:31:42,18.1679,18.1857,18.2243,17.9214,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.154,445.349,445.717,442.717,0,0,0,0,0,0,0,0,0,0,0,0
+5,2021-09-23T11:32:44,18.1693,18.1929,18.2279,17.9229,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.171,445.406,445.76,442.723,0,0,0,0,0,0,0,0,0,0,0,0
+6,2021-09-23T11:33:41,18.1762,18.1923,18.2154,17.9254,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.246,445.409,445.643,442.769,0,0,0,0,0,0,0,0,0,0,0,0
+7,2021-09-23T11:34:42,18.1743,18.1986,18.2293,17.935,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.226,445.477,445.771,442.843,0,0,0,0,0,0,0,0,0,0,0,0
+8,2021-09-23T11:35:57,18.1893,18.2014,18.2386,17.9371,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.371,445.491,445.866,442.871,0,0,0,0,0,0,0,0,0,0,0,0
+9,2021-09-23T11:36:58,18.1843,18.2029,18.2371,17.945,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.317,445.503,445.854,442.951,0,0,0,0,0,0,0,0,0,0,0,0
+
+use:
+python ~/programy/cpems/pyth/plot_function.py data.csv  -x 1 -y 6 -y 7 -y 8 -y 9  --CSVheader 1 --dateFmt '%Y-%m-%dT%H:%M:%S' --pt o
+
+'''
+
+parser = OptionParser(description=programDescription, usage=usage)
 # parser.add_option("", "--simPrefix", dest="simPrefix", default="", type="string", help='simulation prefix', metavar="PREFIX")
 
 # parser.add_option("-f", "--file", dest="signal_file", default='277_ocraf_absron_010711.dat.totalPower.last500000', 
@@ -873,6 +895,17 @@ def printInteractiveHelp():
     print("1-mouse button - view info on selected point")
     print("2-mouse button - remove closest selectedLine/maskRange")
 
+
+def get_basename_ext(fname):
+    '''
+    return triple dirname,basename and file extension
+    '''
+    fname_base=os.path.basename(fname)
+    l=fname_base.split('.')
+    fnamenoext='.'.join(l[:-1])
+    ext=l[-1]
+    
+    return os.path.dirname(fname),fnamenoext,ext
 
 #--------------------------------------------------------------------------------------------------------
 def loadMask(m):
@@ -2454,7 +2487,7 @@ def loadDataFromUDP(UDPparams):
     
 def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples=-1, colx=0, coly=1, badX='None', badY='None'):
     if fname.endswith('.csv'):
-        d=np.genfromtxt(fname, delimiter=',', skip_header=option.CSVheader)
+        d=np.genfromtxt(fname, delimiter=',', skip_header=option.CSVheader, dtype=str)
     else:
         d = np.loadtxt(fname, dtype=str)
         
@@ -2479,6 +2512,7 @@ def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples
             dbin.append(mean)
         d = np.asanyarray(dbin).T
     print(fname)
+    print('Loaded data:')
     print(d)
     return d
     
@@ -2659,13 +2693,16 @@ def removeNans3(datax, datay, datac):
 def removeNans2(datax, datay):
     print("removing nans2")
     print("data length before nan removal: %li" % len(datax))
-    tmp = np.array(np.concatenate([[datax], [datay]], axis=0).T,dtype=np.float64)
+    try:
+        tmp = np.array(np.concatenate([[datax], [datay]], axis=0).T,dtype=np.float64)
+        tmp = tmp[~np.isnan(tmp).any(axis=1)]
 #    print tmp
-    tmp = tmp[~np.isnan(tmp).any(axis=1)]
-#    print tmp
-    datax = tmp[:, 0]
-    datay = tmp[:, 1]
-    print("data length after nan removal: %li" % len(datax))
+        datax = tmp[:, 0]
+        datay = tmp[:, 1]
+        print("data length after nan removal: %li" % len(datax))
+    except:
+        print("Could not remove nans")
+        pass
     return datax, datay
 
 def removeNans1(datax):
@@ -5481,6 +5518,7 @@ while 1:
                         cmd = ''
                         if args[i][-7:] == '-Tn-bin':
                             cmd = 'draw_maps %s -o lonlat --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                            # cmd = 'draw_maps %s -o lonlat   --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
                             if option.reverseLon:
                                 cmd+=' --reverse_l '
                             cpedsPythCommon.sayAndExecute("Exporting data from binary file", cmd, 1)
@@ -5491,7 +5529,7 @@ while 1:
                                 cmd = 'draw_maps %s --ft fitsPL -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
                             cpedsPythCommon.sayAndExecute("Exporting data from binary file", cmd, 1)
             
-                        inFile.append(array([np.loadtxt(args[i] + '.lonlatT'), np.loadtxt(args[i] + '.lon'), np.loadtxt(args[i] + '.lat')]))
+                        inFile.append([np.loadtxt(args[i] + '.lonlatT'), np.loadtxt(args[i] + '.lon'), np.loadtxt(args[i] + '.lat')])
         if option.transpose:
             inFile[-1] = inFile[-1].T
             print(inFile[-1])

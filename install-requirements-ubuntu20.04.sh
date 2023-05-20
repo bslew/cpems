@@ -7,6 +7,8 @@ apt install cmake  cmake-data:all
 apt install libopenmpi2 openmpi-common:all openmpi-bin mpi-default-bin libopenmpi-dev 
 # algebra and math
 apt install libblas3 liblapack3 libarmadillo libarmadillo-dev libgslcblas0 libblas-dev libgsl23 libgsl-dev libgmp-dev libeigen3-dev/focal
+apt install libeigen3-dev/focal
+
 # data files
 apt install libhdf5-100 libhdf5-cpp-100 libhdf5-dev libhdf5-openmpi-100 libhdf5-openmpi-dev  libjsoncpp1 
 # graphics
@@ -27,6 +29,7 @@ apt install libcfitsio-dev libccfits-dev libcfitsio-bin
 apt install libnova-0.16-0 libnova-dev 
 # system
 apt install gfortran libx11-dev
+apt install curl
 # parser
 apt install libtclap-dev
 

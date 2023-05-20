@@ -20,6 +20,7 @@ target_link_libraries(cpeds_get_healpix_nested_pixels ${LIBRARIES} )
 target_link_libraries(test-smoothing 
 	${LIBRARIES} 
 	${LIB_BOOST}
+	${LIBRARIES_FMT}
 	)
 	
 target_link_libraries(test-cpeds-templates 

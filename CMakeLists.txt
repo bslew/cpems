@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.11)
 
 ################################################################
 ################################################################
@@ -133,6 +133,15 @@ add_custom_target(Lib_ccSHT3
 #    VERBATIM
     )
 
+add_custom_target(proj
+    COMMENT "Building proj"
+    COMMAND /bin/bash -c 'if [ ! -f ${PROJECT_BINARY_DIR}/external_packages/proj-6.3.2.tar.gz ]\; then curl https://download.osgeo.org/proj/proj-6.3.2.tar.gz\; fi'
+#    COMMAND /bin/bash -c 'curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz'
+#    COMMAND /bin/bash -c 'mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz proj-6.3.2.tar.gz 
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/proj-6.3.2 && ./configure && make && sudo make install
+    )
+	
 add_custom_target(Lib_CGAL
     COMMENT "Building CGAL 4.11"
     COMMAND /bin/bash -c 'if [ ! -f ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz ]\; then curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz\; fi'
@@ -275,23 +284,25 @@ endif()
 
 
 
-find_package(CGAL 4.11 REQUIRED )
-# CGAL_INCLUDE_DIRS
-# CGAL_LIBRARIES_DIR
-# CGAL_MODULES_DIR
-if (NOT CGAL_FOUND)
-	build_CGAL()
-	find_package(CGAL 4.11 REQUIRED )
-	find_library (CGAL_LIBRARIES_DIR CGAL
-		PATHS
-		${CPEMS_SEARCH_PATHS}
-		PATH_SUFFIXES lib lib64
-	)
+# find_package(CGAL 4.11 REQUIRED )
+# # CGAL_INCLUDE_DIRS
+# # CGAL_LIBRARIES_DIR
+# # CGAL_MODULES_DIR
+# if (NOT CGAL_FOUND)
+# 	build_CGAL()
+# 	find_package(CGAL 4.11 REQUIRED )
+# 	find_library (CGAL_LIBRARIES_DIR CGAL
+# 		PATHS
+# 		${CPEMS_SEARCH_PATHS}
+# 		PATH_SUFFIXES lib lib64
+# 	)
 
-endif()
-MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
-MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
-MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
+# endif()
+# MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
+# MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
+# MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
+find_package(FMT)
+
 
 find_package(PGPLOT)
 #  PGPLOT_INCLUDES    = Path to the PGPLOT header files
@@ -422,7 +433,31 @@ endif()
 
 
 
+# fmt library
+if (NOT FMT_FOUND)
+	find_library (FMT_LIBRARIES fmt
+		PATHS
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
+	)
 
+endif()
+if (NOT FMT_FOUND)
+	set (FMT_LIBRARY fmt)
+endif()
+MESSAGE(STATUS "FOUND FMT: " )
+MESSAGE(STATUS "FMT_INCLUDE_DIR: " ${FMT_INCLUDE_DIR})
+MESSAGE(STATUS "FMT_LIBRARY: " ${FMT_LIBRARY})
+
+
+if (NOT FMT_FOUND)
+include(FetchContent)
+FetchContent_Declare(fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(fmt)
+endif()
 
 # PGPLOT library
 if (NOT PGPLOT_FOUND)
@@ -474,7 +509,7 @@ find_path (STL_INCLUDE_DIR NAMES
 ################################################################
 # find python installation path
 execute_process(
-  COMMAND "python" -c "from distutils import sysconfig as sc
+  COMMAND "python3" -c "from distutils import sysconfig as sc
 print(sc.get_python_lib(prefix='', plat_specific=True))"
   OUTPUT_VARIABLE PYTHON_SITE
   OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -789,6 +824,7 @@ add_executable(mkCMBfield src/mkCMBfield.cpp)
 add_executable(smoothPoints src/smoothPoints.cpp)
 add_executable(draw_maps src/draw_maps.cpp)
 add_executable(calculate_minkowski_v src/calculate_minkowski_v.cpp )
+add_executable(calc_ang_dist src/calc_ang_dist.cpp )
 
 #draw_mapsMPI	:
 #	MPIFLAG = -DGOMPI
@@ -1013,6 +1049,9 @@ set (LIBRARIES_BOOST
 	boost_system
 	)
     
+set (LIBRARIES_FMT
+	fmt
+)
 
 
 #	
@@ -1034,7 +1073,7 @@ endif()
 
 # PG - profiler variable that is set during cmake configuration
 SET( CMAKE_CXX_FLAGS  
-	"${CMAKE_CXX_FLAGS} -fopenmp  ${PG} -fPIC "  
+	"${CMAKE_CXX_FLAGS} -fopenmp  ${PG} -fPIC"  
 	)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-parameter") # -fPIC
@@ -1097,6 +1136,7 @@ set (EXTERNAL_LIBRARIES
 	${PROJ_LIBRARY}
 	${ARMADILLO_LIBRARIES}
 	${GMP_LIBRARIES}
+	${FMT_LIBRARIES}
 )	
 	
 set (LIBRARIES 
@@ -1127,8 +1167,8 @@ target_link_libraries(interpolate ${LIBRARIES})
 target_link_libraries(compute_CL_ranges ${LIBRARIES})
 target_link_libraries(bin_function ${LIBRARIES})
 target_link_libraries(coco ${LIBRARIES})
-target_link_libraries(cpeds_calculate_cov ${LIBRARIES} ${LIBRARIES_BOOST} )
-target_link_libraries(cpeds_row_average ${LIBRARIES} ${LIBRARIES_BOOST} )
+target_link_libraries(cpeds_calculate_cov ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT})
+target_link_libraries(cpeds_row_average ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT})
 
 
 # Link Mscs targets
@@ -1146,6 +1186,7 @@ target_link_libraries(mk_gauss_map ${LIBRARIES})
 target_link_libraries(map_oper ${LIBRARIES} ${LIBRARIES})
 target_link_libraries(calculate_Cth ${LIBRARIES} ${LIBRARIES})
 target_link_libraries(calculate_minkowski_v ${LIBRARIES} ${LIBRARIES})
+target_link_libraries(calc_ang_dist ${LIBRARIES} ${LIBRARIES})
 
 # Link Mscs test targets
 #
@@ -1159,10 +1200,10 @@ target_link_libraries(test-domain-decomposition ${LIBRARIES})
 target_link_libraries(test-function-fft ${LIBRARIES})
 target_link_libraries(test-function-derivative ${LIBRARIES})
 target_link_libraries(test-fits-read ${LIBRARIES})
-target_link_libraries(test-cpedsMCMC-parabola_2param LINK_PUBLIC ${LIBRARIES} boost_program_options )
+target_link_libraries(test-cpedsMCMC-parabola_2param LINK_PUBLIC ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT} )
 target_link_libraries(test-SPinterpolation-2d ${LIBRARIES})
-target_link_libraries(test-cpedsMCMC-2Dcontours ${LIBRARIES} boost_program_options)
-target_link_libraries(test-cpedsMCMC-gaussXY-independent ${LIBRARIES} boost_program_options)
+target_link_libraries(test-cpedsMCMC-2Dcontours ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT})
+target_link_libraries(test-cpedsMCMC-gaussXY-independent ${LIBRARIES} ${LIBRARIES_BOOST}  ${LIBRARIES_FMT})
 target_link_libraries(test-cpeds_refraction_space ${LIBRARIES})
 
 add_subdirectory(tests)
@@ -1248,7 +1289,7 @@ install (FILES
 
 
 #--prefix=${CMAKE_INSTALL_PREFIX} 
-install (CODE "execute_process(COMMAND sudo python setup.py install -f
+install (CODE "execute_process(COMMAND sudo python3 setup.py install -f
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/pyth)")
  
 

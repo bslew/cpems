@@ -9,3 +9,4 @@ SET (LIB_BOOST
 target_link_libraries(testDirections ${LIBRARIES} )
 
 add_subdirectory(unit-tests)
+add_subdirectory(functional_tests)

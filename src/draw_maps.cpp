@@ -403,7 +403,8 @@ int main(int argc, char **argv) {
 
     long N=circ_lbrv_tmp.RowNo();
     if (circ_lbrv_tmp.ColNo() == 4) { circ_lbrv=circ_lbrv_tmp; }
-    if (circ_lbrv_tmp.ColNo() == 3) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=circ_lbrv_tmp(i,2); circ_lbrv(i,3)=_ctf_v; } }
+    // if (circ_lbrv_tmp.ColNo() == 3) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=circ_lbrv_tmp(i,2); circ_lbrv(i,3)=_ctf_v; } }
+    if (circ_lbrv_tmp.ColNo() == 3) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=_ctf_r; circ_lbrv(i,3)=circ_lbrv_tmp(i,2); } }
     if (circ_lbrv_tmp.ColNo() == 2) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=_ctf_r0+_ctf_r; circ_lbrv(i,3)=_ctf_v; } }
     circ_lbrv_tmp.SetSize(0,0);
     if (_ctf_U == "m") {       for (long i=0;i<N;i++) { circ_lbrv(i,2)/=60.0; } }

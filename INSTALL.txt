@@ -22,6 +22,8 @@ that are not provided in the standard linux repositories.
 
 To install follow the steps below. Assuming that the sources are located in 
 cpems subdirectory
+0) init venv for python3
+python3 -m venv venv && . venv/bin/activate
 
 1) create build directory: eg.
 mkdir cpems-build
@@ -41,3 +43,4 @@ make
 make install
 
 
+add /usr/local/lib to your LD_LIBRARY_PATH

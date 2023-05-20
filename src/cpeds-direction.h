@@ -788,6 +788,8 @@ class  DirectionRaDec : public cpedsDirection {
 	@param T - temperature [Celsius]
 	@return
 
+  The conversion takes into account the precession and nutation.\n
+
 	\date Dec 10, 2012, 11:04:30 AM
 	\author Bartosz Lew
    */

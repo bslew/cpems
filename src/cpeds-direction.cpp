@@ -137,8 +137,8 @@ DirectionRaDec& DirectionRaDec::toJD(double jd) {
 DirectionRaDec& DirectionRaDec::nutate(int direction) {
 	  double pos1[3]; // geocentric equatorial rectangular coordinates
 	  double pos2[3]; // geocentric equatorial rectangular coordinates
-	  ln_lnlat_posn ecl;
-	  ln_nutation n;
+	//   ln_lnlat_posn ecl;
+	//   ln_nutation n;
 	  double RA,DEC;
 	  double Elon,Elat;
 	  double jd=epoch();

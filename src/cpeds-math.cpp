@@ -846,6 +846,7 @@ double cpeds_refraction(double ZDobs, double alt, double T, double P, double H, 
 	lambda*=1e4; // convert to um
 	lat*=PI180; // convert to rad
 	slarefro_(&ZDobs, &alt,&T,&P,&H,&lambda,&lat,&Tlapse, &acc,&ref);	
+	printf("ref: %f\n",ref*PI180inv);
 	double ZDspace=(ZDobs+ref)*PI180inv;
 	return ZDspace;
 }

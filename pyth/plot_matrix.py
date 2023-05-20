@@ -9,7 +9,8 @@ import re
 #import matplotlib.path as mpath
 #import matplotlib.patches as mpatches
 import h5py
-import pyfits
+# import pyfits
+import astropy.io.fits as pyfits
 from optparse import OptionParser
 from pyCPEDScommonFunctions import cpedsPythCommon
 

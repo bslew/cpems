@@ -358,7 +358,10 @@ void calculatePlanet(string planetName, cpedsMsgs& msgs) {
 	nowAtAh=nowAt.toAh(obs,JDutc,0,0,0,_P,_T,true);
 	nowAtAh.check().print_direction("Ah (topocentric, with optical refraction, UT1=UTC, no polar motion)");
 	
-	
+	if (planetName == "Sun") {
+		std::cout << "ang.size [deg]: " << planet.angularSize()*PI180inv << "\n";
+	}
+
 	// make calculation for the next days
 	double jdtmp,JD=_JD;
 	if (_JD==0) JD=cpeds_julian_time();

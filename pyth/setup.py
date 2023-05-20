@@ -23,13 +23,16 @@ cpedsRotation = Extension(
     include_dirs=['/usr/local/include/cpems', 
                 '/usr/lib64/python3.6/site-packages/numpy/core/include/numpy',
                   '/usr/lib/python3.6/dist-packages/numpy/core/include/numpy/',
+                  '/usr/include/x86_64-linux-gnu/qt5',
                   ],
     library_dirs=['/usr/local/lib/cpems'],
-    libraries=['nova',  'gsl', 'gslcblas', 'm', 'proj', 
-               'QtCore', 'fftw3', 'fftw3l', 'hdf5', 'CGAL', 'gmp','cfitsio', 'CPEDS', 'Mscsfn', 
-               'Mscscore', 'Mscsplot', 'MscsWMAP', 'armadillo', 
-               'gsl', 'gslcblas', 'm', 'proj', 'QtCore', 'fftw3', 'ccSHT3', 'novas', 'velKB', 'slaRefr', 
-               'fftw3l', 'hdf5', 'CGAL', 'gmp', 'cfitsio', 'cpgplot', 'armadillo'],
+    # libraries=['nova',  'gsl', 'gslcblas', 'm', 'proj', 
+    #            'QtCore', 'fftw3', 'fftw3l', 'hdf5', 'CGAL', 'gmp','cfitsio', 'CPEDS', 'Mscsfn', 
+    #            'Mscscore', 'Mscsplot', 'MscsWMAP', 'armadillo', 
+    #            'gsl', 'gslcblas', 'm', 'proj', 'QtCore', 'fftw3', 'ccSHT3', 'novas', 'velKB', 'slaRefr', 
+    #            'fftw3l', 'hdf5', 'CGAL', 'gmp', 'cfitsio', 'cpgplot', 'armadillo'],
+    libraries=['cpems',],
+    
     language='C++',
     )
 
@@ -50,10 +53,12 @@ setup(name='pyCPEDScommonFunctions',
       ],      
 #       package_dir = {'': ''},
       packages = ['pyCPEDScommonFunctions'],
-      scripts=['pyCPEDScommonFunctions/confidenceRange.py',
-               'pyCPEDScommonFunctions/cal2jd.py',
-               'pyCPEDScommonFunctions/jd2cal.py', 
-               'pyCPEDScommonFunctions/join_interpolate.py'],
+      scripts=[
+               'plot_function.py', 
+                'pyCPEDScommonFunctions/confidenceRange.py',
+                'pyCPEDScommonFunctions/cal2jd.py',
+                'pyCPEDScommonFunctions/jd2cal.py', 
+                'pyCPEDScommonFunctions/join_interpolate.py'],
       ext_modules=[cpedsRotation]
      )
 
