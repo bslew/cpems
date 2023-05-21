@@ -54,75 +54,106 @@ cpedsStatusCodes cpedsFits::openFile(string fname, string action) {
 }
 
 /***************************************************************************************/
-cpedsStatusCodes cpedsFits::addBinTable(string Tname, long rows, QList<string> &colName, QList<string>  &colType, QList<string>  &colUnit) {
-	long cols=colName.size();
-	char *tname[cols];
-	char *tform[cols];
-	char *tunit[cols];
-	char buff[100];
-	long w;
+cpedsStatusCodes cpedsFits::addBinTable(string Tname, long rows,
+                                        QList<string> colName,
+                                        QList<string> colType,
+                                        QList<string> colUnit) {
+    long cols = colName.size();
+    char* tname[cols];
+    char* tform[cols];
+    char* tunit[cols];
+    char buff[100];
+    long w;
 
-	// setup stuff for cfitsio
-	
-	for (long i = 0; i < cols; i++) {
-		tname[i] = new char[8];
-		strcpy(tname[i],colName[i].c_str());
-		if (colUnit[i]=="") tunit[i]=NULL; else { tunit[i] = new char[20]; strcpy(tunit[i],colUnit[i].c_str()); }
-	}
+    // setup stuff for cfitsio
 
-	
-	for (long i = 0; i < cols; i++) {
-		tform[i] = new char[8];
-//		printf("--> %s\n", colType[i].c_str());
-		if (colType[i]=="double") strcpy(tform[i],"1D");
-		else
-			if (colType[i].find("double",0)!=string::npos) { 
-				strcpy(buff,colType[i].replace(0,6,"").c_str()); w=strtol(buff,NULL,10); sprintf(tform[i],"%liD",w);
-			}
-		if (colType[i]=="float") strcpy(tform[i],"1E");
-		else
-			if (colType[i].find("float",0)!=string::npos) { 
-				strcpy(buff,colType[i].replace(0,5,"").c_str()); w=strtol(buff,NULL,10); sprintf(tform[i],"%liE",w);
-			}
-		if (colType[i]=="long") strcpy(tform[i],"1J");
-		else
-			if (colType[i].find("long",0)!=string::npos) { 
-				strcpy(buff,colType[i].replace(0,4,"").c_str()); w=strtol(buff,NULL,10); sprintf(tform[i],"%liJ",w);
-			}
-		if (colType[i].find("string",0)!=string::npos) { 
-			strcpy(buff,colType[i].replace(0,6,"").c_str()); w=strtol(buff,NULL,10); sprintf(tform[i],"%liA",w);
-//			printf("adding string field of width: %li\n",w);
-		}
-		
-		if (colType[i]=="bool") strcpy(tform[i],"1L");
-		if (colType[i].find("Pfloat",0)!=string::npos) { 
-			strcpy(buff,colType[i].replace(0,6,"").c_str()); w=strtol(buff,NULL,10); sprintf(tform[i],"PE(%li)",w);
-		}
-		if (colType[i].find("Pdouble",0)!=string::npos) { 
-			strcpy(buff,colType[i].replace(0,7,"").c_str()); w=strtol(buff,NULL,10); sprintf(tform[i],"PD(%li)",w);
-		}
-		if (colType[i].find("Plong",0)!=string::npos) { 
-			strcpy(buff,colType[i].replace(0,5,"").c_str()); w=strtol(buff,NULL,10); sprintf(tform[i],"PJ(%li)",w);
-		}
-//		printf("->> %s\n",tform[i]);
-	}
-	
-	// create binary table
-//	int hduType,hduNum;
-	
-//	fits_movabs_hdu(_fptr, fits_get_num_hdus(_fptr,&hduNum,&_status)+1, &hduType, &_status);
-//	if (_status) { msgs->error("addBinTable>> cannot create table: "+Tname,High);	return cpedsError;	}
-	fits_create_tbl(_fptr, BINARY_TBL, rows, colName.size(), tname, tform, tunit, Tname.c_str(), &_status);
-	
-	// free memory
-	for (long i = 0; i < cols; i++) {
-		delete [] tname[i];
-		delete [] tform[i];
-		if (tunit[i]!=NULL) delete [] tunit[i];
-	}
-	if (_status!=0) { msgs->error("addBinTable (error "+msgs->toStr(_status)+") >> cannot create table: "+Tname,High);	_status=0; return cpedsError;	}
-	
-	return cpedsSuccess;
+    for (long i = 0; i < cols; i++) {
+        tname[i] = new char[8];
+        strcpy(tname[i], colName[i].c_str());
+        if (colUnit[i] == "")
+            tunit[i] = NULL;
+        else {
+            tunit[i] = new char[20];
+            strcpy(tunit[i], colUnit[i].c_str());
+        }
+    }
+
+    for (long i = 0; i < cols; i++) {
+        tform[i] = new char[8];
+        //		printf("--> %s\n", colType[i].c_str());
+        if (colType[i] == "double")
+            strcpy(tform[i], "1D");
+        else if (colType[i].find("double", 0) != string::npos) {
+            strcpy(buff, colType[i].replace(0, 6, "").c_str());
+            w = strtol(buff, NULL, 10);
+            sprintf(tform[i], "%liD", w);
+        }
+        if (colType[i] == "float")
+            strcpy(tform[i], "1E");
+        else if (colType[i].find("float", 0) != string::npos) {
+            strcpy(buff, colType[i].replace(0, 5, "").c_str());
+            w = strtol(buff, NULL, 10);
+            sprintf(tform[i], "%liE", w);
+        }
+        if (colType[i] == "long")
+            strcpy(tform[i], "1J");
+        else if (colType[i].find("long", 0) != string::npos) {
+            strcpy(buff, colType[i].replace(0, 4, "").c_str());
+            w = strtol(buff, NULL, 10);
+            sprintf(tform[i], "%liJ", w);
+        }
+        if (colType[i].find("string", 0) != string::npos) {
+            strcpy(buff, colType[i].replace(0, 6, "").c_str());
+            w = strtol(buff, NULL, 10);
+            sprintf(tform[i], "%liA", w);
+            //			printf("adding string field of width: %li\n",w);
+        }
+
+        if (colType[i] == "bool")
+            strcpy(tform[i], "1L");
+        if (colType[i].find("Pfloat", 0) != string::npos) {
+            strcpy(buff, colType[i].replace(0, 6, "").c_str());
+            w = strtol(buff, NULL, 10);
+            sprintf(tform[i], "PE(%li)", w);
+        }
+        if (colType[i].find("Pdouble", 0) != string::npos) {
+            strcpy(buff, colType[i].replace(0, 7, "").c_str());
+            w = strtol(buff, NULL, 10);
+            sprintf(tform[i], "PD(%li)", w);
+        }
+        if (colType[i].find("Plong", 0) != string::npos) {
+            strcpy(buff, colType[i].replace(0, 5, "").c_str());
+            w = strtol(buff, NULL, 10);
+            sprintf(tform[i], "PJ(%li)", w);
+        }
+        //		printf("->> %s\n",tform[i]);
+    }
+
+    // create binary table
+    //	int hduType,hduNum;
+
+    //	fits_movabs_hdu(_fptr, fits_get_num_hdus(_fptr,&hduNum,&_status)+1,
+    //&hduType, &_status); 	if (_status) { msgs->error("addBinTable>> cannot
+    //create table: "+Tname,High);	return cpedsError;	}
+    fits_create_tbl(_fptr, BINARY_TBL, rows, colName.size(), tname, tform,
+                    tunit, Tname.c_str(), &_status);
+
+    // free memory
+    for (long i = 0; i < cols; i++) {
+        delete[] tname[i];
+        delete[] tform[i];
+        if (tunit[i] != NULL)
+            delete[] tunit[i];
+    }
+    if (_status != 0) {
+        msgs->error("addBinTable (error " + msgs->toStr(_status) +
+                        ") >> cannot create table: " + Tname,
+                    High);
+        _status = 0;
+        return cpedsError;
+    }
+
+    return cpedsSuccess;
 }
 /***************************************************************************************/
 cpedsStatusCodes cpedsFits::addBinTable(string Tname) {

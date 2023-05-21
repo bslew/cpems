@@ -218,8 +218,8 @@ class mscsMap : public mscsObject {
   */
   long loadfits(const string& fileName, const string colName, const string dstStructure);
   long loadPLANCK_temp_fits(const string& fileName, string hduName);
-  
-  long savefits(string fileName);
+
+  long savefits(string fileName, string hdu = "map");
   void printtxtT(); //!< prints a map to the screen
 
   long loadbinm (string fileName); //!< read in  mask from a file
@@ -347,7 +347,8 @@ class mscsMap : public mscsObject {
   long maskedPixNum() const { return mask.masked_pix_num; }
   long multi_mask_reg_num() const { return mask.multi_mask_reg_num; }
   long int coordNum() const { return mapInfo.coord_num; } //!< returns the actual pixels number in the map
-  mapOrderings ordering() const { return mapInfo.ordering; }
+  mapOrderings 
+  ordering() const { return mapInfo.ordering; }
 
   /* long get_rows_num(); */
   long ringNum() const { return cpeds_get_ring_num_healpix(nside()); }

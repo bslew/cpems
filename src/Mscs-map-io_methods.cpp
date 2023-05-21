@@ -1229,16 +1229,22 @@ mscsMap::mapOrderings mscsMap::get_fits_map_ordering(fitsfile **fptr) {
 	return unknownMapOrdering;
 }
 
-
-
-long mscsMap::savefits(string fileName) {
-	
-	return -1;
+long mscsMap::savefits(string fileName, string hdu) {
+    cpedsFits ff;
+    ff.openFile(fileName, "new");
+    //	ff.selectHDU("FULL SKY MAP","binTable");
+    long n, cols;
+    ff.createPrimaryHDU();
+    ff.createNewHDU();
+    ff.addBinTable(hdu, pixNum(), {"T"}, {"double"}, {"[K]"});
+    ff.addBinTableData(1, 1, T());
+    ff.addKey("NSIDE", nside(), "NSIDE");
+    if (ordering() == nested) {
+        ff.addKeyCH("ORDERING", "NESTED", "map ordering");
+    }
+    if (ordering() == ring) {
+        ff.addKeyCH("ORDERING", "RING", "map ordering");
+    }
+    ff.closeFile();
+    return 0;
 }
-
-
-
-
-
-
-

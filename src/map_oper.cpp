@@ -160,6 +160,7 @@ void count_values(vector<string> _infiles, double val);
 void norm_max(vector<string> _infiles, string mask_file);
 void convPLANCKfits2Tnbin(vector<string> _infiles);
 void convPLANCKfits_1sthdu1col_2Tnbin(vector<string> _infiles,string hdu);
+void convTnbin2Fits(vector<string> _infiles, string hdu = "T");
 void change_nside(vector<string> _infiles);
 void smoothB(vector<string> _infiles);
 void convolveSH(mscsMap& map, mscsFunction b);
@@ -189,8 +190,13 @@ int main(int argc, char **argv) {
 	if (_cmd=="stat")  { print_map_stat(_infiles,_mask_file);	}
 	if (_cmd=="convPLANCKfits2Tnbin")  { convPLANCKfits2Tnbin(_infiles);	}
 	if (_cmd=="convPLANCKfits_1sthdu1col_2Tnbin")  { convPLANCKfits_1sthdu1col_2Tnbin(_infiles,_hduName);	}
-	if (_cmd.contains("renside"))  { change_nside(_infiles);	}
-	if (_cmd.contains("thres"))  { thresold_map(_infiles,_cmd);	}
+        if (_cmd == "convTnbin2Fits") {
+            convTnbin2Fits(_infiles);
+        }
+        if (_cmd.contains("renside")) {
+            change_nside(_infiles);
+        }
+        if (_cmd.contains("thres"))  { thresold_map(_infiles,_cmd);	}
 	if (_cmd=="count")  { count_values(_infiles,_const_value);	}
 	if (_cmd=="norm_max")  { norm_max(_infiles, _mask_file);	}
 
@@ -482,7 +488,17 @@ void convPLANCKfits_1sthdu1col_2Tnbin(vector<string> _infiles,string hduName) {
 		printf("loading %s\n",_infiles[i].c_str());
 		m1.loadPLANCK_temp_fits(_infiles[i],hduName);
 		m1.savebinT(_outfile);
-	}	
+	}
+}
+/***************************************************************************************/
+void convTnbin2Fits(vector<string> _infiles, string hdu) {
+    mscsMap m1;
+    m1.setVerbosityLevel(High);
+    for (unsigned long i = 0; i < _infiles.size(); i++) {
+        printf("loading %s\n", _infiles[i].c_str());
+        m1.loadbinT(_infiles[i]);
+        m1.savefits(_outfile, "map");
+    }
 }
 /***************************************************************************************/
 void change_nside(vector<string> _infiles) {
