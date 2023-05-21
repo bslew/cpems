@@ -31,6 +31,7 @@ using namespace TCLAP;
 #define STD
 #endif
 
+double _lon, _lat;
 string _programVersionString;
 bool _add;
 vector<string> _infiles;
@@ -158,9 +159,10 @@ void thresold_map(vector<string> _infiles,QString cmd);
 void print_map_stat(vector<string> _infiles, string mask_file);
 void count_values(vector<string> _infiles, double val);
 void norm_max(vector<string> _infiles, string mask_file);
+void at_lb(vector<string> _infiles, double _lon, double _lat);
 void convPLANCKfits2Tnbin(vector<string> _infiles);
 void convPLANCKfits_1sthdu1col_2Tnbin(vector<string> _infiles,string hdu);
-void convTnbin2Fits(vector<string> _infiles, string hdu = "T");
+void convbin2Fits(vector<string> _infiles, string hdu = "T");
 void change_nside(vector<string> _infiles);
 void smoothB(vector<string> _infiles);
 void convolveSH(mscsMap& map, mscsFunction b);
@@ -190,15 +192,16 @@ int main(int argc, char **argv) {
 	if (_cmd=="stat")  { print_map_stat(_infiles,_mask_file);	}
 	if (_cmd=="convPLANCKfits2Tnbin")  { convPLANCKfits2Tnbin(_infiles);	}
 	if (_cmd=="convPLANCKfits_1sthdu1col_2Tnbin")  { convPLANCKfits_1sthdu1col_2Tnbin(_infiles,_hduName);	}
-        if (_cmd == "convTnbin2Fits") {
-            convTnbin2Fits(_infiles);
-        }
-        if (_cmd.contains("renside")) {
-            change_nside(_infiles);
-        }
-        if (_cmd.contains("thres"))  { thresold_map(_infiles,_cmd);	}
+	if (_cmd == "convbin2Fits") {
+		convbin2Fits(_infiles);
+	}
+	if (_cmd.contains("renside")) {
+		change_nside(_infiles);
+	}
+	if (_cmd.contains("thres"))  { thresold_map(_infiles,_cmd);	}
 	if (_cmd=="count")  { count_values(_infiles,_const_value);	}
 	if (_cmd=="norm_max")  { norm_max(_infiles, _mask_file);	}
+	if (_cmd=="at_lb") { at_lb(_infiles, _lon, _lat); }
 
 	return 0;
 }
@@ -221,7 +224,8 @@ void parseOptions(int argc, char** argv) {
 		// Define arguments
 		//
 		
-//		ValueArg<double> Ndec("", "Ndec", "number of periods in Lissajous trajectory [21]", false,21,"double");	cmd.add( Ndec );
+		ValueArg<double> lon("l", "lon", "longitude  [deg]", false,0,"double");	cmd.add( lon );
+		ValueArg<double> lat("b", "lat", "latitude  [deg]", false,0,"double");	cmd.add( lat );
 //		ValueArg<long> nLissajous("", "nLj", "number of timesteps to take for Lissajous trajectory (5000)", false,5000,"long");	cmd.add( nLissajous );
 		
 		SwitchArg add("","add", "sum input files (default: false)", false);	cmd.add( add );
@@ -242,6 +246,8 @@ void parseOptions(int argc, char** argv) {
 				"stat\n"
 				"convPLANCKfits2Tnbin - to extract maps form PLANCK fits files from FULL SKY MAP hdus\n"
 				"convPLANCKfits_1sthdu1col_2Tnbin - to extract a single column data from hdu specified with --hdu option\n"
+				"convbin2Fits - convert Tn-bin to fits format readable by e.g. Healpix"
+				"at_lb - print map value from direction l,b [deg]"
 				"",false,"","string"); cmd.add(oper);
 		
 		ValueArg<string> mask("m","mask","mask file",false,"","string"); cmd.add(mask);
@@ -280,6 +286,8 @@ void parseOptions(int argc, char** argv) {
 		_hduName=hdu.getValue();
 		_const_value=const_value.getValue();
 		_mask_file = mask.getValue(); 
+		_lon = lon.getValue();
+		_lat = lat.getValue();
 		
 	} catch ( ArgException& e )
 	{ cout << "ERROR: " << e.error() << " " << e.argId() << endl; }
@@ -470,6 +478,21 @@ void norm_max(vector<string> _infiles, string mask_file) {
 		m1.savebinT(_outfile);
 	}
 }
+/* ******************************************************************************************** */
+void at_lb(vector<string> _infiles, double _lon, double _lat) {
+	mscsMap m1;
+	long n=0;
+	m1.setVerbosityLevel(High);
+	for (unsigned long i = 0; i < _infiles.size(); i++) {
+		printf("loading %s\n",_infiles[i].c_str());
+		m1.loadbinT(_infiles[i]);
+		m1.set_map_coord();
+		double th = (90.-_lat)*PI180, phi = _lon*PI180;
+		long idx;
+		cpeds_ang2pix_healpix(m1.nside(), &idx, th, phi, m1.isNested() ? 1 : 0);
+		std::cout << m1.get_T(_lon * PI180, _lat * PI180) << " idx: " << idx << "\n";
+	}
+}
 /***************************************************************************************/
 void convPLANCKfits2Tnbin(vector<string> _infiles) {
 	mscsMap m1;
@@ -491,7 +514,7 @@ void convPLANCKfits_1sthdu1col_2Tnbin(vector<string> _infiles,string hduName) {
 	}
 }
 /***************************************************************************************/
-void convTnbin2Fits(vector<string> _infiles, string hdu) {
+void convbin2Fits(vector<string> _infiles, string hdu) {
     mscsMap m1;
     m1.setVerbosityLevel(High);
     for (unsigned long i = 0; i < _infiles.size(); i++) {
