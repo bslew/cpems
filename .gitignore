@@ -1,3 +1,6 @@
+CMakeFiles/
+Makefile
+cmake_install.cmake
 /pyth/venv*/
 /release/
 /external_packages/
@@ -84,3 +87,5 @@ refrKBpos.ZD
 diff--90_10_1010_100_0.000001_0_54_0.0065_1e-8_less_RT32KBneg.mdeg
 pyth/.plot_function.log
 .clang-format~
+tests/functional_tests/cpems_arithmetic
+tests/functional_tests/test-cpeds-directions
