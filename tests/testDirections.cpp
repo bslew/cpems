@@ -48,7 +48,7 @@ void parseOptions(int argc, char** argv);
 string getProgramVersionString();
 void calculateMoon(cpedsMsgs& msgs);
 void calculateNextSolstice(cpedsMsgs& msgs);
-void calculateSunRiseAndSet(cpedsMsgs& msgs);
+void calculateRiseAndSet(cpedsMsgs& msgs);
 void calculatePlanet(string planetName, cpedsMsgs& msgs);
 void novaVSnovas(cpedsMsgs& msgs);
 void novaReversabilityTest(cpedsMsgs& msgs);
@@ -68,13 +68,15 @@ int main(int argc, char** argv) {
     //----------------------------------------------------------------------------------------------------
     parseOptions(argc, argv);
 
-	if (_datetime != "") {
-		std::cout << "overriding JD" << std::endl;
-		if (_datetime.size() == 10) { _datetime += "T12:00:00"; }		
-		std::cout << "datetime: " << _datetime << std::endl;
-		_JD = cpeds_cal2jd(_datetime);
-		std::cout << "JD: " << std::setprecision(12) << _JD << std::endl;
-	}
+    if (_datetime != "") {
+        std::cout << "overriding JD" << std::endl;
+        if (_datetime.size() == 10) {
+            _datetime += "T12:00:00";
+        }
+        std::cout << "datetime: " << _datetime << std::endl;
+        _JD = cpeds_cal2jd(_datetime);
+        std::cout << "JD: " << std::setprecision(12) << _JD << std::endl;
+    }
 
     if (_ra != -1) {
         testConversionDeg2HMSDMS(_ra, _dec, 0, msgs);
@@ -102,7 +104,7 @@ int main(int argc, char** argv) {
         calculateNextSolstice(msgs);
     }
     if (_sunRiseAndSet) {
-        calculateSunRiseAndSet(msgs);
+        calculateRiseAndSet(msgs);
         return 0;
     }
     if (_planet != "none") {
@@ -140,7 +142,7 @@ void parseOptions(int argc, char** argv) {
         //		ValueArg<double> Ndec("", "Ndec", "number of periods in
         // Lissajous trajectory [21]", false,21,"double");	cmd.add( Ndec );
         //		ValueArg<long> nLissajous("", "nLj", "number of
-        //timesteps to take for Lissajous trajectory (5000)",
+        // timesteps to take for Lissajous trajectory (5000)",
         // false,5000,"long"); cmd.add( nLissajous );
         ValueArg<double> lon(
             "", "lon", "longitude of the observatory location (-180,180) [deg]",
@@ -170,9 +172,9 @@ void parseOptions(int argc, char** argv) {
                             false, 0, "double");
         cmd.add(JD);
         ValueArg<string> datetime("", "datetime",
-                              "calculate JD from given date/time. Eg. "
-                              "2016-05-13-17-40-01.234 or 2016-05-13",
-                              false, "", "string");
+                                  "calculate JD from given date/time. Eg. "
+                                  "2016-05-13-17-40-01.234 or 2016-05-13",
+                                  false, "", "string");
         cmd.add(datetime);
         ValueArg<double> da("", "da",
                             "days after JD for which to calculate the stuff "
@@ -202,7 +204,9 @@ void parseOptions(int argc, char** argv) {
             "", "calcSunRiseAndSet",
             "calculate next sun rise and set (default: false). eg. "
             "testDirections --planet Sun  --lat 52.2 --lon 21.00  -T 10 -P "
-            "1013 --JD 2461447.000000000000000 --calcSunRiseAndSet --dt 0.001",
+            "1013 --JD 2461447.000000000000000 --calcSunRiseAndSet --dt 0.001. "
+            "or ./testDirections --planet Sun  --lat 52.2 --lon 21.00  -T 10 "
+            "-P 1013  --calcSunRiseAndSet --dt 0.001 --datetime 2027-02-10",
             false);
         cmd.add(sunRiseAndSet);
         SwitchArg moon("", "moon",
@@ -308,7 +312,7 @@ void parseOptions(int argc, char** argv) {
         _T = temp.getValue();
         _calcMoon = moon.getValue();
         _JD = JD.getValue();
-		_datetime = datetime.getValue();
+        _datetime = datetime.getValue();
         _da = da.getValue();
         _dt = dt.getValue();
         _timeLimit = timeLimit.getValue();
@@ -583,8 +587,8 @@ void calculateNextSolstice(cpedsMsgs& msgs) {
     double timeLimit = JDutc + period;
     long N = period / dt + 1;
     long i = 0;
-    //	while (JD<=timeLimit) {			i++;			JD+=dt;		} // first pass
-    //to learn how big matrix to allocate 	N=i; 	matrix<double> m(N,4);
+    //	while (JD<=timeLimit) {			i++;			JD+=dt;		} // first
+    //pass to learn how big matrix to allocate 	N=i; 	matrix<double> m(N,4);
     FILE* f = fopen("Solstice.txt", "w");
     i = 0;
     JD = JDutc;
@@ -621,12 +625,14 @@ void calculateNextSolstice(cpedsMsgs& msgs) {
     printf("dt: %.15lf [s]\n", _dt * 3600);
 }
 
-void calculateSunRiseAndSet(cpedsMsgs& msgs) {
+void calculateRiseAndSet(cpedsMsgs& msgs) {
     double lambda = 5.5e-5; // cm = 550 nm
     double humidity = 100;  // percent
     double tLapse = 0.0065; // K/m
+    double calcLimit = 1;   // deg
+
     cpedsDirection obs(_lon, _lat, _altitude); // observer location
-    cpedsPlanetDirection planet("Sun", obs, _altitude, _P, _T);
+    cpedsPlanetDirection planet(_planet, obs, _altitude, _P, _T);
     obs *= PI180;
     obs.print_direction("my location:", true, 0);
     double dscSize;
@@ -645,9 +651,10 @@ void calculateSunRiseAndSet(cpedsMsgs& msgs) {
 
             if (target == UPPER_LIMB) {
                 // calculate Sun's upper limb elevation
-                double sunTrueAngularSizeForJD = planet.angularSize() * PI180inv; // deg
-				double calcLimit = sunTrueAngularSizeForJD * 2;
-                auto inSpaceAh = nowAt.toAh(obs, JD, 0, 0, 0, _P, _T, false).toDeg();
+                double sunTrueAngularSizeForJD =
+                    planet.angularSize() * PI180inv; // deg
+                auto inSpaceAh =
+                    nowAt.toAh(obs, JD, 0, 0, 0, _P, _T, false).toDeg();
                 double inSpaceSunUpperLimbElevation =
                     (inSpaceAh.h() + sunTrueAngularSizeForJD / 2);
                 if (inSpaceSunUpperLimbElevation < -calcLimit ||
@@ -655,29 +662,38 @@ void calculateSunRiseAndSet(cpedsMsgs& msgs) {
                     JD += dt;
                     continue;
                 }
-                auto apparentUpperLimbElev = 90.0 - cpeds_refraction_space(
-                    90.0 - inSpaceSunUpperLimbElevation, _altitude, _T, _P,
-                    humidity, lambda, _lat, tLapse, 1e-8);
+                auto apparentUpperLimbElev =
+                    90.0 - cpeds_refraction_space(
+                               90.0 - inSpaceSunUpperLimbElevation, _altitude,
+                               _T, _P, humidity, lambda, _lat, tLapse, 1e-8);
                 elevVsJD.newPoint(JD, apparentUpperLimbElev);
             } else if (target == LOWER_LIMB) {
                 // calculate Sun's lower limb elevation
-                double sunTrueAngularSizeForJD = planet.angularSize() * PI180inv; // deg
-				double calcLimit = sunTrueAngularSizeForJD * 2;
-                auto inSpaceAh = nowAt.toAh(obs, JD, 0, 0, 0, _P, _T, false).toDeg();
+                double sunTrueAngularSizeForJD =
+                    planet.angularSize() * PI180inv; // deg
+                auto inSpaceAh =
+                    nowAt.toAh(obs, JD, 0, 0, 0, _P, _T, false).toDeg();
                 double inSpaceSunLowerLimbElevation =
                     inSpaceAh.h() - sunTrueAngularSizeForJD / 2;
                 if (inSpaceSunLowerLimbElevation < -calcLimit ||
-					inSpaceSunLowerLimbElevation > calcLimit) {
-		            JD += dt;
+                    inSpaceSunLowerLimbElevation > calcLimit) {
+                    JD += dt;
                     continue;
                 }
-                auto apparentLowerLimbElev = 90.0 - cpeds_refraction_space(
-                    90.0 - inSpaceSunLowerLimbElevation, _altitude, _T, _P,
-                    humidity, lambda, _lat, tLapse, 1e-8);
+                auto apparentLowerLimbElev =
+                    90.0 - cpeds_refraction_space(
+                               90.0 - inSpaceSunLowerLimbElevation, _altitude,
+                               _T, _P, humidity, lambda, _lat, tLapse, 1e-8);
                 elevVsJD.newPoint(JD, apparentLowerLimbElev);
             } else if (target == CENTER) {
-                auto apparentCtrAh = nowAt.toAh(obs, JD, 0, 0, 0, _P, _T, true);
-                elevVsJD.newPoint(JD, apparentCtrAh.h() * PI180inv);
+                auto apparentCtrAh =
+                    nowAt.toAh(obs, JD, 0, 0, 0, _P, _T, true).toDeg();
+                if (apparentCtrAh.h() < -calcLimit ||
+                    apparentCtrAh.h() > calcLimit) {
+                    JD += dt;
+                    continue;
+                }
+                elevVsJD.newPoint(JD, apparentCtrAh.h());
             } else {
                 throw std::invalid_argument("Invalid ElevTarget value");
             }
