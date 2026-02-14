@@ -50,15 +50,16 @@ const cpedsPlanetDirection& cpedsPlanetDirection::operator=(const cpedsMoonDirec
 }
 /***************************************************************************************/
 double cpedsPlanetDirection::angularSize(double JD, int which) {
-	double ang=-1, r=0;
-	if (JD==0) {
-		if (which==-1) r=_COproperties.polarRadius;
-		if (which==0) r=(_COproperties.polarRadius+_COproperties.equatorialRadius)/2;
-		if (which==1) r=_COproperties.equatorialRadius;
-		if (getDistance()!=0)
-			ang=2.0*atan(r/getDistance());
-	}
-	return ang;
+    double ang = -1, r = 0;
+    if (which == -1)
+        r = _COproperties.polarRadius;
+    if (which == 0)
+        r = (_COproperties.polarRadius + _COproperties.equatorialRadius) / 2;
+    if (which == 1)
+        r = _COproperties.equatorialRadius;
+    if (getDistance() != 0)
+        ang = 2.0 * atan(r / getDistance());
+    return ang;
 }
 /***************************************************************************************/
 void cpedsPlanetDirection::setPlanetProperties(string planetName) {

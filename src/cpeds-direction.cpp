@@ -331,6 +331,12 @@ DirectionRaDec DirectionAh::toRaDec(const cpedsDirection& observer, double JD, d
 //	  vector2radec(pos2,&ra,&dec);
 //	  return DirectionRaDec(ra*15.0, dec,JD)*PI180;
 }
+
+DirectionAh& DirectionAh::toDeg() {
+    operator*=(PI180inv);
+    return *this;
+}
+
 /***************************************************************************************/
 cpedsDirection& cpedsDirection::toGeographic(double a, double b) {
 	lat()=atan(a*a/b/b*tan(lat()));

@@ -575,7 +575,8 @@ class DirectionAh : public cpedsDirection {
    */
   DirectionRaDec toRaDec(const cpedsDirection& observer, double JD, double ut1_utc=0, double DeltaAT=37, bool localTime=false, double polar_x=0, double polar_y=0, double P=1012, double T=0, bool refract=false, int LSTtype=0) const;
 
-  
+  DirectionAh& toDeg();
+
   //! pressure is given in millibars=100 Pa=100N/m^2 and temperature in Celsius degrees
   double getRefraction(double pressure=1013, double temperature=20) const { return PI180*ln_get_refraction_adj(h()*PI180inv,pressure,temperature); }
   //! include the effect of the atmospheric refraction to the Ah direction.
