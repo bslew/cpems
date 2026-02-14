@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
   mscsAlms a("alms");
   parseOptions(argc,argv);
   map.setVerbosityLevel(High);
+  mask.setVerbosityLevel(High);
   //----------------------------------------------------------------------------------------------------
   srand((long)time(NULL)-cpeds_seed_offset);
 
@@ -402,7 +403,8 @@ int main(int argc, char **argv) {
 
     long N=circ_lbrv_tmp.RowNo();
     if (circ_lbrv_tmp.ColNo() == 4) { circ_lbrv=circ_lbrv_tmp; }
-    if (circ_lbrv_tmp.ColNo() == 3) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=circ_lbrv_tmp(i,2); circ_lbrv(i,3)=_ctf_v; } }
+    // if (circ_lbrv_tmp.ColNo() == 3) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=circ_lbrv_tmp(i,2); circ_lbrv(i,3)=_ctf_v; } }
+    if (circ_lbrv_tmp.ColNo() == 3) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=_ctf_r; circ_lbrv(i,3)=circ_lbrv_tmp(i,2); } }
     if (circ_lbrv_tmp.ColNo() == 2) { for (long i=0;i<N;i++) { circ_lbrv(i,0)=circ_lbrv_tmp(i,0); circ_lbrv(i,1)=circ_lbrv_tmp(i,1); circ_lbrv(i,2)=_ctf_r0+_ctf_r; circ_lbrv(i,3)=_ctf_v; } }
     circ_lbrv_tmp.SetSize(0,0);
     if (_ctf_U == "m") {       for (long i=0;i<N;i++) { circ_lbrv(i,2)/=60.0; } }
@@ -435,7 +437,9 @@ int main(int argc, char **argv) {
 /*     for (i=1;i<=(long)(_ml[0]);i++) {       map.set_Treg(_ml[i]*PI/180,_mb[i]*PI/180,2); } */
 /*     map.clear_multimask(); */
 
-    for (i=1;i<=(long)(_tl[0]);i++) {       map.make_circle_dot(_tl[i],_tb[i],_ts[i],_tv[i],"T",_overplot_region_type,_overplot_region_type_dot_points,""); }
+    for (i=1;i<=(long)(_tl[0]);i++) {       
+    	map.make_circle_dot(_tl[i],_tb[i],_ts[i],_tv[i],"T",_overplot_region_type,_overplot_region_type_dot_points,""); 
+    }
 
 /*     EXPERIMENTAL BEGIN */
 

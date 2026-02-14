@@ -24,6 +24,7 @@ QLists
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_deriv.h>
 #include <vector>
+#include <tuple>
 #ifndef NO_HDF5
 #include <hdf5.h>
 #endif
@@ -40,6 +41,7 @@ QLists
 #include "cpeds-point3d.h"
 #include "cpeds-point_set.h"
 #include "subdomain.h"
+
 
 /* INTERDEPENDENT HEADERS */
 
@@ -361,6 +363,15 @@ class mscsFunction3dregc : public mscsObject {
 		double getMaxValue(long* iMax=NULL, bool Re=true) const;
 		double getMinValue(long* iMin=NULL, bool Re=true) const;
 		cpedsPoint3D getMinValueCell(bool Re=true) const;
+		/*!
+			\brief return function space coordinates of the maximal function value
+			\details 
+			@param Re - if true the maximal value corresponds to real part, otherwise
+				it concerns the imaginary part.
+			@return x,y,z point in function space of the maximal value.
+		
+			\date Mar 13, 2020, 12:52:29 PM
+		*/
 		cpedsPoint3D getMaxValueCell(bool Re=true) const;
 
 //		//! returns a modifiable reference to the list of X coordinates list
@@ -840,6 +851,10 @@ class mscsFunction3dregc : public mscsObject {
 			@param smKernel - defines which smoothing kernel should be used - default is "gadget2"
 			@param NeighborsMin - minimal number of neighbors
 			@param NeighborsMax - maximal number of neighbors
+			@param providedHSML - a list of smoothing lengths that can be provided (if the size is
+				equal the size of positions) or requested if the allocated vector size is 0,
+				in which case the vector will be modified with the calculated smoothing lengths.
+				
 			@return returns this object
 			
 			This is SPH interpolation. The interpolated field is hold on real part of the function. The imaginary part holds the effective 
@@ -1431,6 +1446,7 @@ class mscsFunction3dregc : public mscsObject {
 			\author Bartosz Lew
 		*/
 		void importSlice(double* a, long N, int slice, bool re=true);
+//		void importSlice(cpedsList<double> a,  int slice, bool re=true);
 		/*!
 			\brief exports a copy of the real part of the function; 
 			\details 

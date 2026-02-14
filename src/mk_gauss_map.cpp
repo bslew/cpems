@@ -467,7 +467,7 @@ void fitNoiseToResolution(mscsMap& map, long target_nside) {
 		int output;
 		map.change_map_resolution(target_nside);
 		for (long i = 0; i < map.pixNum(); i++) {
-			rns.setMeanVariance(0.0,mmmap.T(i));
+			rns.setMeanStd(0.0,mmmap.T(i));
 			map.T(i)=rns.getRN();
 		}
 		

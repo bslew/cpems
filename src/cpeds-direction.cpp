@@ -137,8 +137,8 @@ DirectionRaDec& DirectionRaDec::toJD(double jd) {
 DirectionRaDec& DirectionRaDec::nutate(int direction) {
 	  double pos1[3]; // geocentric equatorial rectangular coordinates
 	  double pos2[3]; // geocentric equatorial rectangular coordinates
-	  ln_lnlat_posn ecl;
-	  ln_nutation n;
+	//   ln_lnlat_posn ecl;
+	//   ln_nutation n;
 	  double RA,DEC;
 	  double Elon,Elat;
 	  double jd=epoch();
@@ -331,6 +331,12 @@ DirectionRaDec DirectionAh::toRaDec(const cpedsDirection& observer, double JD, d
 //	  vector2radec(pos2,&ra,&dec);
 //	  return DirectionRaDec(ra*15.0, dec,JD)*PI180;
 }
+
+DirectionAh& DirectionAh::toDeg() {
+    operator*=(PI180inv);
+    return *this;
+}
+
 /***************************************************************************************/
 cpedsDirection& cpedsDirection::toGeographic(double a, double b) {
 	lat()=atan(a*a/b/b*tan(lat()));
@@ -362,16 +368,18 @@ string cpedsDirection::print_direction(string comment, bool show, int format) co
   }
   string s;
   char tmpch[1000];
-  if (format==0 or format==2)
+  if (format==0 or format==2) {
 	  if (format==0)
 		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [d] %li [m] %lE [s], lat  %li [d] %li [m] %lE [s] \n", comment.c_str(), cpeds_check_phi(lon())*PI180inv, cpeds_check_b(lat())*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
 	  else
-		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [d] %li [m] %lE [s], lat  %li [d] %li [m] %lE [s] \n", comment.c_str(), cpeds_check_phi(lon()*PI180)*PI180inv, cpeds_check_b(lat()*PI180)*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
-  if (format==1 or format==3)
+		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [d] %li [m] %lE [s], lat  %li [d] %li [m] %lE [s] \n", comment.c_str(), cpeds_check_phi(lon()*PI180)*PI180inv, cpeds_check_b(lat()*PI180)*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  	  
+  }
+  if (format==1 or format==3) {
 	  if (format==1)
 		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [h] %li [m] %lE [s], lat  %li [d] %li ['] %lE [\"] \n", comment.c_str(), cpeds_check_phi(lon())*PI180inv, cpeds_check_b(lat())*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
 	  else
 		  sprintf(tmpch,"%s> lon [deg]: %lf lat [deg]: %lf val: %lE    ||| lon %li [h] %li [m] %lE [s], lat  %li [d] %li ['] %lE [\"] \n", comment.c_str(), cpeds_check_phi(lon()*PI180inv)*PI180, cpeds_check_b(lat()*PI180)*PI180inv, val(),long(h1),long(m1),s1,long(h2),long(m2),s2);  
+  }
   if (show) printf("%s",tmpch);
   s=tmpch;
   return s;
@@ -412,6 +420,14 @@ string DirectionRaDec::print_direction(string comment, bool show) const {
   if (show) printf("%s",tmpch);
   s=tmpch;
   return s;
+}
+/* ******************************************************************************************** */
+const cpedsDirection& cpedsDirection::toRad() {
+	return operator*=(PI180);
+}
+/* ******************************************************************************************** */
+const cpedsDirection& cpedsDirection::toDeg() {
+	return operator*=(PI180inv);
 }
 /* ************************************************************************************************************************************************************************************ */
 /* ************************************************************************************************************************************************************************************ */

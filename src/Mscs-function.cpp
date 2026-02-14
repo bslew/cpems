@@ -80,8 +80,13 @@ double mscsFunction::getMaxValue() const { return range.ymax; }
 double mscsFunction::getMinArg() const { return range.xmin; }
 /* **************************************************************************************************** */
 double mscsFunction::getMaxArg() const { return range.xmax; }
+/* ******************************************************************************************** */
+std::pair<double,double> mscsFunction::getMinMaxValues() const {
+	return std::make_pair(getMinValue(),getMaxValue());
+}
+
 /* **************************************************************************************************** */
-void mscsFunction::checkRanges() {
+mscsFunction& mscsFunction::checkRanges() {
 	double* tmp;
 	clearRanges();
 	
@@ -98,6 +103,7 @@ void mscsFunction::checkRanges() {
 	}
 	else { range.ymin=range.ymax=0.0; range.iymin=range.iymax=0; }
 	
+	return *this;
 }
 
 void mscsFunction::clearRanges() {
@@ -242,7 +248,8 @@ double mscsFunction::Y(long i) const {
 double mscsFunction::getY(long i) const {
 	if (argOK(i)) return _f[i].y();
 	else {
-		msgs->error("index out of range: "+msgs->toStr(i),Medium);
+//		msgs->error("index out of range: "+msgs->toStr(i),Medium);
+		msgs->say("index out of range: "+msgs->toStr(i),Medium);
 	}
 	return 0;
 }
@@ -1986,6 +1993,97 @@ mscsFunction mscsFunction::binFunction(double dx, cpedsList<long>& binSize, stri
 	
 	return fbinned;
 }
+/* ******************************************************************************************** */
+mscsFunction mscsFunction::binFunction(cpedsList<double>& binEdge, cpedsList<long>& binCounts, string methodX, string methodY) {
+	mscsFunction fbinned;
+	if (binEdge.size()<2) return fbinned; 
+	long i,ist, ien, binidx;
+	double x,binst,binen, binctr, xmin,xmax,binArg, binVal;
+	cpedsList<double> binX,binY;
+	
+	
+	checkRanges();
+	binidx=0;
+	ist=0;
+	ien=pointsCount();
+	x=getx(ist);
+	i=ist;
+
+	do {
+		binX.clear();
+		binY.clear();
+
+		binst=binEdge[binidx];
+		binen=binEdge[binidx+1];
+		binctr=(binst+binen)/2;
+		x=getx(i);
+		while (x>=binst and x<binen) {
+			binX.append(x);
+			binY.append(f(i));
+			i++;
+			if (i==pointsCount()) break; 
+			x=getx(i);
+//			printf("----------\n");
+//			binY.print();
+		}
+//		printf("----------\n");
+//		binY.print();
+		
+		if (binX.size()>0) {
+			if (methodX=="mean") binArg=binX.mean();
+			else {
+				if (methodX=="median") binArg=binX.median();
+				else {
+					if (methodX=="min") binArg=binX.min();
+					else {
+						if (methodX=="max") binArg=binX.max();
+						else {
+							if (methodX=="bin_center") binArg=binctr;
+							else {
+								if (methodX=="bin_max") binArg=binen;
+								else {
+									if (methodX=="bin_min") binArg=binst;
+									else {
+										cout << "Wrong methodX in binFunction\n"; exit(1);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+	
+			if (methodY=="mean") binVal=binY.mean();
+			else {
+				if (methodY=="median") binVal=binY.median();
+				else {
+					if (methodY=="min") binVal=binY.min();
+					else {
+						if (methodY=="max") binVal=binY.max();
+						else {
+							cout << "Wrong methodY in binFunction\n"; exit(1);
+						}
+					}
+				}
+			}
+//			binY.print();
+			binCounts.append(binX.size());
+			fbinned.newPoint(binArg,binVal);
+		}
+		else {
+			// make sure binCounts has the right size when there is no data in the bin
+			binCounts.append(0);
+		}
+		
+		if (x>=binen) binidx++;
+		if (x<binst) i++;
+		if (i==pointsCount()) break; 
+		
+	} while (binidx<binEdge.size()-1);
+	
+	return fbinned;
+	
+}
 /***************************************************************************************/
 mscsFunction& mscsFunction::binFunctionLin(long imin, cpedsList<long>& binSize, cpedsList<double>& w) {
 	
@@ -2356,7 +2454,10 @@ mscsFunction mscsFunction::powerSpectrum(mscsFunction* re, mscsFunction* im, dou
 	//	debug_time1=clock();
 #endif
 	
+//#pragma omp critical
+//	{
 	p=fftw_plan_dft_1d(N, t,t, dir, FFTW_ESTIMATE); 
+//	}
 	for (i=0;i<N;i++) { t[i][0]=f(i); t[i][1]=0.0; }
 	fftw_execute(p);
 #ifdef DEBUG
@@ -2398,8 +2499,10 @@ mscsFunction mscsFunction::powerSpectrum(mscsFunction* re, mscsFunction* im, dou
 	//	P.f(0)/=double(2.0); // zero'th frequency does not get the factor of 2 bacause its a real number
 	//	if (N%2==0) // divide the Nyquist frequency by 2 when it doesn't have its negative counterpart (i.e. when N is even)
 	//		P.f(M-1)/=double(2.0);
-	
+#pragma omp critical
+	{
 	fftw_destroy_plan(p);
+	}
 #ifdef DEBUG_USING_FFTW2AND3
 	delete [] t;
 #else
@@ -2425,8 +2528,9 @@ mscsFunction mscsFunction::inverseFFT(mscsFunction& re, mscsFunction& im, double
 	
 	double *sig=fft_1D_c2r(re.extractValues(),im.extractValues(),re.pointsCount(),pointsNum,true);
 	clearFunction();
-	importFunction(x,sig,pointsNum);
-	if (deleteX) delete [] x;
+	importFunction(x,sig,pointsNum,false);
+	if (deleteX and x!=0) delete [] x;
+	delete [] sig;
 	return *this;
 }
 
@@ -2973,7 +3077,7 @@ mscsFunction& mscsFunction::mkGaussianNoise(long N, double m, double s, long see
 			rns=_rns;		
 		}
 	}	
-	rns->setMeanVariance(m,s);
+	rns->setMeanStd(m,s);
 	
 	double *a=NULL;
 	

@@ -48,6 +48,10 @@ cpedsList<double> MscsPDF1D::getCR(double CL, double* LVL) {
 	tmp-=lvl;
 	vector<double> CR=tmp.findRoot();
 	cpedsList<double> CRl(CR);
+#ifdef DEBUG_MCMC_PDF
+	tmp.save("getCR.pdf.root.debug");
+	CRl.print();
+#endif
 	checkRanges();
 	double modalX=getX(getMaxValueIdx());
 	
@@ -65,12 +69,19 @@ cpedsList<double> MscsPDF1D::getCR(double CL, double* LVL) {
 		if (CR[0]-modalX > 0) CRl.prepend(getMinArg());
 		else CRl.append(getMaxArg());
 	}
-//	else {
+	else {
+		if (CR.size()==0) {
+			CRl.append(getMinArg());
+			CRl.append(getMaxArg());
+		}
+//		else {
+//			
+//		}
 //		if (f(getMinArg()>lvl) or f(getMaxArg()>lvl)) {
 //			if (CR[0]-modalX > 0) CRl.prepend(getMinArg());
 //			else CRl.append(getMaxArg());
 //		}		
-//	}
+	}
 	
 	return CRl;
 }
@@ -101,7 +112,7 @@ mscsFunction MscsPDF1D::getCDF() {
 double MscsPDF1D::getTwosidedIntegral(double yMin) {
 	double I=0;
 	long N=pointsCount();
-	assert(N>2);
+	if (N<2) return I;
 //	mscsFunction* tmp;
 //	
 //	if (yMin<_MscsPDF1D_data.twoSidedIntegral_lastyMin) {

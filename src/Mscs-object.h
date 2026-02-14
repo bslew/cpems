@@ -75,7 +75,7 @@ class mscsObject {
   string getName() const { return object_name; }
   //! sets a new name to the object
   void setName(string newName) { 
-    msgs->say("changing name to: "+newName,High);
+//    msgs->say("changing name to: "+newName,High);
     object_name = newName; 
     msgs->setSender(newName);
   }
@@ -129,12 +129,26 @@ class mscsObject {
   cpedsMsgs& messenger() { return *msgs; }
 
   mscsObject& operator=(const mscsObject& rhs) {
+	  if (this == &rhs) return *this;
+
+	  
 	  const cpedsMsgs* msg=rhs.getMessengerP();
 	  if (msg!=NULL) {
+/*
 		  if (msgs!=NULL) { delete msgs; msgs=NULL; } // WHY WHEN THIS IS UNCOMMENTED THERE'S SOMETIMES SEGMENTATION FAULT ??
-	  	  	  	  	  	  	  	  	  	  	  	  // Jul 6, 2011, 4:02:06 PM: perhaps the long standing problem was fixed today.
-	  	  	  	  	  	  	  	  	  	  	  	  // the problem was that the msgs was not initialized msgs=NULL in the copy constructor. now it is and
-	  	  	  	  	  	  	  	  	  	  	  	  // there are no more seg.faults with this line uncommented.
+*/
+		  /*
+		 * Comment:
+		 * 
+		 * This is a constructor, so msgs is not yet initialized, so comparing its value
+		 * against anything in the constructor doesn't make any sense.
+		 * 
+		 * author: blew
+		 * date: Oct 16, 2020 4:08:16 PM
+		 *
+		 */
+		
+		  
 //		  else {
 //			  printf("!!!!!!!!!!!!!! WARNING THe msgs is NULL. This should not be !!! Will exit now. \n"); exit(0);			  
 		  // msgs can actually be null here when entering  from the copy constructor
@@ -148,9 +162,7 @@ class mscsObject {
 		  printf("!!!!!!!!!!!!!! WARNING THe parent msgs is NULL. This should not be !!! Will exit now. \n"); exit(0);
 	  }
 	  //    object_name=rhs.getName(); // commented out on 2010-10-06 - we don't want functions to change names after eg. f=g
-	  /* setName(parent.getName()); */
-	  //    msgs->setSender(getName()); // added on 2010-10-06 // commented out on Dec 16, 2010, 9:22:40 PM
-	  if (getName()=="") object_name=rhs.getName(); // added on Dec 16, 2010, 9:22:21 PM  -- setting the sender is done here too
+	  setName(rhs.getName()); 
 	  
 	  return *this;
   }

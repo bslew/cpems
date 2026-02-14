@@ -190,5 +190,8 @@ class cpedsPoint3D : public cpedsPoint2D {
   double _z;
 
  };
+
+ostream& operator<<(ostream& s, cpedsPoint3D& p);
+
 #endif /* CPEDSPOINT3D */ 
 

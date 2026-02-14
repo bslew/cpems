@@ -48,7 +48,10 @@ cpedsPointSet3D cpedsProject::projectOnPlane(const cpedsDirection& n, string pro
 	
 	//  printf("proj string: %s\n",tmpch);
 	s=tmpch;
-	pj = pj_init_plus(s.c_str());
+
+	projCtx ctx = pj_ctx_alloc();
+	pj=pj_init_plus_ctx(ctx, s.c_str());
+//	pj = pj_init_plus(s.c_str());
 	
 	// if (projection == "stere" ) { maxX=0.707106799968253; maxY=0.707106799968253; }
 	// x=cpeds_get_min(x,endX);      x=cpeds_get_max(x,startX);
@@ -82,6 +85,7 @@ cpedsPointSet3D cpedsProject::projectOnPlane(const cpedsDirection& n, string pro
 		// }
 	}
 	pj_free(pj);
+    pj_ctx_free( ctx );
 
 	return _ps;  
 }
@@ -109,7 +113,9 @@ cpedsDirectionSet cpedsProject::projectOnSphere(const cpedsDirection& n, string 
 		
 	//  sprintf(tmpch,"+proj=%s +lat_0=%lE +lon_0=%lEw +R=%lE",getProjection().c_str(), projectionDirection().lat(), PI-projectionDirection().lon(), sqrt(2)/4);
 	s=tmpch;
-	pj = pj_init_plus(s.c_str());
+	projCtx ctx = pj_ctx_alloc();
+	pj=pj_init_plus_ctx(ctx, s.c_str());
+//	pj = pj_init_plus(s.c_str());
 	
 	long N=pointsCount();
 	_ds.clear();
@@ -126,7 +132,8 @@ cpedsDirectionSet cpedsProject::projectOnSphere(const cpedsDirection& n, string 
 			_ds.append(cpedsDirection(p.u,p.v,_ps.at(i).z()));
 	}
 	pj_free(pj);
-	
+    pj_ctx_free( ctx );
+
 	return _ds;
 }
 /***************************************************************************************/
@@ -141,3 +148,4 @@ double cpedsProject::getLengthScaleFromAng(double ang) {
 	ls=( fabs(ps[1].x()-ps[0].x()) +  fabs(ps[3].y()-ps[2].y()) )/2;  
 	return ls;
 }
+/* ******************************************************************************************** */

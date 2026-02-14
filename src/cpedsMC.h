@@ -40,10 +40,14 @@ class cpedsMC : public QList<MClink> {
 		/* ---------------------------- */
 		/* PUBLIC METHODS */
 		/* ---------------------------- */
-
+		void append(MClink l, long idx);
+		void append(MClink l);
+		void append(cpedsMC& mc);
 		void load(string fname);
 		const cpedsMC& operator=(const cpedsMC& rhs);
 
+		void save(string fname, long precision=5);
+		
 		/* ---------------------------------------------------------------------------------------------------- */
 		/* CLASS PROTECTED MEMBERS */
 		/* ---------------------------------------------------------------------------------------------------- */

@@ -14,6 +14,8 @@
 
 #include "cpeds-pdf.h"
 
+using namespace cpems;
+
 /*****************************************************************************************************************/
 cpeds_PDF::cpeds_PDF(double *x, double *y, long n, cpeds_queue_double *cl) {
   msgs=new cpedsMsgs("PDF");

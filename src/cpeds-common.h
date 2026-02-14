@@ -97,7 +97,19 @@ typedef struct {
 */
 typedef enum { cpedsSuccess=0, cpedsNoSuchFile, cannotOpenFile, wrongFormat, cpedsCannotWriteToFile, cannotConnect, cpedsError, cpedsNoSuchHDF5dataset } cpedsStatusCodes;
 
+
 #endif
 
 
+#ifndef __cpeds_common__
+#define __cpeds_common__
+#include <vector>
+#include <string>
 
+std::vector<std::string> cpeds_strsplit(std::string cmd,char delim);
+std::vector<std::string> cpeds_strToVec(std::string s,char delim=',');
+
+
+
+
+#endif

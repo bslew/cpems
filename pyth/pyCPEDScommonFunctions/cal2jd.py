@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 '''
 Module description: 
@@ -47,9 +47,9 @@ parser = OptionParser(description=programDescription)
 #options
 # parser.add_option("", "--data", dest="data", default="", type="string", help='name of the data file: if gauss3000 then 3000 gaussian samples is generated internally', metavar="STRING")
 parser.add_option("-c", "--col", dest="col", default=0, type="int", help='column in data file to look for date. ', metavar="VAL")
-parser.add_option("-o", "", dest="outfile", default="", type="string", help='output file name', metavar="STRING")
+parser.add_option("-o", "", dest="outfile", default="", type=str, help='output file name', metavar="STRING")
 parser.add_option("", "--offset", dest="offset", default=0, type="float", help='time offset to apply to the converted times [JD]', metavar="VALUE")
-parser.add_option("", "--fmt", dest="fmt", default="iso", type="string", help='''input file time 
+parser.add_option("", "--fmt", dest="fmt", default="iso", type=str, help='''input file time 
     format (default: %Y-%m-%d %H:%M:%S). To read time with fraction of seconds you can used eg.
     %Y %m %d %H %M %S.%f''', metavar="STRING")
 
@@ -94,28 +94,28 @@ parser.add_option("", "--testFmt", action="store_true", dest="testFmt", default=
 if option.test:
     dt='2017-10-27 09:10:11.23'
     val=cpedsPythCommon.cal2jd(date_time_str=dt,offset=option.offset)
-    print dt,' UTC is %.15f' % val
+    print(dt,' UTC is %.15f' % val)
     shouldBe=2458053.882074421271682
-    print 'should be: %.15f' % shouldBe
-    print 'diff: ',val-shouldBe
+    print('should be: %.15f' % shouldBe)
+    print('diff: ',val-shouldBe)
     sys.exit()
 
 if option.testFmt:
     dt='2017 10 27 09 10 11.23'
     val=cpedsPythCommon.cal2jd(date_time_str=dt,offset=option.offset,DT_FMT=option.fmt)
-    print dt,' UTC is %.15f' % val
+    print(dt,' UTC is %.15f' % val)
     shouldBe=2458053.882074421271682
-    print 'should be: %.15f' % shouldBe
-    print 'diff: ',val-shouldBe
+    print('should be: %.15f' % shouldBe)
+    print('diff: ',val-shouldBe)
     sys.exit()
 
-from matplotlib.dates import strpdate2num
-data=np.loadtxt(args[0], dtype="string")
+# from matplotlib.dates import strpdate2num
+data=np.loadtxt(args[0], dtype=str)
 # print data
 np.set_printoptions(precision=15,suppress=True)
 
 Nspaces=len(option.fmt.split(' '))
-dt=data[:,range(option.col,option.col+Nspaces,1)]
+dt=data[:,list(range(option.col,option.col+Nspaces,1))]
 # print dt
 # dt=map(' '.join, zip(dt[:,0],dt[:,1]))
 

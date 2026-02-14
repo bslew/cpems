@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
+# from distutils.core import setup, Extension
 import os
 
 os.environ["CC"] = "c++" 
@@ -19,13 +20,19 @@ os.environ["CXX"] = "c++"
 cpedsRotation = Extension(
     'pyCPEDScommonFunctions/cpedsRotation',
     sources=['pyCPEDScommonFunctions/cpedsRotation.cpp'],
-    include_dirs=['/usr/local/include/cpems', '/usr/lib64/python2.7/site-packages/numpy/core/include/numpy'],
+    include_dirs=['/usr/local/include/cpems', 
+                '/usr/lib64/python3.6/site-packages/numpy/core/include/numpy',
+                  '/usr/lib/python3.6/dist-packages/numpy/core/include/numpy/',
+                  '/usr/include/x86_64-linux-gnu/qt5',
+                  ],
     library_dirs=['/usr/local/lib/cpems'],
-    libraries=['nova',  'gsl', 'gslcblas', 'm', 'proj', 
-               'QtCore', 'fftw3', 'fftw3l', 'hdf5', 'CGAL', 'gmp','cfitsio', 'CPEDS', 'Mscsfn', 
-               'Mscscore', 'Mscsplot', 'MscsWMAP', 'armadillo', 
-               'gsl', 'gslcblas', 'm', 'proj', 'QtCore', 'fftw3', 'ccSHT3', 'novas', 'velKB', 'slaRefr', 
-               'fftw3l', 'hdf5', 'CGAL', 'gmp', 'cfitsio', 'cpgplot', 'armadillo'],
+    # libraries=['nova',  'gsl', 'gslcblas', 'm', 'proj', 
+    #            'QtCore', 'fftw3', 'fftw3l', 'hdf5', 'CGAL', 'gmp','cfitsio', 'CPEDS', 'Mscsfn', 
+    #            'Mscscore', 'Mscsplot', 'MscsWMAP', 'armadillo', 
+    #            'gsl', 'gslcblas', 'm', 'proj', 'QtCore', 'fftw3', 'ccSHT3', 'novas', 'velKB', 'slaRefr', 
+    #            'fftw3l', 'hdf5', 'CGAL', 'gmp', 'cfitsio', 'cpgplot', 'armadillo'],
+    libraries=['cpems',],
+    
     language='C++',
     )
 
@@ -35,10 +42,23 @@ setup(name='pyCPEDScommonFunctions',
       author='Bartosz Lew',
       author_email='blew@astro.umk.pl',
       url='',
-      package_dir = {'': ''},
+      install_requires=[
+        'scipy',
+        'matplotlib',
+        'pyfits',
+#          'pyhdf5',
+        'h5py',
+        'astropy',
+        'statsmodels'
+      ],      
+#       package_dir = {'': ''},
       packages = ['pyCPEDScommonFunctions'],
-      scripts=['pyCPEDScommonFunctions/confidenceRange.py','pyCPEDScommonFunctions/cal2jd.py',
-               'pyCPEDScommonFunctions/jd2cal.py', 'pyCPEDScommonFunctions/join_interpolate.py'],
+      scripts=[
+               'plot_function.py', 
+                'pyCPEDScommonFunctions/confidenceRange.py',
+                'pyCPEDScommonFunctions/cal2jd.py',
+                'pyCPEDScommonFunctions/jd2cal.py', 
+                'pyCPEDScommonFunctions/join_interpolate.py'],
       ext_modules=[cpedsRotation]
      )
 

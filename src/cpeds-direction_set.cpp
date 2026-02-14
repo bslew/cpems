@@ -12,7 +12,7 @@ cpedsDirectionSet::cpedsDirectionSet(const QList<cpedsDirection> &q) {
   for (long i=0;i<N;i++) { append(q.at(i));  }
 }
 // ****************************************************************************************************
-cpedsDirectionSet::cpedsDirectionSet(const cpedsDirectionSet &q) {
+cpedsDirectionSet::cpedsDirectionSet(const cpedsDirectionSet &q) : QList<cpedsDirection>(q) {
   clear();
   *this=q;
 }

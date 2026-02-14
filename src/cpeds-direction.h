@@ -249,6 +249,8 @@ class cpedsDirection {
     return cpedsDirection(cpeds_cart2sph(1,x3,y3,z3),PIsnd-cpeds_cart2sph(0,x3,y3,z3));
   }
   
+  const cpedsDirection& toRad();
+  const cpedsDirection& toDeg();
   cpedsDirection& subtract(const cpedsDirection& rhs);
   cpedsDirection& add(const cpedsDirection& rhs);
   
@@ -573,7 +575,8 @@ class DirectionAh : public cpedsDirection {
    */
   DirectionRaDec toRaDec(const cpedsDirection& observer, double JD, double ut1_utc=0, double DeltaAT=37, bool localTime=false, double polar_x=0, double polar_y=0, double P=1012, double T=0, bool refract=false, int LSTtype=0) const;
 
-  
+  DirectionAh& toDeg();
+
   //! pressure is given in millibars=100 Pa=100N/m^2 and temperature in Celsius degrees
   double getRefraction(double pressure=1013, double temperature=20) const { return PI180*ln_get_refraction_adj(h()*PI180inv,pressure,temperature); }
   //! include the effect of the atmospheric refraction to the Ah direction.
@@ -785,6 +788,8 @@ class  DirectionRaDec : public cpedsDirection {
 	@param P - pressure [mbar]
 	@param T - temperature [Celsius]
 	@return
+
+  The conversion takes into account the precession and nutation.\n
 
 	\date Dec 10, 2012, 11:04:30 AM
 	\author Bartosz Lew

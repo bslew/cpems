@@ -98,7 +98,7 @@ class cpedsMCMC {
 				long maximalNumberOfForcedCoolings; //! the number of times when the system will be forced to cool down each time when _maximalRejectionsCount has been reached and _temperature > _finalTemperature
 				
 				double temperature; //!< defines the current temperature for the simulated annealing and its history
-				cpedsList<double> temperatureHistory; //!< records the cooling history
+				mscsFunction temperatureHistory; //!< records the cooling history
 				double initialTemperature; //! temperature to start the walk with
 				double finalTemperature; //!< temperature at which we stop the parameter space walk
 				double coolingRate; //!< temperature decrease multiplier for one Monte-Carlo step
@@ -133,8 +133,10 @@ class cpedsMCMC {
 				cpedsRNG rnSgn; //!< This generator only generates the sign + or -
 				MClink current; //!< The last accepted MClink
 				MClink next; //!< currently not used
+				MClink avgStep; //!< average step calculated using NavgSteps
 				double likelihoodRejectionThreshold; //!< likelihood threshold below which links are rejected for posterior calculation
 				long maximalChainLength; //!< the maximal length of the chain after which the chain will be broken
+				long maximalAcceptedChainLength; //!< the maximal number of accepted links (default: 0 = not used)
 				long statesTot; //!< total number of states (accepted and rejected) considered during the walk
 				long statesTotBeforeBurnOut; //!< chain length after the walk is done and before burning-out
 				double initialPDFstepCRfraction; //!< fraction of the parameter domain used for generation of initial step size PDFs
@@ -145,13 +147,32 @@ class cpedsMCMC {
 				bool uphillClimbing; //!< this defines whether to keep the direction of walk if the previous state was accepted and deltaX2>0 (true) or otherwise whether the next step direction should be random (default: true)
 				bool keepDirectionNow; //!< defines whether to keep the current direction when _uphillClimbing is on
 				cpedsList<double> currentDirection; //!< holds the current climb direction
-				vector< cpedsList<double> > steps; //!< holds history of MC steps in each direction
+
+				cpedsMC steps; //!< holds history of MC steps in each direction (regardless of whether the step is accepted or not)
+//				cpedsMC stepsBuff; //!< holds history of MC steps in each direction (regardless of whether the step is accepted or not)
+//				vector< cpedsList<double> > steps; //!< holds history of MC steps in each direction (regardless of whether the step is accepted or not)
+				vector< cpedsList<double> > stepsBuff; //!< holds history of NavgSteps accepted MC steps 
 				long keepDirectionStepGenerationFailuresNumber; //!< maximal number of failures to generate the next step in given direction before dropping that direction (this prevents chain from trying to keep direction when staying on wall)
 				long rejectedLinkNumber; //!< number of links that were prepended before the beginning of the chain to store the location of the true first link in the chain. -- not sure if this is accurate anymore...
 				long rejectionsCount; //!< current number of rejected states
 				long userOutputFrequency; //!< output info about MCMC walk every this number of MCMC states
 				long convergenceTestMinimalLength; //!< the minimal length of the chain for testing the convergence; the cooling is not done for chains shorter than this value
 				long burnOutLength; //!< number of steps to perform after convergence is reached.
+				long NavgSteps; /*!< number of last steps used to calculate average step.
+				 	 	 	 	 	 Used only for UphillGradient method to speed up
+				 	 	 	 	 	 the convergence. */
+				long momentum; /*!< number of accumulated average steps.
+				 	 	 	 	 	 Used only for UphillGradient method to speed up
+				 	 	 	 	 	 the convergence. */
+				
+				mscsFunction momentumFactorHistory;
+				cpedsMC momentumHistory;
+				cpedsMC etagradHistory;
+				mscsFunction etaHistory;
+				double d2X2rel;
+				int d2X2rel_points; //!< number of last points used for d(deltaX2rel)/d step calculation
+				mscsFunction dX2rel; //!< delta(chisq)/chisq used to control gradient walk parameters
+				
 		} walk_t;
 		
 		typedef struct {
@@ -232,7 +253,8 @@ class cpedsMCMC {
 				long PDF1d_pointsCount; //!< number of points used to store estimated 1d PDFs
 				long PDF2d_pointsCount; //!< number of points used to store estimated 2d PDFs
 //				bool calculate1Dpdf;				
-				bool calculate2Dpdf;				
+				bool calculate2Dpdf;	
+				int saveFilePrecision; //!< parameter sent to setprecision in ostream when saving
 		} IOcontrol_t;
 		
 //		cpedsMCMC(int runIdx=0);
@@ -259,20 +281,38 @@ class cpedsMCMC {
 		void initialize(int runIdx, long runOffset=0,long Npar=1, long runSeed=0);
 
 		void setRunIdx(int idx) { _IOcontrol.mcmcRunIdx=idx; }
-		int getRunIdx() { return _IOcontrol.mcmcRunIdx; }
+		int getRunIdx() const { return _IOcontrol.mcmcRunIdx; }
 		string getRunDependentFileName(string fname);
 		string getParameterDependentFileName(string fname, long paramID);
 		string get2ParameterDependentFileName(string fname, long paramID1, long paramID2);
 		void setVerbocity(cpeds_VerbosityLevel verb);
 		
 		/*!
-			\brief chisq evaluation - abstract method to be implemented in the derived class fit for the particular problem.
+			\brief chisq evaluation - abstract method to be implemented in the derived class 
+				fit for the particular problem.
 			\details 
 			@param data - data vector
 			@param th - set of model parameters used to derive the expected values for every measured data point
 			@param cov - covariance matrix for the input data; the reference is passed so that the object can be modified if
 			the covariance matrix changes from one state to another which is generally true
-			@return
+			@return chisq value should be returned and should be calculated according to
+			
+			X2 = sum_data ( D - M(X,theta) )^2/sigma^2(X)
+			
+			where:
+			
+			D(X) - data vector for a given vector of X independent variables
+			M(X,theta) - model value for a given parameter vector theta at point X
+			sigma^2(X) - variance as a function of measurement point X
+			
+			Notice: Do not implement this function as reduced X2: i.e. X2/N
+			where N - number of degrees of freedom
+			
+			This X2 value will provide the correct best fit solution and the reconstructed 1-D 
+			likelihoods and 2-D likelihood contours for the case of uncorrelated parameters.
+			
+			For the general case when covariance between the parameters is not known and 
+			should be measured it is better to simply overload the residual() method.
 		
 			\date Nov 19, 2010, 10:04:48 PM
 			\author Bartosz Lew
@@ -281,6 +321,9 @@ class cpedsMCMC {
 		virtual double chisq(const mscsFunction& data, const MClink &th, matrix<double>& cov);
 		virtual double chisq(const MClink &th);
 
+		
+//		virtual std::vector<double> residual(const MClink &th);
+		
 		double getRelX2Improvement();
 		double getX2Convergence();
 		
@@ -314,7 +357,7 @@ class cpedsMCMC {
 		const mscsFunction& getData() const;
 		const mscsFunction& getModel() const;
 		const mscsFunction3dregc& getData2D() const;
-		const double getData2D(long i, long j) const;
+		double getData2D(long i, long j) const;
 
 		void setDataMask(const cpedsList<double>& dataMask) { _chisqData.dataMask=dataMask; }
 		long dataSize() const { return _chisqData.data.pointsCount(); }
@@ -381,16 +424,18 @@ class cpedsMCMC {
 		*/
 		const mscsFunction& getParameter(string Pname, int* ctrl=NULL) const;
 
-		const int getParameterByName(string Pname) const;
+		int getParameterByName(string Pname) const;
 
 		int dims() const { return _walk.Nparam; }
 		long sizeRejected() { return _MCrej.size(); }
 		long sizeAccepted() { return _MCaccepted.size(); }
 		long size() { return sizeAccepted()+sizeRejected(); }
 		long length() { return _MCaccepted.size()+_MCrej.size(); }
+		long lengthAccepted() { return _MCaccepted.size(); }
 		cpedsMC& BFchain() { return _MCbestFitChain; }
 		MClink& chain(long i) { return _MCaccepted[i]; }
 		cpedsMC& rejectedStates() { return _MCrej; }
+		cpedsMC& testStates() { return _MCtest; }
 		cpedsMC& chain() { return _MCaccepted; }
 		cpedsMC& acceptedStates() { return _MCaccepted; }
 		MClink getBestFitLink() { return _bestFit; }
@@ -405,11 +450,13 @@ class cpedsMCMC {
 			\details 
 			@param followPriors - if true then the random point will be drawn according to the priors defined in the parameter space; 
 			if false then flat priors will be used for all parameters (currently this is ON by default and the only one that works)
+			@param startingLink - if given then it is used as starting link instead of the randomly generated one
+				from the distribution of priors. Useful for debugging.
 		
 			\date Nov 19, 2010, 10:07:40 PM
 			\author Bartosz Lew
 		*/
-		void startChain(bool followPriors=true);
+		void startChain(MClink* startingLink=0, bool followPriors=true);
 		/*!
 			\brief run MCMC for Nstates another states around the starting link
 			\details 
@@ -420,7 +467,21 @@ class cpedsMCMC {
 			\date Jan 25, 2018, 6:56:54 PM
 		*/
 		void walkNstates(long Nstates, MClink startingLink, int how=1);
+		
+		/*!
+			\brief run MCMC for another N states in parallel assuming that steps are independent
+			\details 
+			@param N - number of steps that should be taken
+
+			This method is useful for burn-in and burn-out phases where the next step
+			does not depend on the current step.
+			The next step is taken from the current PDFs for each dimension.
+			
+			\date Mar 6, 2020, 12:13:02 PM
+		*/
+		void walkNindependent_states(long N);
 		void setMaximalChainLength(long l) { _walk.maximalChainLength=l; }
+		void setMaximalAcceptedChainLength(long l) { _walk.maximalAcceptedChainLength=l; }
 		/*!
 			\brief set the maximal number of rejected states required for forced cooling
 			\details 
@@ -450,12 +511,13 @@ class cpedsMCMC {
 		
 		
 		void printInfo() const;
+		void printLastStep() const;
 
 		QList<MscsPDF1D>& posteriors() { return _chisqData.bestFitData.posteriors1D; }
 		MscsPDF1D get1Dposterior(string paramName, long pdfPoints=50, string interpolationType="steffen");
-		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50, string interpolationType="steffen");
+		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50, string interpolationType="steffen", bool recalculate=true);
 		mscsFunction3dregc get2Dposterior(string paramName1, string paramName2, long pdfPoints=50);
-		mscsFunction3dregc get2Dposterior(int paramID1, int paramID2, long pdfPoints=50);
+		mscsFunction3dregc get2Dposterior(int paramID1, int paramID2, long pdfPoints=50,bool recalculate=true);
 
 		/*!
 			\brief define the frequency at which the MCMC run states information is dumped defined in number of states between dumps
@@ -473,7 +535,9 @@ class cpedsMCMC {
 		void saveAcceptedChisq(string fname);
 		cpedsMC loadMC(string fnameName);
 		void loadMCrun(string dirName);
-		void saveParams(string fname);
+		void saveAcceptedParams(string fname);
+		void saveMomentumHistory(string fname);
+		void saveLearningRateHistory(string fname);
 		void saveData(string fname);
 		/*!
 			\brief calculate and save residuals calculated wrt the provided input data column
@@ -488,10 +552,16 @@ class cpedsMCMC {
 		void saveResiduals(int inputDataColumn=-1);
 
 		void savePriors();
-		void save1Dposteriors();
+		void save1Dposteriors(string output_file_prefix="posterior1D");
 		void save2Dposteriors();
 //		void setCalculate1Dposteriors(bool tf) {_IOcontrol.calculate1Dpdf=tf; }
 		void setCalculate2Dposteriors(bool tf) {_IOcontrol.calculate2Dpdf=tf; }
+		/*!
+			\brief re-calculate 1-D likelihoods based on all currently available links
+			\details This method forces re-calculating the likelihoods.
+		
+			\date Mar 11, 2020, 3:27:03 PM
+		*/
 		void calculate1Dposteriors();
 		/*!
 			\brief calculate 1D CRs
@@ -514,14 +584,32 @@ class cpedsMCMC {
 		void save2DCR(double CL);
 //		void save1DCR(double CL, string fname, string dset);
 		cpedsList<double> get1DCR(int paramID1, double CL, double* LVL=NULL);
+		double get1D_fwhm(int paramID);
+		/*!
+			\brief calculates an estimate of the parameter uncertainty from 1-D likelihood
+			\details 
+			@param paramID - parameter id
+			@return
+			
+			Calculates 2nd derivative of the PDF at its maximum and returns sqrt of its twice inverse value:
+			
+			err = sqrt(2/ (d^2 X^2/ d param^2))
+			
+			For gaussian PDF this yields the value of sigma.
+			
+		
+			\date Mar 16, 2020, 1:28:54 PM
+		*/
+		double get1D_sigma_estimate(int paramID);
 		mscsFunction get2DCR(int paramID1, int paramID2, double CL, double* LVL=NULL);
 	
 		void saveTemperature(string fname);
 		void saveBestFitStepPDFs(string fname);
 		void loadBestFitStepPDFs(string dirName);
 		void saveStepPDFs(string fname);
-		cpedsList<double> getMCsteps(long param);
-		cpedsList<double>& MCsteps(long param);
+//		mscsFunction getMCstepsFn(long param) const;
+		cpedsMC getMCsteps() const { return _walk.steps; }
+		cpedsMC& MCsteps();
 		void saveMCsteps(string fname);
 		void saveParameterNames(string fname="");
 		/*!
@@ -575,6 +663,9 @@ class cpedsMCMC {
 			}
 		}
 		bool getUphillGradient() const { return _walk.uphillGradient; }
+		void setAvgStepsCount(long N);
+		void resetAvgStep();
+		void resetMomentum() { _walk.momentum=0; }
 		void setChisqSignature(string sig) { _IOcontrol.chisqSignature=sig; }
 		const string getChisqSignature() const { return _IOcontrol.chisqSignature; }
 		/*!
@@ -627,7 +718,13 @@ class cpedsMCMC {
 			If you want to have randomly chosen parameter values during the burn-in state, i.e. 
 			chosen from within the prior volume	and according to the prior PDF you should set this value to zero (0).
 		
+		
 			\date Mar 11, 2011, 12:32:10 PM
+			
+			revision Feb 23, 2020, 5:19:09 PM
+			
+			If you use gradient descent then setting this to 1 should be OK
+			
 			\author Bartosz Lew
 		*/
 		void setInitialStepSize(double size) { 
@@ -653,9 +750,23 @@ class cpedsMCMC {
 			\date Jan 9, 2018, 12:34:52 PM
 		*/
 		void setTemperatures(double initial, double final) { _cooling.initialTemperature=initial; _cooling.finalTemperature=final; updateCoolingPDF();  }
+
+		/*!
+			\brief defines the step size during the MCMC walk
+			\details 
+			@param size
+			
+			If you use gradient descent then setting this to 1 should be OK. In this mode this variable
+			effectively defines the step at which initially the derivatives are taken.
+			During descent the actual sizes are adjusted by falling temperature.
+
+			See also setInitialStepSize()
+		
+			\date Feb 23, 2020, 5:20:15 PM
+		*/
 		void setInitialWalkStepSize(double size) { _walk.initialPDFstepCRfractionAfterBurnIn=size; }
 		
-		void setWalkInfoOutputFrequency(long everyNstates) { _walk.userOutputFrequency=everyNstates;	}
+		void setWalkInfoOutputFrequency(long everyNstates);
 		long getWalkInfoOutputFrequency() const { return _walk.userOutputFrequency;	}
 		
 		/*!
@@ -903,10 +1014,12 @@ class cpedsMCMC {
 		int paramij2idx(int i,int j);
 		MClink& current() { return _walk.current; }
 		MClink& nextCandidate() { return _walk.next; }
+		MClink& avgStep() { return _walk.avgStep; }
 
+		
 		void saveCooling();
 		void saveModel();
-		void dumpAll();
+		void dumpAll(bool dumpNow=false);
 
 		/*!
 			\brief this function defines the actual cooling scheme
@@ -928,7 +1041,9 @@ class cpedsMCMC {
 		void coolDownLogLin(double deltaX);
 		/*!
 			\brief cool the system in a geometric sequence
+			@param factor - factor by which the temperature will shrink
 			\details 
+			
 			
 			The current temperature is divided by 2^coolingRage
 			For the typical coolingRate=1 this will cool system by 2.
@@ -937,7 +1052,7 @@ class cpedsMCMC {
 		
 			\date Jan 9, 2018, 12:57:49 PM
 		*/
-		double coolDownGeometric();
+		double coolDownGeometric(double factor=2.0);
 		void coolForcibly();
 		void coolDownProp(double deltaX);
 
@@ -978,7 +1093,7 @@ class cpedsMCMC {
 		void saveFirstLinkLocation();
 		void saveCurrentLength();
 		void saveCurrentTemperature();
-		void printLink(const MClink& link) const;
+		void printLink(const MClink& link, string comment="") const;
 
 		void storeBestFit();
 		
@@ -995,14 +1110,31 @@ class cpedsMCMC {
 		
 		
 		/*!
-			\brief extract parameter values and associated likelihoods 
+			\brief update the internal list of MC step sizes. Useful for debugging purposes
+			\details 
+
+			@return returns delta w.r.t previous step
+			The returned link contains parameter differences from the last step to step-2.
+			The index of the returned link is set to the index of the last step.
+			
+			This function assumes that the new link has been added, so it should be called
+			after the link is added.
+		
+			\date Feb 12, 2020, 4:12:51 PM
+		*/
+		MClink update_deltas();
+		
+		/*!
+			\brief extract parameter likelihoods from all accepted, rejected and test states
 			\details 
 			@param j - parameter index
+			@param returnX2only - if true, the function value will hold the X2 value instead of 
+				the associated probability = exp(-X2/2)
 			@return an unsorted function of parameter values (X) and their likelihoods (Y)
 		
 			\date May 24, 2017, 12:04:57 PM
 		*/
-		mscsFunction getParamValues(int j);
+		mscsFunction combineParamLikelihoods(int j, bool returnX2only=false);
 		
 		bool forcedCoolingPossible() { return _walk.rejectionsCount>=_cooling.maximalRejectionsCount and getTemperature()>getFinalTemperature(); }
 		bool coolingPossible() { return getTemperature()>getFinalTemperature(); }
@@ -1016,7 +1148,13 @@ class cpedsMCMC {
 		//
 		
 		cpedsMC _MCaccepted; //!< chain of all accepted links (including those that yield a higher chisq)
+		cpedsMC _MCaccepted_deltas; /*!< TODO: chain of steps for accepted links 
+								(including those that yield a higher chisq).
+								There is a functionaliy overlap between this structure
+								and _walk.steps structure which holds exactly the same 
+								information */
 		cpedsMC _MCrej; //!< list of rejected states
+		cpedsMC _MCtest; //!< list of tested states
 		MClink _bestFit; //!< stores the current best fit state
 		cpedsMC _MCbestFitChain; //!< chain to hold the history of best fit links 
 		MClink _startingLink; //!< the initial link
@@ -1038,7 +1176,8 @@ class cpedsMCMC {
 		// data used to calculate the chisq
 		//
 		chisqData_t _chisqData;
-		
+		static constexpr double one_sigma_CL = 0.682689;
+		static constexpr double two_sigma_CL = 0.9545;
 		//
 		// run/debug/save control stuff
 		//
@@ -1076,6 +1215,18 @@ class cpedsMCMC {
 		
 		MClink getNextPoint(const MClink& current);
 		MClink getNextPointUphillGradient(const MClink& current);
+		
+		/*!
+			\brief re-calculate probability inside provided states function
+			\details 
+			@param p - function contains parameter values a X values and X2 values as Y values;
+			@return same function with X2 shifted to 0 and rederived likelihood as
+			
+			P = exp(-X2/2)
+		
+			\date Mar 16, 2020, 2:40:07 PM
+		*/
+		mscsFunction calculateProbability(mscsFunction& p);
 		
 		double getSign();
 		void generateInitialStepSizePDFsAfterBurnIn();

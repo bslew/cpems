@@ -18,12 +18,11 @@
 #include <string.h>
 
 #include <gsl/gsl_rng.h>
-
-
+#include <tuple>
 
 #include "cpeds-common.h"
 #include "cpeds-consts.h"
-//#include "cpeds-templates.h"
+#include "cpeds-templates.h"
 //#include "cpeds-pdf.h"
 #include "matrix.h"
 //#include <fftw3.h>
@@ -32,6 +31,7 @@
 /* using namespace LiDIA; */
 using namespace std;
 using namespace math;
+//using namespace cpems;
 #define STD std
 #else
 #define STD
@@ -131,7 +131,14 @@ void cpeds_check_bl(double *l, double *b);
 
 //! checks the b coordinate for the correct value and returns the value from within range <-PIsnd...PIsnd>
 double cpeds_check_b(double b);
-//! Same as above but only for the phi coordinate
+/*!
+	\brief checks the phi coordinate for the correct value and returns the value from within range <0...2\pi>
+	\details 
+	@param pointer to allocated variable; the variable is modified inside the function
+	@return copy of the modified variable.
+
+	\date Jun 18, 2020, 2:35:26 PM
+*/
 double cpeds_check_phi(double *phi);
 double cpeds_check_phi(double phi);
 
@@ -383,6 +390,29 @@ long cpeds_get_pix_num_above_ring_healpix(long nside, long ring);
 long cpeds_get_healpix_pix_num(long nside);
 
 
+/*!
+	\brief get list of nested pixel IDs in ns resolution that are contained in the coarser 
+	parent pixel with id=pixID in the coarse_ns resolution
+	\details 
+	@param ns - HP ns parameter
+	@param coarse_ns - parent pixel ns parameter (must be < ns)
+	@param pixID - pixel ID in nested map of coarse_ns resolution
+	@return returns a pair of long values: 
+	
+	offset and Npix 
+	
+	where:
+	
+	 offset is the pixel id in the ns resolution of the first pixel 
+	 	 that belong to the coarse pixel and 
+	 	 
+	 Npix is the number of pixels that belong 
+	 	 to the coarse pixel. The numbering of the pixels that belong to the coarse
+	 	 pixel is continuous.
+
+	\date Jun 4, 2020, 5:03:03 PM
+*/
+std::pair<long,long> cpeds_get_healpix_nested_pixels(long ns, long coarse_ns, long pixID);
 
 
 
@@ -635,6 +665,7 @@ long cpeds_JDToYear(double JD=-1e9);
  * */
 double cpeds_julian_time(long year, long month, long day, double hour);
 
+double cpeds_cal2jd(std::string dtstr, std::string fmt="%Y-%0m-%0dT%0H:%0M:%0S");
 //! same as cpeds_julian_time (long year, long month, long day, double hour) but for the current system time expressed in UTC time: i.e. for the current UTC time
 double cpeds_julian_time();
 
@@ -971,6 +1002,32 @@ double cpeds_TSZEgnu_factor(double freq, double T0);
 	\author Bartosz Lew
 */
 double cpeds_refraction(double ZDobs, double alt, double T, double P, double H, double lambda, double lat, double Tlapse, double acc);
+
+/*!
+	\brief calculate refraction for the ZDspace direction
+	\details 
+	@param ZDspace - true (in space) zenith distance [deg]
+	@param alt - altitude above sea level [m]
+	@param T - temperature [C]
+	@param P - pressure [mbar]
+	@param hum - relative humidity [%]
+	@param lambda - wavelength [cm] 
+	@param lat - latitude of the observer [deg]
+	@param Tlapse temperature lapse in the troposphere [K/m] (suggested value: 0.0065)
+	@param acc - accuracy to terminate the the iteration [rad] (suggested value 1e-8)
+			Value passed to cpeds_refraction.
+	@return returns the refracted (observed) zenith distance [deg]
+	
+	The accuracy of this routine is as follows:
+	for ZDobs=80 deg error is ~3.3e-05 deg
+	for ZDobs=85 deg error is ~0.00026 deg
+	for ZDobs=89 deg error is ~0.0012 deg
+	
+
+	\date Apr 29, 2020, 5:54:53 PM
+*/
+double cpeds_refraction_space(double ZDspace, double alt, double T, double P, double H, double lambda, double lat, double Tlapse, double acc);
+
 extern "C" {
 	extern void* slarefro_(double *zobs, double* alt,double* T, double* P, double* hum, double* lambda, double* lat, double* Tlapse, double* acc, double* ref);
 
@@ -1618,7 +1675,7 @@ const matrix<double> cpeds_array2matrix(const double* t, long size, long vecSize
 void cpeds_change_matrix_ordering_from_rows_to_cols_major(double *M, long rows, long cols);
 
 /*! 
-	\brief Calculates the covariance matrix of the measured data in Dvec table
+	\brief Calculates the unbiased estimator of the covariance matrix of the measured data in Dvec table
 	\details 
 	@param Dvec - pointer to linear array of size vec_size*vec_num
 	@param vec_num - number of vectors in the Dvec array
@@ -1628,19 +1685,44 @@ void cpeds_change_matrix_ordering_from_rows_to_cols_major(double *M, long rows, 
 	@return pointer to the covariance matrix
 	
 	Calculates the covariance matrix of the measured data in Dvec table, organized in vec_num vectors 1-row vectors, each of size vec_size and form (1___x___vec_size) 
-	If i=0..vec_num-1 iterates vector index and j=0..vec_size-1 iterates variate in i'th vector then the ordering of the Dvec array is i-major: i.e. vector index major.
+	If i=0..vec_num-1 iterates vector index and j=0..vec_size-1 iterates variate in i'th vector then 
+	the ordering of the Dvec array is i-major: i.e. vector index major.
 	Hence the Dvec is a set of vectors where each row-vector is a single measurement of all variates
 	The resulting cov matrix is a square var_num___x___var_num size symmetric matrix 
 	given by pointer cov.
 		
 	The array pointed by the returned pointer need not be allocated. It is allocated in this function.
 		
-	TODO: add option of calculate un-biased estimator of the covariance matrix
-
 	\date Jan 29, 2011, 1:31:33 PM
 	\author Bartosz Lew
 */
 double * cpeds_calculate_covariance_matrix(double *Dvec, long vec_size, long var_num, bool diagonal=false);
+
+/*!
+	\brief as cpeds_calculate_covariance_matrix but openMP parallel implementation
+	\details 
+	@param max_n_diagonals =[0,var_num-1] - Determines limit 
+	of diagonals that should be calculated. -1 (default) means that the full matrix is calculated.
+	Positive integers indicate how many near-diagonal elements should be calculated.
+	max_n_diagonals=1 is equivalent with diagonal covariance matrix. 
+	If max_n_diagonals==1 then the diagonal and the sub-diagonal closest to the diagonal is calculated.
+	More specifically if max_n_diagonals=n then the following covariance matrix elements are calculated
+	
+	c_i,i c_i+1,i c_i+2,i ... c_i+n,i	
+	
+	If diagonal=false then the return matrix size is var_num*var_num otherwise it's a vector of size
+	var_num.
+	
+	@return pointer to the covariance matrix
+
+	
+	
+
+	\date Aug 17, 2021, 1:03:35 PM
+*/
+double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long var_num, 
+		bool diagonal=false,
+		long max_n_diagonals=-1);
 
 //! Returns the quantile probability of occurance of x value in the t array of data of size ts
 /*! Calculates the quantile probability of getting value x from distr given in t of size ts */
@@ -1765,7 +1847,7 @@ double cpeds_bilinear_interpolation(double x1, double x2, double y1, double y2, 
 	\date Jan 12, 2012, 1:43:05 PM
 	\author Bartosz Lew
 */
-void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double (&c)[4][4]);
+void cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double c [][4]);
 /*!
 	\brief routine to calculate c matrix coefficients for bicubic interpolation it is called by bicubic_interpolation function
 	\details 
@@ -1795,7 +1877,7 @@ void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, doubl
 	\date Jan 12, 2012, 1:43:05 PM
 	\author Bartosz Lew
 */
-void* cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
+void cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
 		const double x1l, const double x1u, const double x2l, const double x2u,
 		const double x1, const double x2, double &ansy, double &ansy1, double &ansy2);
 
@@ -1843,6 +1925,7 @@ double cpeds_getMinAbs3(double v1, double v2, double v3);
 /*! it works good whether or not the last line in file ends with \n (this doesn't matter here since it's only for the first line) */
 /*! if you run it on some strange stuff then you better check the results. */
 long cpeds_get_cols_num_first_ln(strarg fn,char * lastc);
+long cpeds_get_file_cols_num_first_ln(string fname);
 
 /*!
   \brief returns the number of columns in the first line of the file
@@ -1882,10 +1965,12 @@ long cpeds_get_cols_num(FILE *f,char * lastc);
 long long cpeds_get_file_size(string fName);
 
 long long cpeds_get_txt_file_lines_count(string fName);
+long long cpeds_get_txt_file_non_empty_lines_count(string fName);
 
 ////! This routine checks the txt file given by fn, and returns the cpeds_queue object that contains the
 ////! number of columns (space separated words) in each row of the file and much other useful info.
 //cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn);
+cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn, long scanRowsMax=-1);
 
 //! checks if the file exists
 bool cpeds_fileExists(string fname);
@@ -1928,6 +2013,8 @@ const matrix<double> cpeds_matrix_load(string fileName, string how="", long * re
 long cpeds_matrix_save(const matrix<double>& M, string fileName, string how="",int precision=20);
 
 double cpeds_get_memory_usage();
+
+std::tuple<string, string, string> cpeds_get_dirname_filebase_ext(string s);
 
 #endif
 

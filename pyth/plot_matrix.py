@@ -1,8 +1,16 @@
-#!/usr/bin/env python2.7
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
+import numpy as np
 import os
 import re
+
+
+#from matplotlib.collections import PatchCollection
+#import matplotlib.path as mpath
+#import matplotlib.patches as mpatches
+import h5py
+# import pyfits
+import astropy.io.fits as pyfits
 from optparse import OptionParser
 import numpy as np
 
@@ -54,6 +62,7 @@ parser.add_option("", "--Rxlabels", dest="Rxlabels", default=0, type="float", he
 parser.add_option("", "--Rylabels", dest="Rylabels", default=0, type="float", help='rotate yticklabels by this angle [deg]', metavar="VALUE")
 #parser.add_option("", "--ylabelsPos", dest="ylabelsPos", default="left", type="float", help='rotate yticklabels by this angle [deg]', metavar="VALUE")
 parser.add_option("", "--ylabels", dest="ylabels", default="", type="string", help='comma separated list of yticklabels ', metavar="VALUE")
+parser.add_option("", "--xlabels", dest="xlabels", default="", type="string", help='comma separated list of xticklabels ', metavar="VALUE")
 parser.add_option("", "--title", dest="title", default='', type="string", help='plot title', metavar="STRING")
 parser.add_option("", "--xlabel", dest="xlabel", default='x', type="string", help='plot x label', metavar="STRING")
 parser.add_option("", "--ylabel", dest="ylabel", default='y', type="string", help='plot y label', metavar="STRING")
@@ -154,6 +163,7 @@ The circle center will be placed where you asked according to the specified axes
 coincides with these new coordinates orientation by using apropriate matrix transformations like --flip[XY] or --transpose options.
 Typically inverting vertical axes may be needed (--flipY) when ymin > ymax to force y-values increase upwards.''')
 parser.add_option("", "--joinPlots", action="store_true", dest="joinPlots", default=False, help="do not close figure (plot) after every plot. Plot data on the same plot (useful for eg image + contours on the same plot)")
+parser.add_option("", "--scriptMode", action="store_true", dest="scriptMode", default=False, help="flag to indicate that we are working in script mode for generating pictures and without GUI.")
 
 
 # movie options
@@ -191,38 +201,59 @@ from pyCPEDScommonFunctions import cpedsPythCommon
 
 cpedsPythCommon.saveHowWeWereCalled()
 
+(option, args) = parser.parse_args()
+
+if option.scriptMode:
+    import matplotlib
+    matplotlib.use('Agg')
+
+from pylab import *
+import matplotlib.pyplot as plt
+import matplotlib.mlab
+from matplotlib.ticker import FuncFormatter
+import matplotlib.path as mpath
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
+from matplotlib.collections import PatchCollection
+
+
+
 if option.enumSlices and option.title=="":
-    print "WARNING: title was not given, enumeration will take no effect.\nUse space for title if you want to enforce single number enumeration."
+    print("WARNING: title was not given, enumeration will take no effect.\nUse space for title if you want to enforce single number enumeration.")
 
 ylabels=list()
 if option.ylabels!='':
     ylabels=option.ylabels.split(',')
-    print ylabels
+    print(ylabels)
 
+xlabels=list()
+if option.xlabels!='':
+    xlabels=option.xlabels.split(',')
+    print(xlabels)
 
 # the input parameters are integers
 def getSymmetricTicks(Asize,step):
 #     d=(vmax-vmin)/2.0
 #     vmin=-d
 #     vmax=d
-    print '-------------'
+    print('-------------')
 #     if N/2
     N=int(Asize/step)
     N/=2
-    print 'Asize ',Asize
-    print 'step ',step
+    print('Asize ',Asize)
+    print('step ',step)
     t2=np.arange(Asize/2,Asize+step/10,step)
     t1=np.arange(Asize/2-step,0,-step)
-    print t1
-    print t2
+    print(t1)
+    print(t2)
     t=np.sort(np.hstack([t1,t2]))
 #     if t[-1]!=-t[0]:
 #         t=np.hstack([t,[-t[0]]])
 #     print
 #     print vmin,vmax,N
-    print t
-    print 'len(t): ',len(t)
-    print 
+    print(t)
+    print('len(t): ',len(t))
+    print() 
     return np.asarray(t)
 
 def convertNegativePixelCoordinates(coord,cMax):
@@ -244,8 +275,8 @@ def newAxesConverterX(x):
     y1=0.0; y2=Nx+0.0;
     x1=option.xmin
     x2=option.xmax
-    print x1,x2,y1,y2,x
-    print (x-x1)*(y2-y1)/(x2-x1)+y1 
+    print(x1,x2,y1,y2,x)
+    print((x-x1)*(y2-y1)/(x2-x1)+y1) 
     return ( (x-x1)*(y2-y1)/(x2-x1)+y1 )
 
 def newAxesConverterY(x):
@@ -299,14 +330,15 @@ def getMatInfo(boxSlice):
     vmin=nanmin(boxSlice)
     vmax=nanmax(boxSlice)
     maxabs=max([abs(vmin),abs(vmax)])
-    print "matrix statistics:"
-    print "min: %E" % vmin
-    print "max: %E" % vmax
-    print "max-min: %E" % (vmax-vmin)
-    print "mean: %E" % np.mean(boxSlice)
-    print "st.dev: %E" % np.std(boxSlice)
-    print "max absolute: ",maxabs
-    print "------------------"
+    print("matrix statistics:")
+    print("min: %E" % vmin)
+    print("max: %E" % vmax)
+    print("max-min: %E" % (vmax-vmin))
+    print("mean: %E" % np.mean(boxSlice))
+    print("st.dev: %E" % np.std(boxSlice))
+    print("max absolute: ",maxabs)
+    print_mat_stats(boxSlice)
+    print("------------------")
     return vmin,vmax,maxabs
 
 
@@ -330,20 +362,20 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
     vmin=boxSlice.min()
     vmax=boxSlice.max()
     maxabs=max([abs(vmin),abs(vmax)])
-    print "min: %E" % vmin
-    print "max: %E" % vmax
-    print maxabs
-    print "max-min: %E" % (vmax-vmin)
-    print "mean: %E" % np.mean(boxSlice)
-    print "st.dev: %E" % np.std(boxSlice)
-    print 'minimal element: ',cpedsPythCommon.get_ij_min2Darray(boxSlice)
-    print 'maximal element: ',cpedsPythCommon.get_ij_max2Darray(boxSlice)
+    print("min: %E" % vmin)
+    print("max: %E" % vmax)
+    print(maxabs)
+    print("max-min: %E" % (vmax-vmin))
+    print("mean: %E" % np.mean(boxSlice))
+    print("st.dev: %E" % np.std(boxSlice))
+    print('minimal element: ',cpedsPythCommon.get_ij_min2Darray(boxSlice))
+    print('maximal element: ',cpedsPythCommon.get_ij_max2Darray(boxSlice))
 
     Ny=size(boxSlice[:,0])
     Nx=size(boxSlice[0])
-    print 'Matrix size is: '
-    print 'Nx: ',Nx
-    print 'Ny: ',Ny
+    print('Matrix size is: ')
+    print('Nx: ',Nx)
+    print('Ny: ',Ny)
     
     extent=(option.xmin,option.xmax,option.ymin,option.ymax)
 #    extent=(0,Nx+1.0,Ny+1,0)
@@ -400,7 +432,7 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
     # mask business
     #     
     if option.maskBad:
-        print 'masking bad:'
+        print('masking bad:')
         cmap.set_bad('w')
         nx=Nx
         ny=Ny
@@ -420,11 +452,11 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
 #        print maxabs
 
     if math.isnan(option.maskBelow)==False:
-        print 'masking Nan:'
+        print('masking Nan:')
         cmap.set_bad('w')
         ny=size(boxSlice[0])
         nx=size(boxSlice[:,0])
-        print nx,ny
+        print(nx,ny)
         for i in arange(nx):
             for j in arange(ny):
                 if boxSlice[i,j]<option.maskBelow:
@@ -466,7 +498,7 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
         if len(circlePatchDef)>0:
             axes(ax)
             for i in np.arange(len(circR)):
-                print 'Plotting circle (old way): ',circX[i],circY[i],circR[i]
+                print('Plotting circle (old way): ',circX[i],circY[i],circR[i])
                 circ = Circle((circX[i],circY[i]), circR[i], fc=None, ec=option.lc[i % len(option.lc)], color=None, fill=False)
                 ax.add_patch(circ)
 
@@ -475,7 +507,7 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
             axes(ax)
             for circle in circles:
                 circleSplit=re.split(r'(?<!\\),', circle) # negative lookbehind assertion
-                print circleSplit
+                print(circleSplit)
                 if len(circleSplit)>=3:
                     cx=float(circleSplit[0])
                     cy=float(circleSplit[1])
@@ -496,7 +528,7 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
                 if len(circleSplit)>=6:
                     lstyle=circleSplit[5]
 
-                print 'Plotting circle: ',circleSplit
+                print('Plotting circle: ',circleSplit)
 #                 print cx,cy,r,cw,ccolor,lstyle
                 circ = Circle((cx,cy), r, fc=None, ec=ccolor, linestyle=lstyle, linewidth=cw, color=None, fill=False)
                 ax.add_patch(circ)
@@ -607,11 +639,11 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
             vmin=-maxabs
             vmax=maxabs
     
-    print option.zmin,option.zmin
-    print vmax
+    print(option.zmin,option.zmin)
+    print(vmax)
     vmax=vmax*option.fzmax
 #    imshow(boxSlice, interpolation='nearest', cmap=cmap, vmin=vmin, vmax=vmax, aspect='auto')
-    print "CM",CM
+    print("CM",CM)
     if CM[plotNo % len(CM)]!='none':
 #        imshow(boxSlice, interpolation=option.interpolation, cmap=cmap, vmin=vmin, vmax=vmax, aspect='auto')
         imshow(boxSlice, interpolation=option.interpolation, cmap=cmap, vmin=vmin, vmax=vmax, aspect=option.aspect, extent=extent)
@@ -691,18 +723,22 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
             option.ymax=dY/2.0
         
         if option.xmin!=-1 or option.xmax!=-1:
-            if option.centerXextent:
-#                 xticks(getSymmetricTicks(option.xmin, option.xmax, option.xticks))
-#                 xticks(getSymmetricTicks(0, Nx, option.xticks))
-                xticks(getSymmetricTicks(Nx, option.xticks))
+            if option.xlabels!='':
+                print('changing xlabels')
+                xticks(arange(0,Nx,option.xticks), xlabels)
             else:
-                xticks(arange(0,Nx+1,option.xticks))
-            ax.xaxis.set_major_formatter(formatterX)
-            print 'formatting x ticks:'
-            xt= arange(option.xmin,option.xmax,option.xticks)
-            print xt
-            if len(xt)==0:
-                print 'WARNING: something wrong with xticks ? if the ticks are now what you wanted consider changing/setting option.xticks'        
+                if option.centerXextent:
+    #                 xticks(getSymmetricTicks(option.xmin, option.xmax, option.xticks))
+    #                 xticks(getSymmetricTicks(0, Nx, option.xticks))
+                    xticks(getSymmetricTicks(Nx, option.xticks))
+                else:
+                    xticks(arange(0,Nx+1,option.xticks))
+                ax.xaxis.set_major_formatter(formatterX)
+                print('formatting x ticks:')
+                xt= arange(option.xmin,option.xmax,option.xticks)
+                print(xt)
+                if len(xt)==0:
+                    print('WARNING: something wrong with xticks ? if the ticks are now what you wanted consider changing/setting option.xticks')        
             setp( gca().get_xticklabels(), rotation=option.Rxlabels, horizontalalignment='center', verticalalignment='top')
         else:
             if option.ticks==-1:
@@ -716,7 +752,7 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
         
         if option.ymin!=-1 or option.ymax!=-1:
             if option.ylabels!='':
-                print 'changing ylabels'
+                print('changing ylabels')
                 yticks(arange(0,Ny,option.yticks), ylabels)
             else:
                 if option.centerXextent:
@@ -725,9 +761,9 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
                     yticks(arange(0,Ny+1,option.yticks))
                 ax.yaxis.set_major_formatter(formatterY)
                 yt= arange(option.xmin,option.xmax,option.xticks)
-                print yt
+                print(yt)
                 if len(yt)==0:
-                    print 'WARNING: something wrong with yticks ? if the ticks are now what you wanted consider changing/setting option.yticks'        
+                    print('WARNING: something wrong with yticks ? if the ticks are now what you wanted consider changing/setting option.yticks')        
     
             setp( gca().get_yticklabels(), rotation=option.Rylabels, horizontalalignment='right', verticalalignment='center')
         else:
@@ -744,7 +780,7 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
             setp( ax.get_xticklabels(), fontsize=option.fontSize)
             setp( ax.get_yticklabels(), fontsize=option.fontSize)
         else:
-            print 'switching off xlabels'
+            print('switching off xlabels')
             ax.set_xticklabels([])
             ax.set_yticklabels([])
     
@@ -761,9 +797,9 @@ def makeMatrixPlot(boxSlice,plotNo,sliceName,fig,ax):
     if contours[plotNo % len(contours)]!='':
         axes(ax)
         cont=contours[plotNo % len(contours)].split(',')
-        print 'cont:',cont
+        print('cont:',cont)
         if len(contours)>0:
-            print 'plotting contours'
+            print('plotting contours')
             CS=contour(arange(Nx),arange(Ny),boxSlice,cont,linewidths=option.contours_w,colors=contcolor[plotNo % len(contcolor)])
 #            CS=contour(boxSlice,cont,linewidths=0.5,colors=contcolor[plotNo % len(contcolor)], extent=extent)
             if option.contours_fontSize>0.0:
@@ -810,7 +846,7 @@ def loadHDF5fnData(fname,dset):
     return x0,xMax,y0,yMax
 
 def loadData(fname, sliceNo=0):
-    print "* loading file: %s (slice: %li)" % (fname, sliceNo)
+    print("* loading file: %s (slice: %li)" % (fname, sliceNo))
     
     if getFileExtension(fname)=='hdf5' or getFileExtension(fname)=='hdf':
         f = h5py.File(fname,'r')
@@ -831,7 +867,7 @@ def loadData(fname, sliceNo=0):
                 option.ymin=ymax
                 option.ymax=ymin
                 
-            print 'Read hdf5 function ranges xmin,xmax,ymin,ymax: ',xmin,xmax,ymin,ymax
+            print('Read hdf5 function ranges xmin,xmax,ymin,ymax: ',xmin,xmax,ymin,ymax)
             
         
         # convert the ordering of the slice to make first dimention (x) increase rightwards and second dimention (y) increase downwards
@@ -840,7 +876,7 @@ def loadData(fname, sliceNo=0):
 #        sys.exit()
     elif getFileExtension(fname)=='fits':
         hdulist = pyfits.open(fname)
-        print hdulist.info()
+        print(hdulist.info())
         if option.fitsSlice!=-1:
             tbdata = hdulist[sliceNo].data[option.fitsSlice] # assuming the first extension is a table
         else:
@@ -862,12 +898,31 @@ def loadData(fname, sliceNo=0):
         for r in removeRows:
             rr=int(r)
             slice=delete(slice, s_[rr:rr+1],axis=0)
-    print
-    print "    * data size after loading and trimming: %i rows %i cols" % (len(slice[:,0]),len(slice[0]))
-    print
+    print()
+    print("    * data size after loading and trimming: %i rows %i cols" % (len(slice[:,0]),len(slice[0])))
+    print()
     return slice
     
 
+def print_mat_stats(slice):
+#     slice=np.array(slice)
+    print('size: {}'.format(slice.size))
+    print('Sum of diagomal terms: {}'.format(np.sum(slice.diagonal())))
+#     print('1^T x C x 1/n^2: {}'.format(np.mean(slice.diagonal())))
+    print('Sum of off-diagomal terms: {}'.format(np.sum(slice)-np.sum(slice.diagonal())))
+    print('square root of mean diagomal term: {}'.format(np.sqrt(np.mean(slice.diagonal()))))
+    print('sqrt( 1^T x C x 1/n^2 ): {}'.format(
+        np.sqrt(np.sum(slice))/slice.diagonal().size))
+    print('sqrt( diag(C) x 1/size(diag(C))^2 ): {}'.format(
+        np.sqrt(
+            np.sum(
+                slice.diagonal()
+                ))/slice.diagonal().size))
+
+    offdiag_sum=np.sum(slice)-np.sum(slice.diagonal())
+    
+    print('off-diag dev: {}'.format(
+        np.sqrt(offdiag_sum)/slice.diagonal().size))
 
 def binMatrix(slice,dim,binSize):
 #    s=arange(20)
@@ -880,7 +935,7 @@ def binMatrix(slice,dim,binSize):
     if dim==0:
         # perform binning along X direction
         n=len(slice[0])
-        Nbin=float(n)/binSize
+        Nbin=int(float(n)/binSize)
         binslice=array([])
         for i in arange(Nbin):
             if option.binMethod=='mean':
@@ -888,18 +943,19 @@ def binMatrix(slice,dim,binSize):
             elif option.binMethod=='max':
                 tmp=np.max(slice[:,binSize*i:binSize*i+binSize],axis=1)
             else:
-                print 'unknown bin method'
+                print('unknown bin method')
                 sys.exit(-1)
-            binslice=np.append(binslice,tmp,axis=1)
-        slice=transpose(binslice.reshape(Nbin,-1))
+#             binslice=np.append(binslice,tmp,axis=1)
+            binslice=np.append(binslice,tmp)
+        return transpose(binslice.reshape(Nbin,-1))
 #        print slice
 #        sys.exit()
     if dim==1:
         # perform binning along Y direction
-        print "perform binning along Y direction"
+        print("perform binning along Y direction")
 #        slice=transpose(binMatrix(transpose(slice),0,binSize))
         n=len(slice[:,0])
-        Nbin=float(n)/binSize
+        Nbin=int(float(n)/binSize)
         binslice=array([])
         for i in arange(Nbin):
             if option.binMethod=='mean':
@@ -907,16 +963,17 @@ def binMatrix(slice,dim,binSize):
             elif option.binMethod=='max':
                 tmp=np.max(slice[binSize*i:binSize*i+binSize],axis=0)
             else:
-                print 'unknown bin method'
+                print('unknown bin method')
                 sys.exit(-1)
-            binslice=np.append(binslice,tmp,axis=1)
-        slice=binslice.reshape(Nbin,len(slice[0]))
+#             binslice=np.append(binslice,tmp,axis=1)
+            binslice=np.append(binslice,tmp)
+        return binslice.reshape(Nbin,len(slice[0]))
 #        print slice
     return slice
 
 
 def processSlice(boxSlice, idx=0):
-    print 'caclulating matrix statistics before processing'
+    print('caclulating matrix statistics before processing')
     getMatInfo(boxSlice)
     
     
@@ -1006,7 +1063,7 @@ hdf5dset=option.hdf5dset.split(',')
 
 if len(args)==0:
     if option.st==0 and option.en==0:
-        print "Too few parameters given"
+        print("Too few parameters given")
         sys.exit(0)
         
 boxSliceScrambled=np.array([])
@@ -1034,9 +1091,9 @@ for fname in args:
                         boxSliceScrambled=boxSliceScrambled+boxSlice
             
                     if i==option.en:
-                        print
-                        print "Averaging slices"
-                        print 
+                        print()
+                        print("Averaging slices")
+                        print() 
                         boxSliceScrambled/=(option.en-option.st+1)
                         boxSlice=processSlice(boxSliceScrambled, len(boxSlices))
                         boxSlices.append(boxSlice)
@@ -1086,31 +1143,31 @@ ax=None
 for boxSlice in boxSlices:
 
 
-    print
-    print "Plotting slice: %i" % i
-    print
+    print()
+    print("Plotting slice: %i" % i)
+    print()
     if i==0:
         fig=None
         ax=None
     fig,ax=makeMatrixPlot(boxSlice,i,fname,fig,ax)
     if option.joinPlots==False:
         close(fig)
-    print "done"
-    print "---------- "
-    print
+    print("done")
+    print("---------- ")
+    print()
     i+=1
             
         
 
 if option.makeMovie:
-    print
-    print "Generating movie..."
-    print
+    print()
+    print("Generating movie...")
+    print()
     filePrefix=fname+"-"+option.hdf5dset+"-slice_%i" % option.hdf5slice
-    print "Using files:"
+    print("Using files:")
     os.system('ls -1 %s*.png' % filePrefix)
     cmd="mencoder mf://%s*.png -mf type=png:fps=%i -ovc lavc -lavcopts  vcodec=mpeg4:mbd=1:vbitrate=2800  -oac copy -o %s.avi" % (filePrefix,option.fps, args[0]+"-"+option.hdf5dset)
     os.system(cmd)
-    print "done"
-    print "---------- "
-    print
+    print("done")
+    print("---------- ")
+    print()

@@ -15,6 +15,7 @@
 /* STANDALONE HEADERS */
 #include <stdio.h>
 #include <stdarg.h>
+#include <iostream>
 #include "cpeds-math.h"
 #include "cpeds-list.h"
 /* INTERDEPENDENT HEADERS */
@@ -38,10 +39,12 @@ It also stores the values of parameters for that likelihood value.
  \author Bartosz Lew
  */
 
+
 class MClink {
 	public:
 		MClink();
 		MClink(long Nparams);
+		MClink(std::vector<double> params);
 		MClink(const MClink& parent);
 		virtual ~MClink();
 		void setNpar(long n);
@@ -62,8 +65,8 @@ class MClink {
 		void setAccepted(bool tf) { _accepted=tf; }
 		bool isAccepted() const { return _accepted; }
 		
-		void setIdx(long i) { _idx=i; }
-		long getIdx() const { return _idx; }
+		void setIdx(double i) { _idx=i; }
+		double getIdx() const { return _idx; }
 		
 		//! get the likelihood values
 		double L() const { return _likelihood; }
@@ -79,11 +82,20 @@ class MClink {
 		
 		void printLink() const;
 		void printParams() const;
+		void printParamsLine(string info) const;
 		void save(string fname);
 		MClink& load(string fname);
 		MClink& load(ifstream& ifs, long Nparam);
 		
+		MClink operator*(const double v);
+		const MClink& operator*=(const double v);
+		MClink operator-(const MClink& rhs);
+		MClink& operator-=(const MClink& rhs);
+//		const MClink operator+(const MClink& rhs);
 		const MClink& operator=(const MClink& rhs);
+		const MClink& operator=(const double v);
+		bool operator==(const double v);
+//		MClink& operator=(const MClink& rhs);
 		const double& operator[](const long i) const;
 		double& operator[](const long i);
 		
@@ -94,7 +106,25 @@ class MClink {
 		double _likelihood; //!< likelihood value at that point
 		double _chisq;
 		bool _accepted;
-		long _idx;
+		double _idx; /*!< fractional indexes may be useful to index 
+						  intermediate steps that may be taken 
+						  in order to find a next step candidate
+		 	 	 	 */
 		
 };
+
+//ostream& operator<<(MClink& link);
+/*!
+	\brief stream to buffer operator
+	\details 
+	@param sb stream buffer object
+	@return stream buffer object
+	
+	should be used e.g. to save link to file buffer
+
+	\date Feb 17, 2020, 2:40:22 PM
+*/
+ostream& operator<< (ostream& output, const MClink& l);
+MClink& operator*(double v, MClink& l);
+
 #endif /* MCLINK_H_ */

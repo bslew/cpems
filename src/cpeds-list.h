@@ -142,8 +142,10 @@ class cpedsList : public QList<T> {
 		T min() const { T* t=toCarray(); T m=(T)cpeds_find_min_value(t,(long)size(),0); delete t; return m; }
 		//! calculates the mean value of the list
 		T mean() const { T* t=toCarray(); T m=(T)cpeds_mean_value(t,(long)size()); delete t; return m; }
-		//! calculates the variance of the list
+		//! calculates the unbiased estimator of the variance of the list
 		T variance() const { T* t=toCarray(); T v=(T)cpeds_variance(t,size()); delete t; return v; }
+		//! calculates the standard deviation of the list
+		T std() const { T* t=toCarray(); T v=(T)sqrt(cpeds_variance(t,size())); delete t; return v; }
 		//! calculates the rms of the list
 		T rms() const { T* t=toCarray(); T v=(T)cpeds_rms(t,size()); delete t; return v; }
 		//! calculates the sum of the list

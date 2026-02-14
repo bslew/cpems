@@ -561,7 +561,7 @@ mscsFunction3dregc& mscsFunction3dregc::generateRandomGaussianField(double m, do
 	if (_rns->getRNsType()!=_rns->gaussian_circle) {
 		_rns->setRNsType(_rns->gaussian_circle);
 	}
-	_rns->setMeanVariance(m,s);
+	_rns->setMeanStd(m,s);
 	
 	if (seed!=0) {
 		_rns->seed(seed);
@@ -1292,11 +1292,21 @@ mscsFunction3dregc& mscsFunction3dregc::mkDensityFieldGather(subDomain_region_t 
 	double (*kernel)(double );
 	double norm;
 	//	mscsWindowFunction wfn;
-	if (smKernel == "gadget2") { kernel=&mscsWindowFunction::kernelGadget; 	
-	if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
-	else norm=8.0/PI; //3d case
+	if (smKernel == "gadget2") { 
+		kernel=&mscsWindowFunction::kernelGadget; 	
+		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	//	mscsWindowFunction w("SPH kernel");
 	//	w.mkSPHkernelGadget2(100);
@@ -1390,12 +1400,22 @@ mscsFunction3dregc& mscsFunction3dregc::mkDensityFieldScatter(subDomain_region_t
 	double (*kernel)(double );
 	double norm;
 	//	mscsWindowFunction wfn;
-	if (smKernel == "gadget2") { kernel=&mscsWindowFunction::kernelGadget; 	
+	if (smKernel == "gadget2") { 
+		kernel=&mscsWindowFunction::kernelGadget; 	
 	//		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
-	if (r.subz==1) norm=double(40.0)/(7.0*PI); //2d case
-	else norm=8.0/PI; //3d case
+		if (r.subz==1) norm=double(40.0)/(7.0*PI); //2d case
+		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	// prepare tree
 	msgs->say("building tree",Medium);
@@ -1602,7 +1622,16 @@ mscsFunction3dregc& mscsFunction3dregc::mkDensityFieldScatter2(subDomain_region_
 		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
 		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	//
 	// prepare tree
@@ -2367,7 +2396,19 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 	// calculate points number density first
 	//
 	if (providedHSML!=NULL) {
-		dens.sml()=(*providedHSML);
+		if (providedHSML->size()==positions.size())	dens.sml()=(*providedHSML);
+		else {
+			if (providedHSML->size()!=0) { 
+				std::cerr << "Wrong providedHSML->size(). "
+						"Should be either 0 or " << positions.size()<<std::endl;
+				exit(1);
+				
+			}
+//			else {
+				// this means we don't know them 
+				// but we want to know them when the calculation is done
+//			}
+		}
 	}
 	if (positions.size()<NeighborsMin) {
 		NeighborsMin=positions.size();
@@ -2383,6 +2424,12 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 	}
 	
 	dens.calculateDensity(NeighborsMin,NeighborsMax,is2Dcase,smKernel,&treeScheme,MassMin,MassMax);
+	
+	// we now have hsml calculated
+	if (providedHSML!=0 and providedHSML->size()==0) { 
+		*providedHSML=dens.sml();
+	}
+	
 #ifdef DEBUG_DENSITY
 	double *v=dens.density().toArray();
 	cpeds_save_matrix(v,dens.size(),1,"mkInterpolatedFieldScatter_ptsDensity",true,false);
@@ -2412,7 +2459,16 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
 		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	//
 	// get the tree
@@ -2703,7 +2759,16 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 		if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
 		else norm=8.0/PI; //3d case
 	}
-	else msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+	else {
+		if (smKernel == "gadget2b") { 
+			kernel=&mscsWindowFunction::kernelGadget2b; 	
+			if (dz==0) norm=double(40.0)/(7.0*PI); //2d case
+			else norm=8.0/PI; //3d case
+		}
+		else {
+			msgs->criticalError("mscsFunction3dregc::mkDensityField >> don't know this smoothing kernel function: "+smKernel,High);
+		}
+	}
 	
 	
 	//
@@ -2741,7 +2806,7 @@ mscsFunction3dregc& mscsFunction3dregc::mkInterpolatedFieldScatter(subDomain_reg
 	//
 	msgs->say("calculating interpolated values at grid cells",Medium);
 	msgs->say("hsmlMax: %lE",hsmlMax,Medium);
-	double x,y,z,Neff,kernVal;
+	double x=0,y=0,z=0,Neff=0,kernVal=0;
 	
 	cpedsPoint3D p0prev=p0ctr;
 	

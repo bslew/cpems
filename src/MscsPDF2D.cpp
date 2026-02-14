@@ -27,12 +27,16 @@ mscsFunction MscsPDF2D::getContour(double CL, double* LVL) {
 	cdfi.invert();
 	cdfi.sortFunctionArgAscending();
 	cdfi.average_sameArgs(0);
-//	cdfi.save("cdfi");
+#ifdef DEBUG_MCMC_PDF2
+	cdfi.save("cdfi");
+#endif
 	double lvl=cdfi.finter(CL);
-//	printf("min: %lE, max: %lE\n",getMinValue(),getMaxValue());
-//	printf("I(lvl=%lf) = %lE\n",0.0,getIntegral(0.0));
-//	printf("I(lvl=%lf) = %lE\n",0.5,getIntegral(0.5));
-//	printf("I(lvl=%lf) = %lE\n",lvl,getIntegral(lvl)/getIntegral(0));
+#ifdef DEBUG_MCMC_PDF2
+	printf("min: %lE, max: %lE\n",getMinValue(),getMaxValue());
+	printf("I(lvl=%lf) = %lE\n",0.0,getIntegral(0.0));
+	printf("I(lvl=%lf) = %lE\n",0.5,getIntegral(0.5));
+	printf("I(lvl=%lf) = %lE\n",lvl,getIntegral(lvl)/getIntegral(0));
+#endif
 	
 	double xmin,xmax,ymin,ymax,x,y,dx,dy,dfx,dfy,tmp,df;
 	xmin=getMinX();
@@ -81,7 +85,9 @@ mscsFunction MscsPDF2D::getCDF() {
 //	cdf.sortFunctionArgAscending();
 	cdf.checkRanges();
 	cdf/=cdf.getMaxValue();
-//	cdf.save("cdf");
+#ifdef DEBUG_MCMC_PDF2
+	cdf.save("cdf");
+#endif
 	return cdf;
 }
 /***************************************************************************************/

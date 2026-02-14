@@ -90,9 +90,9 @@ data.append(list([1,2,3]))
 data.append(list([1,2,3]))
 data.append(list([1,2,3]))
 
-print data
+print(data)
 test=Test(data)
-print data
+print(data)
 
 sys.exit(0)
 
@@ -109,9 +109,9 @@ if option.data=='gauss':
     data+=option.mean-np.mean(data)
 #     s=np.std(data)
 #     data*=option.dev/s
-    print 'mean: ',np.mean(data)
-    print 'std: ',np.std(data)
-    print 'sample size: ',len(data)
+    print('mean: ',np.mean(data))
+    print('std: ',np.std(data))
+    print('sample size: ',len(data))
 
 elif option.data=='uniform':
     data = np.random.uniform(-1,1,option.N).reshape((-1,1))
@@ -119,16 +119,16 @@ elif option.data=='uniform':
     data*=option.dev/s
     data+=option.mean-np.mean(data)
     option.col=0
-    print 'mean: ',np.mean(data)
-    print 'std: ',np.std(data)
-    print 'sample size: ',len(data)
+    print('mean: ',np.mean(data))
+    print('std: ',np.std(data))
+    print('sample size: ',len(data))
     
 else:
     data=np.loadtxt(option.data,dtype="string")
     datacol=np.asarray(data[:,option.col], dtype="float")
-    print 'mean: ',np.mean(datacol)
-    print 'std: ',np.std(datacol)
-    print 'sample size: ',len(datacol)
+    print('mean: ',np.mean(datacol))
+    print('std: ',np.std(datacol))
+    print('sample size: ',len(datacol))
     
 out,shist=cpedsPythCommon.removeOutliersByMinimizingSampleVariance(data,option.col,option.thres)
 np.savetxt(option.data+'.clean', out, fmt="%s", header='clean by minimal sample variance method')

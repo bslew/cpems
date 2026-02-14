@@ -60,7 +60,7 @@ void mscsGaussianSimulation::addWhiteGaussianNoise(double m, double s, bool useN
 		}
 		for (int i = 0; i < n; ++i) {
 			s=sigma0/sqrt(N(i));
-			rns->setMeanVariance(m,s);
+			rns->setMeanStd(m,s);
 			map.T(i)=rns->getRN();
 		}
 		if (rnsWasNull) delete rns;

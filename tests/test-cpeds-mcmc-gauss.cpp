@@ -102,7 +102,7 @@ class gaussMCMC : public cpedsMCMC {
 			long N=vecSize*vecNum; 
 //			double* dcov=new double[N * vecSize];
 			double* x=_data.extractArguments();
-			_rnCov.setMeanVariance(th[0],th[1]);			
+			_rnCov.setMeanStd(th[0],th[1]);			
 			double* dcov=_rnCov.getRN(N);
 			double* sim=_rnCov.getRN(vecSize);
 
@@ -164,7 +164,7 @@ int main() {
 	double model_mean=0;
 	double model_variance=1;
 	long sampleSize=10000;
-	rns.setMeanVariance(model_mean,model_variance);
+	rns.setMeanStd(model_mean,model_variance);
 	rns.seed(1);
 	cpedsList<double> sample=rns.getRNs(sampleSize);
 	mscsFunction data("data");

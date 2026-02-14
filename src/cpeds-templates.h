@@ -18,166 +18,193 @@
 #include "qtbase.h"
 #include "cpeds-common.h"
 
-
-using namespace std;
-
-void cpeds_sort_data(long int k, double * t, int direction);
 void cpeds_sort_data(long int k, double * t, int direction);
 void cpeds_sort_data(long int k, cpeds_point * t, int direction);
 long cpeds_find_value(double val,double * t,long ts, long start, long num);
 long cpeds_find_value(long val,long * t,long ts, long start, long num);
 
-template <class T> 
-class cpeds_queue {
-	public:
-		typedef struct queue_type { 
-			T v;  // value
-			queue_type* n;  // pointer to the next value
-		} queue_type;
-		
-		queue_type *Q;      
-		queue_type *Qlast;
-		long Qsize;
-		T Qmax, Qmin;
-		long iQmax, iQmin;
-		bool set;
-		string qname;
-		
-		//
-		// constructors / destructors
-		//
-		cpeds_queue();
-		cpeds_queue(string name);
-		
-		~cpeds_queue();
-		
-		//
-		// handlers
-		//
-		long get_size();
-		void setq(long I, T v);
-		void set_name(string name) { qname=name; }
-		string get_name() { return qname; }
-		
-		
-		// insets a value at the i'th index of the queue pushing all larger  indexes (starting from the current i'th element ) up
-		T getq(long I);
-		queue_type* getQ(long I) { // returns the address of the I'th element in the list starting from zero
-			long i;
-			queue_type* tmp=Q;
-			if (I > Qsize || I<0) { return NULL; }
-			for (i=0;i<I;i++) { tmp=tmp->n; }
-			return tmp;
-		}
-		
-		T getq_max(long *i);
-		T getq_min(long *i);
-		T mean(); 
-		T variance(); 
-		
-		void update_Qminmax();
-		bool all_same();
-		
-		//
-		// seeding methods
-		//
-		void addq(T v);
-		void addq(cpeds_queue<T> *q);
-		
-		void insertq(T v,long I);
-		void insertq_ord(T v,long ord); // this inserts value into the (assumed) sorted queue in a place such as to keep the ordering of the list as indicated by the ord parameter
-		T* export_array();
-		QList<T> exportQList();
-		void import_array(T* t);
-		void import_array(T* t,long N);
-		void add_array(T* t,long N);
-		void mk_list(T from, T to, T step); // generates a list of values and adds them to the end of the list
-		void mk_list(T val, long size); // generates a list of values and adds them to the end of the list
-		
-		// 
-		// testing methods
-		//
-		bool val_in_list(T val);
-		long count_common_vals(cpeds_queue<T> * q); // returns a number of the same elements in two lists, current and the one given as a parameter
-		bool all_positive();
-		bool all_nonnegative();
-		long get_first_nonpositive_idx(); // -1 is returned if no negatve value is found
-		long get_first_negative_idx(); // -1 is returned if no negatve value is found
-		
-		//
-		// useful operatios
-		//
-		void sort(long direction);
-		long find_closest(T val);
-		void zero_all_below(double val);
-		
-		//
-		// killing methods
-		//
-		void delete_all_queue();
-		void delq(long I);
-		void delq_from(long I);
-		void delq();
-		
-		//
-		// printing methods
-		//
-		void printq_long();
-		void printq_double();
-		void printq_string();
-		
-		//
-		// I/O methods
-		//
-		void saveq(string f,string qtype);
-		long loadq(string f,string qtype);
-		void saveqidx(string f,string qtype);
-		
-		
-		//
-		// useful operators
-		//
-		
-		T operator () (long I) { return getq(I); }
-		T operator () (long I, T v) { setq(I,v); }
-		T operator = (cpeds_queue<T> * q) { T* tmp = q->export_array(); import_array(tmp,q->get_size()); delete [] tmp; }
-		/*   T operator + (cpeds_queue<T> * q) { addq(q); } */
-		
-		
-	private:
-		
-		queue_type* getptr(long I) { // returns the address of the I'th cell; NULL if  does not exist
-			queue_type* tmp=Q;
-			long i;
+namespace cpems {
+	
+	using namespace std;
+	
+	
+	template<class T> class cpeds_queue_iterator;
+	
+	template <class T> 
+	class cpeds_queue {
+		public:
+			typedef struct queue_type { 
+				T v;  // value
+				queue_type* n;  // pointer to the next value
+			} queue_type;
 			
-			if (I > Qsize || I<0) { return NULL; }
-			for (i=0;i<I;i++) { tmp=tmp->n; }
-			return tmp;
-		}
-		
-		
-		void setqOK(long I, T v) { // sets I'th the value in the quque; the corresponding queue must be large enough
-			long i;
-			queue_type* tmp=Q;
+			queue_type *Q;      
+			queue_type *Qlast;
+			long Qsize;
+			T Qmax, Qmin;
+			long iQmax, iQmin;
+			bool set;
+			string qname;
+			typedef cpeds_queue_iterator<T> iterator;
 			
-			for (i=0;i<I;i++) {       tmp=tmp->n;    }
-			tmp->v=v;
-		}
-		
-};
-
-// ########### end of cpeds_queue template ###############
-
+			//
+			// constructors / destructors
+			//
+			cpeds_queue();
+			cpeds_queue(string name);
+			
+			~cpeds_queue();
+			
+			//
+			// handlers
+			//
+			long get_size();
+			void setq(long I, T v);
+			void set_name(string name) { qname=name; }
+			string get_name() { return qname; }
+			cpeds_queue_iterator<T> begin();
+			cpeds_queue_iterator<T> end();
+			
+			
+			// insets a value at the i'th index of the queue pushing all larger  indexes (starting from the current i'th element ) up
+			T getq(long I);
+			queue_type* getQ(long I) { // returns the address of the I'th element in the list starting from zero
+				long i;
+				queue_type* tmp=Q;
+				if (I > Qsize || I<0) { return NULL; }
+				for (i=0;i<I;i++) { tmp=tmp->n; }
+				return tmp;
+			}
+			
+			T getq_max(long *i);
+			T getq_min(long *i);
+			T mean(); 
+			T variance(); 
+			
+			void update_Qminmax();
+			bool all_same();
+			
+			//
+			// seeding methods
+			//
+			void addq(T v);
+			void addq(cpeds_queue<T> *q);
+			
+			void insertq(T v,long I);
+			void insertq_ord(T v,long ord); // this inserts value into the (assumed) sorted queue in a place such as to keep the ordering of the list as indicated by the ord parameter
+			T* export_array();
+			QList<T> exportQList();
+			void import_C_array(T* t);
+			void import_C_array(T* t,long N); // renamed from import_array due to conflicting macro definitions in third party libraries
+			void add_array(T* t,long N);
+			void mk_list(T from, T to, T step); // generates a list of values and adds them to the end of the list
+			void mk_list(T val, long size); // generates a list of values and adds them to the end of the list
+			
+			// 
+			// testing methods
+			//
+			bool val_in_list(T val);
+			long count_common_vals(cpeds_queue<T> * q); // returns a number of the same elements in two lists, current and the one given as a parameter
+			bool all_positive();
+			bool all_nonnegative();
+			long get_first_nonpositive_idx(); // -1 is returned if no negatve value is found
+			long get_first_negative_idx(); // -1 is returned if no negatve value is found
+			
+			//
+			// useful operatios
+			//
+			void sort(long direction);
+			long find_closest(T val);
+			void zero_all_below(double val);
+			
+			//
+			// killing methods
+			//
+			void delete_all_queue();
+			void delq(long I);
+			void delq_from(long I);
+			void delq();
+			
+			//
+			// printing methods
+			//
+			void printq_long();
+			void printq_double();
+			void printq_string();
+			
+			//
+			// I/O methods
+			//
+			void saveq(string f,string qtype);
+			long loadq(string f,string qtype);
+			void saveqidx(string f,string qtype);
+			
+			
+			//
+			// useful operators
+			//
+			
+			T operator () (long I) { return getq(I); }
+			T operator () (long I, T v) { setq(I,v); }
+			T operator = (cpeds_queue<T> * q) { T* tmp = q->export_array(); import_C_array(tmp,q->get_size()); delete [] tmp; }
+			/*   T operator + (cpeds_queue<T> * q) { addq(q); } */
+			
+			cpeds_queue<T>& operator<<(T v) { addq(v); return *this; }
+			
+		private:
+			
+			queue_type* getptr(long I) { // returns the address of the I'th cell; NULL if  does not exist
+				queue_type* tmp=Q;
+				long i;
+				
+				if (I > Qsize || I<0) { return NULL; }
+				for (i=0;i<I;i++) { tmp=tmp->n; }
+				return tmp;
+			}
+			
+			
+			void setqOK(long I, T v) { // sets I'th the value in the quque; the corresponding queue must be large enough
+				long i;
+				queue_type* tmp=Q;
+				
+				for (i=0;i<I;i++) {       tmp=tmp->n;    }
+				tmp->v=v;
+			}
+			
+	};
+	
+	// ########### end of cpeds_queue template ###############
+	
+	
+	
 #ifndef cpeds_queue_double
-typedef cpeds_queue<double> cpeds_queue_double;
+	typedef cpeds_queue<double> cpeds_queue_double;
 #endif
-
+	
 #ifndef cpeds_queue_long
-typedef cpeds_queue<long> cpeds_queue_long;
+	typedef cpeds_queue<long> cpeds_queue_long;
 #endif
-
-
-
+	
+	
+	template<class T>
+	class cpeds_queue_iterator : public std::iterator<std::input_iterator_tag, T> {
+		public:
+			typename cpeds_queue<T>::queue_type* p;
+			cpeds_queue_iterator(typename cpeds_queue<T>::queue_type* x) :p(x) {}
+			cpeds_queue_iterator(const cpeds_queue_iterator& mit) : p(mit.p) {}
+			const cpeds_queue_iterator<T>& operator=(const cpeds_queue_iterator& rhs) {p=&rhs;return *this;}
+			//  const cpeds_queue_iterator<T>& operator=(const cpeds_queue<T>::queue_type& rhs) {p=&rhs;return *this;}
+			cpeds_queue_iterator<T>& operator++() {if (p!=0) p=p->n;return *this;}
+			//  cpeds_queue_iterator operator++(T) {cpeds_queue_iterator tmp(*this); operator++(); return tmp;}
+			bool operator==(const cpeds_queue_iterator& rhs) const {return p==rhs.p;}
+			bool operator!=(const cpeds_queue_iterator& rhs) const {return p!=rhs.p;}
+			T& operator*() {return p->v;}
+	};
+	
+	
+	
+	
+}
 
 
 
@@ -187,6 +214,7 @@ typedef cpeds_queue<long> cpeds_queue_long;
 
 
 
+using namespace cpems;
 
 #include "cpeds-math.h"
 
@@ -317,13 +345,26 @@ template <class T> void cpeds_queue<T>::delq() { // deletes the last cell in the
 }
 
 template <class T> T cpeds_queue<T>::mean() {
+		if (get_size()==0) return T(0);
+		T m=0;
+		queue_type* q=Q;
+		while (q!=0) {
+			m+=q->v;
+			q=q->n;
+		}
+		return m/get_size();
+		/*
 		T* t=export_array(); 
 		T m=(T)cpeds_mean_value(t,get_size(),long(0)); 
 		delete [] t; 
 		return m;
+		 */
 }
 template <class T> T cpeds_queue<T>::variance() {
-		T* t=export_array(); T v=(T)cpeds_variance(t,get_size()); delete [] t; return v; 
+		T* t=export_array(); 
+		T v=(T)cpeds_variance(t,get_size()); 
+		delete [] t; 
+		return v; 
 }
 
 
@@ -384,9 +425,19 @@ template <class T> bool cpeds_queue<T>::all_same() {
 }
 
 template <class T> T* cpeds_queue<T>::export_array() {
+		/*
 		T* t = new T[get_size()];
 		long i;
 		for (i=0;i<get_size();i++) { t[i]=getq(i); }
+		return t;
+		 */
+		
+		
+		T* t = new T[get_size()];
+		long i=0;
+		for (cpeds_queue<T>::iterator it=begin(); it!=end();++it) {
+			t[i++]=*it;
+		}
 		return t;
 }
 
@@ -398,13 +449,13 @@ template <class T> QList<T> cpeds_queue<T>::exportQList() {
 		return q;
 }
 
-template <class T> void cpeds_queue<T>::import_array(T* t) {
+template <class T> void cpeds_queue<T>::import_C_array(T* t) {
 		long i;
 		for (i=0;i<get_size();i++) { 
 			setq(i,t[i]); }
 }
 
-template <class T> void cpeds_queue<T>::import_array(T* t,long N) {
+template <class T> void cpeds_queue<T>::import_C_array(T* t,long N) {
 		long i;
 		delete_all_queue();
 		for (i=0;i<N;i++) { 
@@ -424,7 +475,7 @@ template <class T> void cpeds_queue<T>::sort(long direction) { // direction: 12 
 		// get array of values for sorting
 		t=export_array();
 		cpeds_sort_data(get_size(),t,direction);
-		import_array(t);
+		import_C_array(t);
 }
 
 template <class T>  void cpeds_queue<T>::mk_list(T from, T to, T step) {
@@ -584,8 +635,10 @@ template <class T> long cpeds_queue<T>::find_closest(T val) {
 
 //! This routine checks the txt file given by fn, and returns the cpeds_queue object that contains the
 //! number of columns (space separated words) in each row of the file and much other useful info.
-cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn, long scanRowsMax=-1);
+//cpeds_queue<long>* cpeds_get_txt_file_cols_rows(strarg fn, long scanRowsMax=-1);
 
+template <class T> cpeds_queue_iterator<T> cpeds_queue<T>::begin() { return cpeds_queue_iterator<T>(Q); }
+template <class T> cpeds_queue_iterator<T> cpeds_queue<T>::end() { return cpeds_queue_iterator<T>(Qlast->n); }
 
 
 #endif

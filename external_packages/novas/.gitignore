@@ -1,0 +1,9 @@
+/JPLEPH
+/eph_manager.o
+/novas.o
+/novascon.o
+/nutation.o
+/readeph0.o
+/solsys1.o
+/asc2eph
+/libnovas.a

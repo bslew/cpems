@@ -12,7 +12,7 @@ cpedsPointSet2D::cpedsPointSet2D(const QList<cpedsPoint2D> &q) {
   for (long i=0;i<N;i++) { append(q.at(i));  }
 }
 /****************************************************************************************************/
-cpedsPointSet2D::cpedsPointSet2D(const cpedsPointSet2D &q) {
+cpedsPointSet2D::cpedsPointSet2D(const cpedsPointSet2D &q) : mscsVector<cpedsPoint2D>(q) {
   clear();
   *this=q;
 }
@@ -148,7 +148,7 @@ cpedsPointSet3D::cpedsPointSet3D(const QList<cpedsPoint3D> &q) {
   for (long i=0;i<N;i++) { append(q.at(i));  }
 }
 /****************************************************************************************************/
-cpedsPointSet3D::cpedsPointSet3D(const cpedsPointSet3D &q) {
+cpedsPointSet3D::cpedsPointSet3D(const cpedsPointSet3D &q) : mscsVector<cpedsPoint3D>(q) {
   clear();
   *this=q;
 }

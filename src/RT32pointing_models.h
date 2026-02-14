@@ -122,7 +122,141 @@ void Model6a_DR2017(double AZ, double ZD, double *dAZ, double *dZD, double Tmete
 */
 void Model6ar_DR2017(double AZ, double ZD, double *dAZ, double *dZD, double Tmeteo);
 
+/*!
+	\brief calculate linear drift in ZD correction for linear model
+	\details 
+	@param AZ [deg] - from South
+	@param ZD [deg]
+	@param dAZ [deg] - model position correction
+	@param dZD [deg] - model position correction
+	@param JD - jd_ut1
 
+	The model is based on 
+	http://cosmos.astro.uni.torun.pl/~blew/wordpress/on-the-progressing-elevation-offset-in-rt-32-pointing/
+	
+	analysis and combination of all available data:
+	K-band [2015],[2016], and [2017, 2020]
+	and OCRA-p data form [2016] and [2017]
+	
+	The model is:
+	
+	dZD = A*(t-t0)+B,
+	
+	where
+	
+	A=19.15278693; // mdeg/yr
+	B=-32.06389286; // mdeg
+	t0 - time in years since 2015-01-01 (it is assumed that the year has 365.25 days,
+		and that each day has 86400 seconds.)
+	t - current UT1 time in years (it is assumed that the year has 365.25 days,
+		and that each day has 86400 seconds.)
+		
+	The corrections is calculated as:
+	
+	dt=(JD-JDref)/365.25;
+	
+	dZD=A*dt+B
+	
+	The ZD correction is added to the current value of *dZD.
+	
+	
+	\date Jan 31, 2020, 1:28:17 PM
+*/
+void aging_linear_driftZD(double AZ, double ZD, double *dAZ, double *dZD,double JD);
+/*!
+	\brief calculate correction due to aging for linear model
+	\details 
+	@param AZ [deg] - from South
+	@param ZD [deg]
+	@param dAZ [deg] - model position correction
+	@param dZD [deg] - model position correction
+	@param JD - jd_ut1
+	@param Tmeteo - temperature [degC]
+
+	The corrections resulting from this model are added to the current values of 
+	dAZ and dZD
+
+	The model is based on 
+	http://cosmos.astro.uni.torun.pl/~blew/wordpress/on-the-progressing-elevation-offset-in-rt-32-pointing/
+	
+	analysis and combination of all available data:
+	K-band [2015],[2016], and [2017, 2020]
+	and OCRA-p data form [2016] and [2017]
+	
+	See details for aging_linear_drift(double AZ, double ZD, double *dAZ, double *dZD,double JD);
+	
+	The model is:
+	
+	dZD = A*(t-t0)+B+C*Tmeteo,
+	
+	where
+	
+	A=18.7101907; // mdeg/yr
+	B=-34.4520555; // mdeg
+	C=0.283225502; // mdeg/K
+	
+
+	\date Jan 31, 2020, 1:28:17 PM
+*/
+void aging_linearT_driftZD(double AZ, double ZD, double *dAZ, double *dZD, double JD, double Tmeteo);
+
+
+/*!
+	\brief implements Model4e using full DR2017 pointing data corrected by linear and thermal drift
+	\details 
+	@param AZ [deg] - from South
+	@param ZD [deg]
+	@param dAZ [deg] - model position correction
+	@param dZD [deg] - model position correction
+
+	Temperature independent model.
+	Although this model is mathematically the same as Model4e for AZ corrections (for the same data)
+	and similar to Model4e for ZD corrections, the processing of the pointing data to 
+	derive this model is different in processing the weather dependent refraction. 
+	Now the full history of the refraction angles is used rather than optical refraction.
+	
+	Also, at the preprocessing stage the best fit linear drift and temperature dependence 
+	is removed using aging_linearT_drift model
+	
+	See 2020/1 tech rep. for details. - DOES NOT EXIST YET
+
+	\date Feb 4, 2020, 6:10:27 PM
+	\author Bartosz Lew
+*/
+void Model4e_DR2017_linearT_drift_removed(double AZ, double ZD, double* dAZ, double *dZD);
+
+/*!
+	\brief implements Model4gr 
+	\details 
+	@param AZ [deg] - from South
+	@param ZD [deg]
+	@param dAZ [deg] - model position correction
+	@param dZD [deg] - model position correction
+
+	The model adds rail track corrections atop model 4g: 
+	hence the name has "r" - according to the new naming convention
+	
+	Calibrated against DR2017sum pointing data. See 2017/1 tech rep. for details.
+
+	\date Feb 4, 2020, 6:10:37 PM
+	\author Bartosz Lew
+*/
+void cpeds_Model4er_DR2017_linearT_drift_removed(double AZ, double ZD, double *dAZ, double *dZD);
+
+/*!
+	\brief model used for COR2COR conversions in RT32 pointing project
+	\details 
+
+	This procedure combines COR model Model4er_DR2017_linearT_drift_removed
+	with linear drift model aging_linearT_driftZD
+	
+	as it is done by default in 'oldage' control system.
+	
+	
+	
+	\date Feb 7, 2020, 2:59:52 PM
+*/
+void cpeds_Model4er_DR2017_linearT_drift_removed_linearT_drift(double AZ, double ZD, double JD, double T, double *dAZ, double *dZD);
 
 #endif /* RT32_POINTING_MODELS_H_ */ 
 

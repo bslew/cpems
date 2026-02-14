@@ -23,15 +23,19 @@
 //#include <ncarg/ngmath.h>
 #include "sys/stat.h"
 #include "cpeds-math.h"
+#include "StringParser.h"
 #include "cpeds-templates.h"
 //#include "matrix.h"
 #include <fftw3.h>
+#include <omp.h>
 #include "../external_packages/novas/novas.h"
 
 #ifndef _NO_NAMESPACE
 /* using namespace LiDIA; */
 using namespace std;
 using namespace math;
+using namespace cpems;
+
 #define STD std
 #else
 #define STD
@@ -473,6 +477,19 @@ double cpeds_local_sidereal_time_novas(double jd_ut1, double ut1_utc, double Del
 	if (lst>86400) lst-=86400;
 	return lst;
 }
+/* ******************************************************************************************** */
+double cpeds_cal2jd(std::string dtstr, std::string fmt) {
+	struct tm tm;
+	char buf[255];
+	
+	memset(&tm, 0, sizeof(tm));
+	strptime(dtstr.c_str(), fmt.c_str(), &tm);
+//	cout << tm.tm_year+1900 <<" "<< tm.tm_mon+1 <<" "<< tm.tm_mday << " ";
+//	cout << tm.tm_hour <<" "<< tm.tm_min<<" "<< tm.tm_sec << "\n";
+	return cpeds_julian_time(tm.tm_year+1900,tm.tm_mon+1,tm.tm_mday,
+			double(tm.tm_hour)+double(tm.tm_min)/60+double(tm.tm_sec)/3600);
+}
+
 /****************************************************************************************************************/
 double cpeds_julian_time(long year, long month, long day, double hour) {
 	return cpeds_julian_local_time(year,month,day,hour,0);
@@ -501,12 +518,12 @@ double cpeds_julian_local_time(long year, long month, long day, double hour, dou
 	
 	double tjd;
 	
-	jd12h = (long) day - 32075L + 1461L * ((long) year + 4800L
-			+ ((long) month - 14L) / 12L) / 4L
-			+ 367L * ((long) month - 2L - ((long) month - 14L) / 12L * 12L)
-			/ 12L - 3L * (((long) year + 4900L + ((long) month - 14L) / 12L)
+	jd12h = day - long(32075) + long(1461) * (long(year)+ long(4800)
+			+ (long(month)- long(14)) / long(12)) / long(4)
+			+ long(367) * (long(month) - long(2) - (long(month) - long(14)) / long(12) * long(12))
+			/ long(12) - long(3) * ((long(year)+ long(4900) + (month - long(14)) / long(12))
 					/ 100L) / 4L;
-	tjd = (double) jd12h - 0.5 + hour / 24.0;
+	tjd = double(jd12h) - 0.5 + hour / 24.0;
 	
 	
 	tjd+=longitude/360;
@@ -829,9 +846,51 @@ double cpeds_refraction(double ZDobs, double alt, double T, double P, double H, 
 	lambda*=1e4; // convert to um
 	lat*=PI180; // convert to rad
 	slarefro_(&ZDobs, &alt,&T,&P,&H,&lambda,&lat,&Tlapse, &acc,&ref);	
-	ref=(ZDobs+ref)*PI180inv;
-	return ref;
+	printf("ref: %f\n",ref*PI180inv);
+	double ZDspace=(ZDobs+ref)*PI180inv;
+	return ZDspace;
 }
+/* ******************************************************************************************** */
+double cpeds_refraction_space(double ZDspace, double alt, double T, double P, double H, double lambda, double lat, double Tlapse, double acc) {
+	double ref;
+	T+=273.15; // convert to K
+	ZDspace*=PI180; // convert to rad
+	H/=100.0; // convert to range 0-1
+	lambda*=1e4; // convert to um
+	lat*=PI180; // convert to rad
+	
+	double ZDobs1=ZDspace-0.5*PI180;
+	double ZDobs2=ZDspace;
+	double ZDobs;
+//	double err;
+//	do {
+		double ref1,ref2;
+		slarefro_(&ZDobs1, &alt,&T,&P,&H,&lambda,&lat,&Tlapse, &acc,&ref1);	
+		slarefro_(&ZDobs2, &alt,&T,&P,&H,&lambda,&lat,&Tlapse, &acc,&ref2);	
+		
+		double ZDspace1=ZDobs1+ref1;
+		double ZDspace2=ZDobs2+ref2;
+		
+		// linear interpolation on the inverse function
+		ZDobs=cpeds_extrapolate_linear(ZDspace,ZDspace1,ZDobs1,ZDspace2,ZDobs2)*PI180inv;
+		
+		// calculate error
+//		double ZDspace=cpeds_refraction(ZDobs,alt,T,P,H,lambda,lat,Tlapse,acc);
+//		err=ZDspace-ZDobs;
+
+//		std::cout << "err: " << err << std::endl;
+
+//		ZDobs1=ZDspace-err;
+//		ZDobs2=ZDspace;
+		
+
+		
+//	} while (err*PI180>acc);
+	
+	return ZDobs;	
+}
+
+
 
 double ctgKB(double x) {
 	return 2.908882e-4/tan(x+2.227e-3/(x+0.07679));
@@ -1981,7 +2040,7 @@ double cpeds_gauss_on_sphere(double thc, double phic, double s, double th, doubl
 // and the resolution parameter which defines the pixel size
 double cpeds_normalize_gauss_on_sphere(double s, long int pix_num) {
 	//long int i;
-	double integr;
+	double integr=0;
 	
 	
 	/*   for (i=0;i<pix_num;i++) {  */
@@ -3212,6 +3271,80 @@ double * cpeds_calculate_covariance_matrix(double *Dvec, long vec_size, long vec
 	delete [] av;
 	return cov;
 }
+/* ******************************************************************************************** */
+double * cpeds_calculate_covariance_matrix_para(double *Dvec, long vec_size, long vec_num, 
+		bool diagonal,
+		long max_n_diagonals) {
+	long i,k,l;
+	long idxC,idxD;
+	double *cov;
+
+	long cov_size;
+	if (diagonal)  cov_size=vec_size; 
+	else cov_size=vec_size*vec_size; 
+	cov= new double[cov_size];
+	// initialize cov
+	for (k=0;k<cov_size;k++) {		cov[k]=0;	}
+
+	
+	if (max_n_diagonals==-1) max_n_diagonals=vec_size;
+	else {
+		if (max_n_diagonals>vec_size) max_n_diagonals=vec_size;
+	}
+	
+	double *av = new double[vec_size];
+	double tmp,Nleo;
+	/*   long vec_num_loc=vec_num-NCovst; */
+	Nleo=double(vec_num-1);
+	if (Nleo==0) { printf("too few (1) data vectors given for covariance matrix computations. Will stop now."); exit(0); }
+	
+	// calculate average vectors first
+	printf("calculating mean vectors\n");
+#pragma omp parallel for private(k,i) schedule(dynamic)
+	for (k=0;k<vec_size;k++) {
+		av[k] = 0;
+		for (i=0;i<vec_num;i++) { av[k] += Dvec[i*vec_size+k]; }
+		av[k]/=(double)vec_num;
+	}
+	
+	printf("calculating covariances\n");
+	long done=0;
+	if (diagonal) { // only the diagonal elements are stored
+#pragma omp parallel for private(k,i,tmp,idxD) schedule(dynamic)
+		for (k=0;k<vec_size;k++) {
+			cov[k] = 0;
+			for (i=0;i<vec_num;i++) { idxD=i*vec_size;  tmp=Dvec[idxD+k]-av[k]; cov[k] += tmp*tmp; }
+			cov[k] /= Nleo;
+#pragma omp critical
+			{
+			done+=1;
+			printf("done: %li/%li\n",done,vec_size);
+			}
+		}
+	}
+	else {  
+#pragma omp parallel for private(k,l,i,idxC,idxD) schedule(dynamic)
+		for (k=0;k<vec_size;k++) {
+			long lmin=cpeds_get_max(0,k-max_n_diagonals);
+//			printf("lmin: %li\n",lmin);
+			for (l=lmin;l<=k;l++) {
+				idxC=k*vec_size+l;      cov[idxC] = 0;
+				for (i=0;i<vec_num;i++) { idxD=i*vec_size;  cov[idxC] += (Dvec[idxD+k]-av[k])*(Dvec[idxD+l]-av[l]); }
+				cov[idxC] /= Nleo;
+				cov[l*vec_size+k] = cov[idxC]; //symetrize
+			}
+#pragma omp critical
+			{
+			done+=1;
+			printf("done: %li/%li\n",done,vec_size);
+			}
+
+		}
+	}
+	delete [] av;
+	return cov;
+}
+
 /****************************************************************************************************************/
 //! Calculates the two-sided, upper-tail quantile probability of getting value x, based on values given in array t of size ts which probe the underlying PDF. */
 /*! The probability is that of getting a measurment deviating in absolute value from second quartile (Q24) by more than the measured value x. */
@@ -3705,6 +3838,19 @@ long cpeds_get_cols_num_first_ln(strarg fn,char * lastc) {
 	
 	return cols;
 }
+/* ******************************************************************************************** */
+long cpeds_get_file_cols_num_first_ln(string fname) {
+	std::ifstream ifs(fname);
+	std::string fstline;
+	
+	std::getline(ifs,fstline);
+	ifs.close();
+	if (fstline[fstline.size()-1]=='\n') {
+		fstline.erase(fstline.end()-1,fstline.end());
+	}
+	cpeds::StringParser::rtrim(fstline);
+	return cpeds::StringParser::count_spaces(fstline)+1;
+}
 //***************************************************************************************************
 long cpeds_get_cols_num_first_ln(strarg fn, bool commentedFile, long maxLineSize) {
 	ifstream f;
@@ -3812,6 +3958,17 @@ long long cpeds_get_txt_file_lines_count(string fName) {
     fclose(infile);
     return number_of_lines;
 }
+/* ******************************************************************************************** */
+long long cpeds_get_txt_file_non_empty_lines_count(string fName) {
+	std::ifstream ifs(fName);
+	std::string s;
+	long long n=0;
+	while (std::getline(ifs, s)) {
+		if (s[0]!='\n') n++;
+	}
+	ifs.close();
+	return n;
+}
 //***************************************************************************************************
 // this routine checks the txt file fn and returns an cpeds_queue object that contains the
 // number of columns in each row of the file and much other useful info
@@ -3882,18 +4039,26 @@ const matrix<double> cpeds_matrix_load(string fileName, string how, long * resul
 	if (header) {    fscanf(f,"%li %li",&row,&col); }
 	else {
 		if (binary) {
+#ifdef DEBUG_CPEDS_MATH
 			printf("* binary read requested with no header information\n");
+#endif
 			struct stat64 s; stat64(fileName.c_str(),&s);
 			col=1;
 			if (fourbyte) {
+#ifdef DEBUG_CPEDS_MATH
 				printf("* requested 4-byte float type read\n");
+#endif
 				row=(long)s.st_size/(long)sizeof(float);
 			}
 			else {
+#ifdef DEBUG_CPEDS_MATH
 				printf("* assuming 8-byte float type read\n");
+#endif
 				row=(long)s.st_size/(long)sizeof(double);
 			}
+#ifdef DEBUG_CPEDS_MATH
 			printf("* assuming the matrix of size: rows %li cols %li\n",row,col);
+#endif
 		}
 		else {
 			col=0;
@@ -3905,11 +4070,15 @@ const matrix<double> cpeds_matrix_load(string fileName, string how, long * resul
 					row=(*finfo).get_size();    	  
 				}
 			}
+#ifdef DEBUG_CPEDS_MATH
 			printf("* assuming the matrix of size: rows %li cols %li\n",row,col);
+#endif
 		}
 		
 	}
+#ifdef DEBUG_CPEDS_MATH
 	printf("  -- reading matrix of size: %li rows, %li cols from file %s\n",row,col,fileName.c_str()); //exit(0);
+#endif
 	matrix<double> M; 
 	
 	if (col==0 or row==0) { if (result!=NULL) *result=-1; return M; }
@@ -4525,7 +4694,7 @@ double cpeds_bilinear_interpolation(double x1, double x2, double y1, double y2, 
 }
 /* ******************************************************************************************** */
 
-void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double (&c)[4][4]) {
+void cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, double* y12, double d1, double d2, double c[][4]) {
 	
 	int l,k=0,j,i;
 	double xx,d1d2=d1*d2;
@@ -4544,13 +4713,16 @@ void* cpeds_bicubic_interpolation_ccoef(double* y, double* y1, double* y2, doubl
 		cl[i]=xx;
 	}
 	l=0;
-	for (i=0;i<4;i++)
-		for (j=0;j<4;j++) c[i][j]=cl[l++];
+	for (i=0;i<4;i++) {
+		for (j=0;j<4;j++) {
+			c[i][j]=cl[l++];		
+		}
+	}
 	
 }
 
 
-void* cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
+void cpeds_bicubic_interpolation(double* y, double* y1, double* y2, double* y12, 
 		const double x1l, const double x1u, const double x2l, const double x2u,
 		const double x1, const double x2, double &ansy, double &ansy1, double &ansy2) {
 	
@@ -4810,4 +4982,13 @@ double cpeds_RT4_arcsin(double x) {
 	if (x > 1.) x = 1;
 	if (x < -1.) x = -1.;
 	return asin(x);
+}
+/* ******************************************************************************************** */
+std::tuple<string, string, string> cpeds_get_dirname_filebase_ext(string s) {
+	std::tuple<string, string, string> tpl;
+	
+	std::stringstream ss;
+	throw "Not implemented";
+	
+	return tpl;
 }

@@ -111,7 +111,11 @@ class cpedsFits {
 			\date Jul 9, 2012, 1:04:23 PM
 			\author Bartosz Lew
 		*/
-		cpedsStatusCodes addBinTable(string Tname, long rows, QList<string> &colName, QList<string>  &colType, QList<string>  &colUnit);
+		cpedsStatusCodes addBinTable(string Tname, long rows,
+										QList<string> colName,
+										QList<string> colType,
+										QList<string> colUnit);
+
 		/*!
 			\brief generates binary table extension of zero length and without any columns
 			\details 

@@ -6,7 +6,7 @@ void cpedsRNG::initiateRNG(string distr, string rn, const gsl_rng_type* generato
 	_state=cpeds_random_uniform_numbersGSL_init(&_seed, seedOffset(),generator); // this is the default one in gsl: gsl_rng_mt19937
 	_generator_type=generator;
 	setMinMax(0,1);
-	setMeanVariance(0,1);
+	setMeanStd(0,1);
 	setCentralLimitNumbers(100);
 	gCDF=NULL;
 	gCDF2d=NULL;
@@ -41,15 +41,16 @@ void cpedsRNG::initiateRNG(string distr, string rn, const gsl_rng_type* generato
 // ****************************************************************************************************
 void cpedsRNG::clone(const cpedsRNG& parent) {
 	_generator_type=parent._generator_type;
-//	_seed=parent._seed;
 	seed(parent.seed());
 //	exit(0);
 	seedOffset(parent.seedOffset());
+//	printf("rng clone: rng: %li, state: %li, type: %li, seed:%li off: %li\n",_state,
+//			_state->state,_state->type,_seed,_seed_offset);
 	setState(parent.getState());
 	_rnDataType=parent._rnDataType;
 	_distr=parent._distr;
 	setMinMax(parent.Min(),parent.Max());
-	setMeanVariance(parent.mean(),parent.variance());
+	setMeanStd(parent.mean(),parent.gauss_std());
 	setCentralLimitNumbers(parent.centralLimitNumbers());
 	copyGCDF(parent);
 	_drawsCount=parent._drawsCount;
@@ -81,10 +82,11 @@ void cpedsRNG::setRNsType(string distr) {
 								if (distr=="gaussianPowerLaw_fft") {		_distr=gaussian_power_law_fft;	} else 
 									if (distr=="invCDF") {		_distr=from_array_invCDF;	} else 
 										if (distr=="invCDF2d") {		_distr=from_array_invCDF2d;	} else 
-										{						
-											printf("unknown distribution: %s\n. Please check the code. Will exit now - this is to force debugging.\n",distr.c_str());
-											exit(0);
-										}
+											if (distr=="invCDF_sample") { _distr=from_array_invCDF_sample; } else
+											{						
+												printf("unknown distribution: %s\n. Please check the code. Will exit now - this is to force debugging.\n",distr.c_str());
+												exit(0);
+											}
 }
 /***************************************************************************************/
 void cpedsRNG::setRNsType(distrType distr) {
@@ -150,6 +152,20 @@ void cpedsRNG::setPDF(long size, double* x, double *p) {
 	for (i=0;i<gCDFsize;i++) {	    p[i]/= p[last];	  }
 //	delete [] cdf;
 }
+/* ******************************************************************************************** */
+void cpedsRNG::setCDF(long size, double* x, double *p) {
+	long i;
+	if (size!=0) { killGCDF(); }
+	gCDFsize=size-1;
+	gCDF=p;
+	CDFargs=x;
+	double dxo2=0.5*(x[1]-x[0]);	
+	
+	// normalization of the CDF
+	long last=gCDFsize-1;
+	for (i=0;i<gCDFsize;i++) {	    p[i]/= p[last];	  }	
+}
+
 /***************************************************************************************/
 void cpedsRNG::setPDF2d(long sizeX, double* x, long sizeY, double *y, double *p) {
 	long i,j;
@@ -180,8 +196,9 @@ void cpedsRNG::setPDF2d(long sizeX, double* x, long sizeY, double *y, double *p)
 
 // ****************************************************************************************************
 const cpedsList<double> cpedsRNG::getRNs(long n) {
-	double *t=getRN(n);
 	cpedsList<double> cl;
+	if (n==0) return cl;
+	double *t=getRN(n);
 	for (long i=0;i<n;i++) { cl.append(t[i]); }
 	delete [] t;
 	return cl;
@@ -201,7 +218,7 @@ double* cpedsRNG::getRN(long n) {
 	}
 	/***************************************************************************************/
 	if (_distr==gaussian) {
-		t=cpeds_random_gauss_numbers(mean(),variance(),n, centralLimitNumbers(),getState());
+		t=cpeds_random_gauss_numbers(mean(),gauss_std(),n, centralLimitNumbers(),getState());
 		//for (i=0;i<n;i++) { t[i]= cpeds_random_gauss_numbers(mean(),variance(),n, centralLimitNumbers(),getState()); }
 
 		_drawsCount+=n*centralLimitNumbers();
@@ -215,7 +232,7 @@ double* cpedsRNG::getRN(long n) {
 		if (gCDF==NULL || 2*n!=gCDFsize) {
 			killGCDF();
 			gCDFsize=2*n;
-			gCDF = cpeds_generate_gaussian_distribuant_function(gCDFsize, variance(), mean());
+			gCDF = cpeds_generate_gaussian_distribuant_function(gCDFsize, gauss_std(), mean());
 		}
 		for (j=0;j<n;j++) {
 			x = gsl_rng_uniform(getState());
@@ -246,7 +263,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_circle) {
 		t=new double[n];
-		double v=variance();
+		double v=gauss_std();
 		double m=mean();
 		double v1,v2;
 		double S;
@@ -264,7 +281,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_power_law) {
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		double* gauss=getRN(n); // _drawsCount will be increased here
 		_distr=gaussian_power_law;
 		
@@ -310,7 +327,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_power_law_t) {
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		double* gauss=getRN(n); // _drawsCount will be increased here
 		_distr=gaussian_power_law_t;
 		
@@ -365,7 +382,7 @@ double* cpedsRNG::getRN(long n) {
 	/***************************************************************************************/
 	if (_distr==gaussian_power_law_t2) {
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		double* gauss=getRN(n); // _drawsCount will be increased here
 		_distr=gaussian_power_law_t2;
 		
@@ -437,7 +454,7 @@ double* cpedsRNG::getRN(long n) {
 		// setup the random number generator
 		//
 		_distr=gaussian_circle;
-		setMeanVariance(0,1);
+		setMeanStd(0,1);
 		//
 		// generate gaussian noise
 		//
@@ -544,6 +561,42 @@ double* cpedsRNG::getRN(long n) {
 	  }
 	}
 	/***************************************************************************************/
+	/***************************************************************************************/
+	if (_distr==from_array_invCDF_sample) {
+	  double x,xp,xi,xf,yi,yf; 
+
+	  // generate uniformly distributed numbers
+	  _distr=uniform;
+	  setMinMax(gCDF[0],gCDF[gCDFsize-1]);
+	  t=random_sample.toCarray();
+	  _distr=from_array_invCDF;
+	  
+	  // convert to requested PDF according to the CDF table
+	  long k;
+	  
+//	  cpeds_save_matrix(gCDF,gCDFsize,1,"gCDF",false,false);
+	  for (long j=0;j<n;j++) {
+		  
+		  // find the point in the cdf array
+		  k=cpeds_find_value(t[j],gCDF,gCDFsize,0,gCDFsize);		  
+		  x=t[j];
+		  xp=gCDF[k];
+//		  if (k==0 or k==1) printf("x: %lE k: %li, xp: %lE\n",x,k,xp);
+//		  printf("x: %lE k: %li, xp: %lE\n",x,k,xp);
+		  
+//		  // linear interpolation between the selected points
+		  if (x > xp) { xi = CDFargs[k]; xf = CDFargs[k+1]; yi = xp; yf = gCDF[k+1];}
+		  if (x < xp) { 
+			  xi = CDFargs[k-1]; xf = CDFargs[k]; yi = gCDF[k-1]; yf = gCDF[k];
+//			  if (k==0) xi=0;
+//		  	  if (k==0) printf("warning x: %lE k: %li, xp: %lE, xi:%lE, xf:%lE, yi:%lE yd:%lE\n\n",t[j],k,xp,  xi,xf,yi,yf);		  
+		  }
+		  
+		  t[j] = (x-yi)*(xf-xi)/(yf-yi) + xi;
+//		  if (k==0 or k==1) 		  printf("int x: %lE k: %li, xp: %lE, xi:%lE, xf:%lE, yi:%lE yd:%lE\n\n",t[j],k,xp,  xi,xf,yi,yf);
+//		  t[j]=CDFargs[k]; // case for no interpolation
+	  }
+	}
 	
 	return t;
 }
@@ -709,3 +762,6 @@ double cpedsRNG::sumOOfNumbers_t2(long n) {
 	return s;
 }
 // ****************************************************************************************************
+void cpedsRNG::setRandomSample(cpedsList<double> sample) {
+	random_sample=sample;
+}

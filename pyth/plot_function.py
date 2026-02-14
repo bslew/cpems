@@ -1,7 +1,4 @@
-#!/usr/bin/python2.7
-# #!/usr/bin/env python
-# -*- Encoding: utf-8 -*-
-# coding: utf-8
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -25,9 +22,31 @@ from optparse import OptionParser
 programDescription = """This is a simple function plotter.
 The input text files should be stored as a matrix of numbers.
 The chosen columns will be plotted.
+
+
 """
 
-parser = OptionParser(description=programDescription)
+usage='''
+EXAMPLE USAGE:
+
+- to plot csv with header data with date/time strings use eg.:
+id,dt,T_11,T_12,T_13,T_14,T_21,T_22,T_23,T_24,T_31,T_32,T_33,T_34,T_41,T_42,T_43,T_44,V_11,V_12,V_13,V_14,V_21,V_22,V_23,V_24,V_31,V_32,V_33,V_34,V_41,V_42,V_43,V_44
+1,2021-09-23T11:28:42,18.1514,18.165,18.2107,17.9171,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.006,445.131,445.586,442.66,0,0,0,0,0,0,0,0,0,0,0,0
+2,2021-09-23T11:29:43,18.1586,18.1721,18.2079,17.9143,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.08,445.194,445.566,442.634,0,0,0,0,0,0,0,0,0,0,0,0
+3,2021-09-23T11:30:41,18.1569,18.1769,18.2269,17.92,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.049,445.255,445.735,442.692,0,0,0,0,0,0,0,0,0,0,0,0
+4,2021-09-23T11:31:42,18.1679,18.1857,18.2243,17.9214,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.154,445.349,445.717,442.717,0,0,0,0,0,0,0,0,0,0,0,0
+5,2021-09-23T11:32:44,18.1693,18.1929,18.2279,17.9229,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.171,445.406,445.76,442.723,0,0,0,0,0,0,0,0,0,0,0,0
+6,2021-09-23T11:33:41,18.1762,18.1923,18.2154,17.9254,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.246,445.409,445.643,442.769,0,0,0,0,0,0,0,0,0,0,0,0
+7,2021-09-23T11:34:42,18.1743,18.1986,18.2293,17.935,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.226,445.477,445.771,442.843,0,0,0,0,0,0,0,0,0,0,0,0
+8,2021-09-23T11:35:57,18.1893,18.2014,18.2386,17.9371,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.371,445.491,445.866,442.871,0,0,0,0,0,0,0,0,0,0,0,0
+9,2021-09-23T11:36:58,18.1843,18.2029,18.2371,17.945,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,-2389.22,445.317,445.503,445.854,442.951,0,0,0,0,0,0,0,0,0,0,0,0
+
+use:
+python ~/programy/cpems/pyth/plot_function.py data.csv  -x 1 -y 6 -y 7 -y 8 -y 9  --CSVheader 1 --dateFmt '%Y-%m-%dT%H:%M:%S' --pt o
+
+'''
+
+parser = OptionParser(description=programDescription, usage=usage)
 # parser.add_option("", "--simPrefix", dest="simPrefix", default="", type="string", help='simulation prefix', metavar="PREFIX")
 
 # parser.add_option("-f", "--file", dest="signal_file", default='277_ocraf_absron_010711.dat.totalPower.last500000', 
@@ -178,7 +197,7 @@ parser.add_option("", "--circ", dest="circ", type="string", default='', help='ci
 parser.add_option("", "--rect", dest="rect", type="string", help='rectangles to plot defined as x,y,dx,dy,angle where x,y is the center point and dx,dy width,height. eg. --rect 10,20,5,6,0 for a rectangle at x=10 y=20 and width=5 and height=6. .', action="append", metavar="STRING")
 parser.add_option("", "--gridColor", dest="gridColor", type="string", default='0.5', help='grid color', metavar="STRING")
 parser.add_option("", "--dateFmt", dest="dateFmt", type="string", default='', help='date format for ts type plots: eg "%Y-%m-%d %H:%M:%S"', metavar="STRING")
-parser.add_option("", "--dateFmtPlot", dest="dateFmtPlot", type="string", default='%Y-%m-%d %H:%M:%S', help='date format for ts type plots used for plotting: eg "%Y-%m-%d %H:%M:%S"', metavar="STRING")
+parser.add_option("", "--dateFmtPlot", dest="dateFmtPlot", type="string", default='concise', help='date format for ts type plots used for plotting: eg "%Y-%m-%d %H:%M:%S", default (concise)', metavar="STRING")
 parser.add_option("", "--Rxlabels", dest="Rxlabels", default=0, type="float", help='rotate xticklabels by this angle [deg]', metavar="VALUE")
 parser.add_option("", "--Rylabels", dest="Rylabels", default=0, type="float", help='rotate yticklabels by this angle [deg]', metavar="VALUE")
 parser.add_option("", "--removeXtickLabels", dest="removeXtickLabels", type="int", help='if 0 - not used; if single value - plot every this tick label; if coma-separated list - indexes of labels to be removed (NOT implemented yet). Useful for time series plots', action="append", metavar="VALUE")
@@ -282,6 +301,7 @@ parser.add_option("", "--noaxes", action="store_true", dest="noAxes", default=Fa
 parser.add_option("", "--axesSwitch", action="append", dest="axesSwitch", type='int', help="switches axes on or off on each of the subplots.")
 parser.add_option("", "--interactive", action="store_true", dest="interactive", default=False, help="enters interactive mode allowing data selection from the plot.")
 # parser.add_option("", "--inter", action="store_true", dest="inter", default=False, help="enters a new interactive mode allowing data selection from the plot.")
+parser.add_option("",'--CSVheader',type=int,default=0,help='''Number of CSV header lines (only when loading csv files)''')
 parser.add_option("", "--big", action="store_true", dest="big", default=False, help="flag to indicate that we are loading a big file. This will optimize the loading and plotting")
 parser.add_option("", "--asCol", action="store_true", dest="asCol", default=False, help="flag to indicate that we are loading a column data. Normally the load does not recognise verctor between column or row alignment, so this option helps to define which is it.")
 parser.add_option("", "--scriptMode", action="store_true", dest="scriptMode", default=False, help="flag to indicate that we are working in script mode for generating pictures and without GUI.")
@@ -384,7 +404,11 @@ import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 import csv
 import h5py
-import pyfits
+try:
+    import pyfits
+except ModuleNotFoundError:
+    import fitsio as pyfits
+
 import re
 
 
@@ -395,8 +419,8 @@ from matplotlib.patches import Patch, Rectangle
 from matplotlib.widgets import Button
 from matplotlib.widgets import Cursor
 from matplotlib.widgets import SpanSelector
-import Tkinter as Tk
-import tkMessageBox
+import tkinter as Tk
+import tkinter.messagebox
 import operator
 
 # imports for img plot types
@@ -484,12 +508,12 @@ else:
 # option.fontSizeYtickLabels=cpedsPythCommon.getFloatList(option.fontSizeYtickLabels)
 option.logYaxes = option.logYaxes.split(',')
 
-print 'levels: ', option.levels
+print('levels: ', option.levels)
 if type(option.levels) != type(list()):
     option.levels = list([50])
 else:
     option.levels = [ (cpedsPythCommon.getFloatList(levels)) for levels in option.levels ]
-print 'levels: ', option.levels
+print('levels: ', option.levels)
 # for i in range(len(option.levels)):
 #    print len(option.levels[i])
 #    if len(option.levels[i])==1:
@@ -504,11 +528,11 @@ colsxy = max(colxNum, colyNum)
 inFilesNum = len(args)
 if inFilesNum == 1:
 	inFile = args[0]
-	print colsxy
-	print len(args)
+	print(colsxy)
+	print(len(args))
 	while colsxy > len(args):
 		args.append(inFile)
-		print args
+		print(args)
 if type(option.xmin) != type(list()):    option.xmin = list([None])
 if type(option.xmax) != type(list()):    option.xmax = list([None])
 if type(option.ymin) != type(list()):    option.ymin = list([None])
@@ -692,12 +716,12 @@ else:
         else:
             option.olw[idx] = list()
 
-print 'olw: ', option.olw
+print('olw: ', option.olw)
 # sys.exit()
-print "Yoperations: "
-print Yoperations
-print "Yoperation values"
-print YoperationValues
+print("Yoperations: ")
+print(Yoperations)
+print("Yoperation values")
+print(YoperationValues)
 # sys.exit()
 
 if len(option.meridians.split(',')) == 1:
@@ -730,7 +754,7 @@ if len(option.parallels.split(',')) == 1:
 else:
     parallels = array([ toFloat(v) for v in option.parallels.split(',') ])
 
-print meridians    
+print(meridians)    
 for pt in option.plotType:
     if pt == "map" or pt == "sphere":
         option.xlabel = list(['None'])
@@ -850,31 +874,42 @@ globalMaskedPointsMarkers = []
 globalNfiles = 0
 
 def printInteractiveHelp():
-    print "The following keys are active in the mask making mode:"
-    print "space - sets and stores a new [hv]line and prints its info on terminal"
-    print "d - deletes the last added 'selected line'"
-    print "p - prints the information on the stored lines"
-    print "w - saves the defined lines information to file called selectedMaskLines.txt and selectedMaskRanges.txt it also stores the binning information"
-    print "e - do the spike extraction: save the list of ranges and levels to be removed, run the extract_spikes program and plot results in a new window"
-    print "c - toggle cursor as cross"
-    print "v - toggle spanner"
-    print "f1 - prints this help"
-    print "f2 - mark and add 'selected like'"
-    print "f3 - toggle selectedLines edit mode and maskRanges edit mode"
-    print "f4 - toggle spanner for electing lines"
-    print "D - mark points for creating mask using picker "
-    print "Q - mark points for creating mask using lasso "
-    print "M - write data mask to file"
-    print "m - load data mask from file"
-    print "P - set period for the periodic operations"
-    print ""
-    print "1-mouse button - view info on selected point"
-    print "2-mouse button - remove closest selectedLine/maskRange"
+    print("The following keys are active in the mask making mode:")
+    print("space - sets and stores a new [hv]line and prints its info on terminal")
+    print("d - deletes the last added 'selected line'")
+    print("p - prints the information on the stored lines")
+    print("w - saves the defined lines information to file called selectedMaskLines.txt and selectedMaskRanges.txt it also stores the binning information")
+    print("e - do the spike extraction: save the list of ranges and levels to be removed, run the extract_spikes program and plot results in a new window")
+    print("c - toggle cursor as cross")
+    print("v - toggle spanner")
+    print("f1 - prints this help")
+    print("f2 - mark and add 'selected like'")
+    print("f3 - toggle selectedLines edit mode and maskRanges edit mode")
+    print("f4 - toggle spanner for electing lines")
+    print("D - mark points for creating mask using picker ")
+    print("Q - mark points for creating mask using lasso ")
+    print("M - write data mask to file")
+    print("m - load data mask from file")
+    print("P - set period for the periodic operations")
+    print("")
+    print("1-mouse button - view info on selected point")
+    print("2-mouse button - remove closest selectedLine/maskRange")
 
+
+def get_basename_ext(fname):
+    '''
+    return triple dirname,basename and file extension
+    '''
+    fname_base=os.path.basename(fname)
+    l=fname_base.split('.')
+    fnamenoext='.'.join(l[:-1])
+    ext=l[-1]
+    
+    return os.path.dirname(fname),fnamenoext,ext
 
 #--------------------------------------------------------------------------------------------------------
 def loadMask(m):
-    print 'Loading mask file: ', m
+    print('Loading mask file: ', m)
     tmp = np.loadtxt(m)
     tmp = np.asarray(tmp)
     tmp = tmp.reshape([-1, 2])
@@ -887,15 +922,15 @@ def plotButtons(ax):
 
 
 def printCurrentMaskRanges():
-    print "Current mask ranges are:"
-    print maskRanges
+    print("Current mask ranges are:")
+    print(maskRanges)
 def printCurrentMaskLines():
-    print 'Current mask lines are:'
-    print maskLines
+    print('Current mask lines are:')
+    print(maskLines)
 
 def printSelectedLines():
-    print 'Selected lines are:'
-    print selectedLines
+    print('Selected lines are:')
+    print(selectedLines)
 
 
 def plotSelectedLines():
@@ -964,7 +999,7 @@ def calculatePlotID(dsIdx, figRows, figCols):
 
 
 def isNewPlot(i, figRows, figCols):
-    print 'DEBUG: ', i, figRows, figCols
+    print('DEBUG: ', i, figRows, figCols)
     t, k = calculatePlotID(i, figRows, figCols)
     if k == 0:
         return True
@@ -1059,11 +1094,11 @@ def deleteAllMaskRanges(event):
     makePeriodicMask(p)
     
 def makePeriodicMask(samplesNum):
-    print 'samples: ', samplesNum
+    print('samples: ', samplesNum)
     global maskRanges
     global periodicMaskSamplesNumer
     global globalCurrentDatasetX
-    print 'len(maskRanges): ', len(maskRanges)
+    print('len(maskRanges): ', len(maskRanges))
     
     if periodicMaskSamplesNumer == 1.0 and len(maskRanges) >= 2:
         xmin = maskRanges[-1][0]
@@ -1072,11 +1107,11 @@ def makePeriodicMask(samplesNum):
         xMax, err = cpedsPythCommon.readUserValue('enter xmax value to proceed with the mask', 'float', 0)
         x = xmin
         i = 1
-        print 'xMax: ', xMax
-        print 'x: ', x
+        print('xMax: ', xMax)
+        print('x: ', x)
         while x < xMax:
             r = [xmin + i * delta, xmax + i * delta]
-            print 'adding range: ', r
+            print('adding range: ', r)
             maskRanges.append(r)
             axvspan(r[0], r[1], facecolor='b', edgecolor=None, alpha=0.3, zorder=-100)
             x = xmax + i * delta
@@ -1127,7 +1162,7 @@ def saveLastBinnedSpectra():
     global saveWidgetMain
     fname = saveWidget.get().strip()
     np.savetxt(fname, lastBinnedSpectra)
-    print "saved spectra to file: " + fname
+    print("saved spectra to file: " + fname)
     saveWidgetMain.destroy()
     saveWidgetMain = None
 
@@ -1136,10 +1171,10 @@ def saveLastBinnedSpectra():
 def deleteAllMaskLines(event):
         axes(plotAxes)
         global maskLines
-        print "mask lines" + str(len(maskLines))
-        print "gca lines" + str(len(gca().lines))
+        print("mask lines" + str(len(maskLines)))
+        print("gca lines" + str(len(gca().lines)))
         st = len(gca().lines) - 2 * len(maskLines)
-        print "st" + str(st)
+        print("st" + str(st))
         del gca().lines[st:len(gca().lines)]
         maskLines = []
         draw()
@@ -1172,10 +1207,10 @@ def deleteLastSelectedLine(n=1):
         sl = axes(plotAxes).lines
         i = len(sl) - 1
         d = n
-        print "selected lines count" + str(len(sl))
+        print("selected lines count" + str(len(sl)))
         while i >= 0:
-            print i
-            print sl[i].get_label()
+            print(i)
+            print(sl[i].get_label())
             if sl[i].get_label() == 'selected lines':
 #                sl.pop(i)
                 del sl[i]
@@ -1193,10 +1228,10 @@ def clearSelectedLines():
         
     sl = axes(plotAxes).lines
     i = len(sl) - 1
-    print "selected lines count " + str(len(sl))
+    print("selected lines count " + str(len(sl)))
     while i >= 0:
-        print i
-        print sl[i].get_label()
+        print(i)
+        print(sl[i].get_label())
         if sl[i].get_label() == 'selected lines':
             sl.pop(i)
         i = i - 1
@@ -1208,18 +1243,18 @@ def clearSelectedLine(n):
     sl = axes(plotAxes).lines
     i = 0
     k = 0
-    print "selected lines count " + str(len(sl))
+    print("selected lines count " + str(len(sl)))
     while i < len(sl):
-        print "i: " + str(i)
-        print "k: " + str(k)
-        print sl[i].get_label()
+        print("i: " + str(i))
+        print("k: " + str(k))
+        print(sl[i].get_label())
         if sl[i].get_label() == 'selected lines':
             if k == n:
                 del sl[i]
                 i = len(sl)
-                print "removed"
+                print("removed")
             else:
-                print "not removed"
+                print("not removed")
             k = k + 1
         i = i + 1
         
@@ -1228,7 +1263,7 @@ def clearSelectedLine(n):
 def deleteSelectedLine(event):
     sl = axes(plotAxes).lines
 #        i=len(sl)-1
-    print "selected lines count" + str(len(sl))
+    print("selected lines count" + str(len(sl)))
     x = event.xdata
     y = event.ydata
     slt = array(selectedLines)
@@ -1269,9 +1304,9 @@ def loadDataPointsMask():
     global globalCurrentDatasetY
     
     fname = args[globalCurrentDatasetIdx] + '.mask'
-    print 'loading data points mask from file: ', fname
+    print('loading data points mask from file: ', fname)
     globalMaskedPointsMap = np.loadtxt(fname, dtype=int)
-    print globalMaskedPointsMap
+    print(globalMaskedPointsMap)
     
     globalMaskedPointsMarkers = []
 
@@ -1297,9 +1332,9 @@ def maskLastPickedDataPoint(event):
 #    for i in range(len(globalMaskedPointsMarkers)):
 #        if globalMaskedPointsMarkers[i]==event.artist:
 #            remove.append(artist)
-    print 'event.ind: ', event.ind
+    print('event.ind: ', event.ind)
 #    remove = [artist for artist in globalMaskedPointsMarkers if event.artist.contains(artist)]
-    print globalMaskedPointsMarkers
+    print(globalMaskedPointsMarkers)
 
     if all(globalMaskedPointsMap[event.ind]) == 0:
         globalMaskedPointsMap[event.ind] = 1
@@ -1308,13 +1343,13 @@ def maskLastPickedDataPoint(event):
             if globalMaskedPointsMarkers[i][1] in event.ind:
 #                globalMaskedPointsMarkers[i][0].remove()
                 remove.append(i)
-        print 'remove'
-        print remove
+        print('remove')
+        print(remove)
         if len(remove) > 0:
             remove = sorted(remove, reverse=True)
         ax = gca()
-        print remove
-        print ax.lines
+        print(remove)
+        print(ax.lines)
         for r in remove:
             del(ax.lines[r])
             del(globalMaskedPointsMarkers[r])
@@ -1323,15 +1358,15 @@ def maskLastPickedDataPoint(event):
         for idx in event.ind:
             x = globalCurrentDatasetX[idx]
             y = globalCurrentDatasetY[idx]
-            print 'this point will be masked'
+            print('this point will be masked')
             axes(plotAxes)
             PT, = plot(x, y, 'x', ms=option.ps[globalCurrentDatasetIdx % len(option.ps)] + 1, color='r', picker=True)
             globalMaskedPointsMarkers.append([PT, idx])
-            print len(gca().lines)
+            print(len(gca().lines))
         
 #    event.artist.remove()
 #    print 'event.ind: ',event.ind
-    print globalMaskedPointsMap
+    print(globalMaskedPointsMap)
      
 #    if not remove:
 #        x=globalCurrentDatasetX[event.ind]
@@ -1373,13 +1408,13 @@ def maskLastLassoDataPoints(ind):
         for i in range(len(globalMaskedPointsMarkers)):
             if globalMaskedPointsMarkers[i][1] in ind:
                 remove.append(i)
-        print 'remove'
-        print remove
+        print('remove')
+        print(remove)
         if len(remove) > 0:
             remove = sorted(remove, reverse=True)
         ax = gca()
-        print remove
-        print ax.lines
+        print(remove)
+        print(ax.lines)
         for r in remove:
             del(ax.lines[r])
             del(globalMaskedPointsMarkers[r])
@@ -1388,13 +1423,13 @@ def maskLastLassoDataPoints(ind):
         for idx in ind:
             x = globalCurrentDatasetX[idx]
             y = globalCurrentDatasetY[idx]
-            print 'this point will be masked'
+            print('this point will be masked')
             axes(plotAxes)
             PT, = plot(x, y, 'x', ms=option.ps[globalCurrentDatasetIdx % len(option.ps)] + 1, color='r', picker=True)
             globalMaskedPointsMarkers.append([PT, idx])
-            print len(gca().lines)
+            print(len(gca().lines))
         
-    print globalMaskedPointsMap
+    print(globalMaskedPointsMap)
     draw()
 
 
@@ -1466,8 +1501,8 @@ def extractSpikes(event):
         tmpax.plot(spectra[:, 0], spectra[:, 1], dsStyle[0], label=dsName[0] + "(" + DA[j] + ") no spikes", alpha=.5, picker=False)
         spectra2 = loadPower(s + '.bin')
         tmpax.plot(spectra2[:, 0], spectra2[:, 1], dsStyle[1] + 'v', label=dsName[0] + "(" + DA[j] + ") no spikes bin", alpha=.5, picker=False)
-        print "Binned spectra consists of %li points" % len(spectra2[:, 1])
-        print "Binned spectra consists of %li points" % len(spectra2[:, 1])
+        print("Binned spectra consists of %li points" % len(spectra2[:, 1]))
+        print("Binned spectra consists of %li points" % len(spectra2[:, 1]))
 
         setupAxes(spectra, 'loglinear', tmpax, False, False, False)
         global lastBinnedSpectra
@@ -1477,7 +1512,7 @@ def extractSpikes(event):
 
 
 def simplifyMask(mask):
-    print "* Removing redundant mask ranges"
+    print("* Removing redundant mask ranges")
     i = 0
     j = 0
     rr = 0
@@ -1485,7 +1520,7 @@ def simplifyMask(mask):
         j = 0
         while j < len(mask):
             if i != j and mask[i][0] <= mask[j][0] and mask[i][1] >= mask[j][1]:
-                print "mask range: (%lf, %lf) includes (%lf, %lf). I will remove it." % (mask[i][0], mask[i][1], mask[j][0], mask[j][1])
+                print("mask range: (%lf, %lf) includes (%lf, %lf). I will remove it." % (mask[i][0], mask[i][1], mask[j][0], mask[j][1]))
                 mask.pop(j)
                 j = j - 1
                 if i > j: i = i - 1
@@ -1493,7 +1528,7 @@ def simplifyMask(mask):
 #            print "i: %li j: %li\n" % (i,j)
             j = j + 1
         i = i + 1
-    print "* DONE. Removed %li redundant mask ranges" % rr
+    print("* DONE. Removed %li redundant mask ranges" % rr)
 
     return mask, rr
 
@@ -1512,12 +1547,12 @@ def on_key(event):
         fn = dsName[0] + "-" + DA[0] + '.selectedLines.txt'
         sl = array(selectedLines)
         np.savetxt(fn, sl)
-        print "selected lines saved to file: " + fn
+        print("selected lines saved to file: " + fn)
 
     if event.key == 'f2':
         xdata = event.xdata
         ydata = event.ydata
-        print "adding new point data: %lf, %fE" % (xdata, ydata)
+        print("adding new point data: %lf, %fE" % (xdata, ydata))
         selectedLines.append([xdata, ydata])
 #        sl=axes(ax1).lines
 #        sl.append
@@ -1528,19 +1563,19 @@ def on_key(event):
 
     if event.key == 'f3':
         if selectedLinesMode == False:
-            print "* SETTING SELECTED LINES MODE ON (2-MOUSE BUTTON WILL REMOVE SELECTED LIES)"
+            print("* SETTING SELECTED LINES MODE ON (2-MOUSE BUTTON WILL REMOVE SELECTED LIES)")
             selectedLinesMode = True
         else:
-            print "* SETTING SELECTED LINES MODE OFF (2-MOUSE BUTTON WILL REMOVE SELECTED MASK RANGE)"
+            print("* SETTING SELECTED LINES MODE OFF (2-MOUSE BUTTON WILL REMOVE SELECTED MASK RANGE)")
             selectedLinesMode = False
 
 
     if event.key == 'f4':
         toggleSpannerSelectLines(event)
         if (spannerSelectLinesOn):
-            print "spanner SelectLines is ON"
+            print("spanner SelectLines is ON")
         else:
-            print "spanner SelectLines is OFF"
+            print("spanner SelectLines is OFF")
 
 
 
@@ -1553,7 +1588,7 @@ def on_key(event):
 #        fn='selectedMaskLines.txt';
         mask = array(maskLines)
         np.savetxt(fn, mask)
-        print "mask lines saved to file: " + fn
+        print("mask lines saved to file: " + fn)
         fn = 'lastPlotFunction.selectedMaskRanges.txt'
 #        fn='selectedMaskRanges.txt';
 
@@ -1561,12 +1596,12 @@ def on_key(event):
         i = len(mask) - 1
         while i >= 0:
             if abs(mask[i][1] - mask[i][0]) < 1e-5:
-                print "removing empty range: %lE %lE\n" % (mask[i][0], mask[i][1])
+                print("removing empty range: %lE %lE\n" % (mask[i][0], mask[i][1]))
                 mask.pop(i)
             i = i - 1
         mask, rr = simplifyMask(mask)
         np.savetxt(fn, array(mask))
-        print "mask ranges saved to file: " + fn
+        print("mask ranges saved to file: " + fn)
 
 #        fn=dsName[0]+"."+DA[0]+'.selectedBinning.txt'
 #        selectedBinning=array([binningParams['st'],binningParams['bw'],binningParams['gm']])
@@ -1580,23 +1615,23 @@ def on_key(event):
     if event.key == 'v':
         toggleSpanner(event)
         if spannerOn:
-            print "spanner is ON"
+            print("spanner is ON")
         else:
-            print "spanner is OFF"
+            print("spanner is OFF")
 
     if event.key == 'P':
-        periodicMaskSamplesNumer = float(raw_input('Enter samples number: (1 to read from the last two spans)'))
+        periodicMaskSamplesNumer = float(input('Enter samples number: (1 to read from the last two spans)'))
 #        periodicMaskSamplesNumer,err=cpedsPythCommon.readUserValue('Enter samples number', 'float', '10')
 #        if err==0:
         makePeriodicMask(periodicMaskSamplesNumer)
             
     if event.key == ' ':
-        print event.xdata, event.ydata
+        print(event.xdata, event.ydata)
         line = axhline(y=event.ydata, xmax=1, color='r', lw=2)
         line = axvline(x=event.xdata, ymax=1, color='r', lw=2)
 #        linesData.append([event.xdata, event.ydata])
         last = len(maskLines) - 1
-        print last
+        print(last)
         if (len(maskLines) == 0):
             maskLines.append([event.xdata, 138, event.ydata])
         else:
@@ -1615,10 +1650,10 @@ def on_key(event):
         global globalDeleteDataMode
         if globalDeleteDataMode:
             globalDeleteDataMode = False
-            print 'globalDeleteDataMode: OFF'
+            print('globalDeleteDataMode: OFF')
         else:
             globalDeleteDataMode = True
-            print 'globalDeleteDataMode: ON'
+            print('globalDeleteDataMode: ON')
 #        x = event.xdata
 #        y = event.ydata
 #        ind = event.ind
@@ -1628,10 +1663,10 @@ def on_key(event):
         global globalLassoDataMode
         if globalLassoDataMode:
             globalLassoDataMode = False
-            print 'globalLassoDataMode: OFF'
+            print('globalLassoDataMode: OFF')
         else:
             globalLassoDataMode = True
-            print 'globalLassoDataMode: ON'
+            print('globalLassoDataMode: ON')
             global globalCurrentDatasetX, globalCurrentDatasetY, globalLassoManager
 #             print 'globalCurrentDataset'
 #             print globalCurrentDataset
@@ -1644,13 +1679,13 @@ def on_key(event):
     if event.key == 'M':
         global globalMaskedPointsMap
         fname = args[globalCurrentDatasetIdx] + '.mask'
-        print 'saving data mask to file: ', fname
+        print('saving data mask to file: ', fname)
         np.savetxt(fname, globalMaskedPointsMap.reshape((len(globalMaskedPointsMap), 1)), fmt='%i')
         fnameIn = args[globalCurrentDatasetIdx]
         fnameMasked = fnameIn + '.masked'
         fnameSelected = fnameIn + '.selected'
         if option.fits:
-            print 'using read data: ', fnameIn
+            print('using read data: ', fnameIn)
             data = globalCurrentDataset
             data = np.hstack([data, globalMaskedPointsMap.reshape((len(globalMaskedPointsMap), 1))])
             dataMasked = data[data[:, -1] == 1]
@@ -1660,19 +1695,19 @@ def on_key(event):
             dataSelected = dataSlected[:, 0:-1]
             np.savetxt(fnameSelected, dataSelected)
         else:
-            print 'reading data from file: ', fnameIn
+            print('reading data from file: ', fnameIn)
             file = open(fnameIn, 'r')
             data = np.array(file.readlines())
             file.close()
 #             data=globalCurrentDataset
             mask = globalMaskedPointsMap.reshape((len(globalMaskedPointsMap), 1))
-            print mask
+            print(mask)
 #             data=np.hstack([data,globalMaskedPointsMap])
 #             data=np.hstack([
 #                 data.reshape((len(globalMaskedPointsMap),1)),
 #                 globalMaskedPointsMap.reshape((len(globalMaskedPointsMap),1))
 #                 ])
-            print 'saving masked data to file: ', fnameMasked
+            print('saving masked data to file: ', fnameMasked)
 #            print data
             dataMasked = data[mask[:, -1] == 1]
             #        print dataMasked
@@ -1743,7 +1778,7 @@ def maskMaskedPointsMapRange(vmin, vmax, val=0):
     idx = np.argwhere(np.logical_and(globalCurrentDatasetX >= vmin, globalCurrentDatasetX <= vmax))
     globalMaskedPointsMap[idx] = val
     
-    print globalMaskedPointsMap
+    print(globalMaskedPointsMap)
 
 # def onclick(event):
 #    print 'button=%d, x=%d, y=%d, xdata=%f, ydata=%f'%(
@@ -1765,7 +1800,7 @@ def deletePointedMaskRange(event):
 
     axes(plotAxes)
     x = event.xdata
-    print "removing at x=%f " % x
+    print("removing at x=%f " % x)
     i = len(maskRanges) - 1
     while i >= 0:
 
@@ -1808,7 +1843,7 @@ def on_pick(event):
             xdata = thisline.get_xdata()
             ydata = thisline.get_ydata()
             ind = event.ind
-            print 'selected point data:', zip(np.take(xdata, ind), np.take(ydata, ind))
+            print('selected point data:', list(zip(np.take(xdata, ind), np.take(ydata, ind))))
 #        if isinstance(artist, AxesImage):
 #            im = artist
 #            A = im.get_array()
@@ -1825,7 +1860,7 @@ def on_pick(event):
 #            print r
 #            print 'selected point data:', zip(np.take(xdata, ind), np.take(ydata, ind), ind , np.take(scatterGlobalData,ind))
 #            print globalCurrentDataset
-            print 'selected point data:', globalCurrentDataset[ind]
+            print('selected point data:', globalCurrentDataset[ind])
             if globalDeleteDataMode:
                  maskLastPickedDataPoint(event)
 
@@ -1908,28 +1943,28 @@ def onMapPick(event):
     global inFile
     x = event.pickx
     y = event.picky
-    print 'onMapPick line:', x, y
+    print('onMapPick line:', x, y)
     l, b = projectMap(x, y, inverse=True)
     l = 360 - l
     if l > 360:
         l = l - 360
-    print 'converted coordinates: (l,b)=(%lf, %lf)' % (l, b)
+    print('converted coordinates: (l,b)=(%lf, %lf)' % (l, b))
     
     # find the indexes of the data in the lon and lat data for the current plot
     # find lon index
-    lonIdx = min(range(len(inFile[globalCurrentDatasetIdx][1])), key=lambda i: abs(inFile[globalCurrentDatasetIdx][1][i] - l))
-    print lonIdx, inFile[globalCurrentDatasetIdx][1][lonIdx]
+    lonIdx = min(list(range(len(inFile[globalCurrentDatasetIdx][1]))), key=lambda i: abs(inFile[globalCurrentDatasetIdx][1][i] - l))
+    print(lonIdx, inFile[globalCurrentDatasetIdx][1][lonIdx])
     # find lat index
-    latIdx = min(range(len(inFile[globalCurrentDatasetIdx][2])), key=lambda i: abs(inFile[globalCurrentDatasetIdx][2][i] - b))
-    print latIdx, inFile[globalCurrentDatasetIdx][2][latIdx]
-    print "data lon: %f, lat: %f" % (inFile[globalCurrentDatasetIdx][1][lonIdx], inFile[globalCurrentDatasetIdx][2][latIdx])
+    latIdx = min(list(range(len(inFile[globalCurrentDatasetIdx][2]))), key=lambda i: abs(inFile[globalCurrentDatasetIdx][2][i] - b))
+    print(latIdx, inFile[globalCurrentDatasetIdx][2][latIdx])
+    print("data lon: %f, lat: %f" % (inFile[globalCurrentDatasetIdx][1][lonIdx], inFile[globalCurrentDatasetIdx][2][latIdx]))
     lonIdx = -lonIdx
 #    lonIdx=lonIdx+round(len(inFile[globalCurrentDatasetIdx][1])/2)
     if lonIdx > len(inFile[globalCurrentDatasetIdx][1]):
         lonIdx = lonIdx - len(inFile[globalCurrentDatasetIdx][1] - 1)
-    print "lonIdx: %i" % lonIdx
-    print np.shape(inFile[globalCurrentDatasetIdx][0])
-    print "data value: %f" % (inFile[globalCurrentDatasetIdx][0][latIdx][lonIdx])
+    print("lonIdx: %i" % lonIdx)
+    print(np.shape(inFile[globalCurrentDatasetIdx][0]))
+    print("data value: %f" % (inFile[globalCurrentDatasetIdx][0][latIdx][lonIdx]))
 
 
 
@@ -1975,7 +2010,7 @@ class LassoManager(object):
 #         facecolors = self.collection.get_facecolors()
         p = path.Path(verts)
         ind = p.contains_points(self.xys)
-        print ind
+        print(ind)
         maskLastLassoDataPoints(ind)
 #         print self.xys
 #        for i in range(len(self.xys)):
@@ -2015,13 +2050,36 @@ def formatXaxisDates(figIdx):
 #                yearsFmt = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
 
     ax = gca()
-    print(option.dateFmtPlot)
+    print((option.dateFmtPlot))
 #     yearsFmt = mdates.DateFormatter("%Y-%m-%d\n%H:%M:%S")
-    yearsFmt = mdates.DateFormatter(option.dateFmtPlot.decode("unicode_escape"))
-    ax.xaxis.set_major_formatter(yearsFmt)
-    # format the ticks
-    ax.xaxis.set_major_locator(days)
-    ax.xaxis.set_major_formatter(yearsFmt)
+    if isinstance(option.dateFmtPlot, str):
+        yearsFmt = mdates.DateFormatter(option.dateFmtPlot)
+    else:
+        yearsFmt = mdates.DateFormatter(option.dateFmtPlot.decode("unicode_escape"))
+
+
+    if option.dateFmtPlot=='concise':
+        '''
+        '''
+        import matplotlib.dates as mdates
+        import matplotlib.units as munits
+        try:
+            converter = mdates.ConciseDateConverter()
+            munits.registry[np.datetime64] = converter
+            munits.registry[datetime.date] = converter
+            munits.registry[datetime.datetime] = converter
+            locator = mdates.AutoDateLocator(minticks=5, maxticks=7)
+            dateFormatter = mdates.ConciseDateFormatter(locator)
+            ax.xaxis.set_major_locator(locator)
+            ax.xaxis.set_major_formatter(dateFormatter)
+        except:
+            raise
+            pass
+    else:
+        ax.xaxis.set_major_formatter(yearsFmt)
+        # format the ticks
+        ax.xaxis.set_major_locator(days)
+        ax.xaxis.set_major_formatter(yearsFmt)
 #                 ax.xaxis.set_minor_locator(hours)
 #                 ax.xaxis.set_minor_locator(None)
 
@@ -2054,17 +2112,17 @@ def formatXaxisDates(figIdx):
     if globalCurrentDatasetX != None:
         datemin = globalCurrentDatasetX[0]
         datemax = globalCurrentDatasetX[-1]
-        print datemin
-        print datemax
-    print option.datexmin[figIdx % len(option.datexmin)]
-    print option.datexmax
+        print(datemin)
+        print(datemax)
+    print(option.datexmin[figIdx % len(option.datexmin)])
+    print(option.datexmax)
     if option.datexmin[figIdx % len(option.datexmin)] != -1:
         datemin = datetime.datetime.strptime(option.datexmin[figIdx % len(option.datexmin)], option.dateFmt)
     if option.datexmax[figIdx % len(option.datexmax)] != -1:
         datemax = datetime.datetime.strptime(option.datexmax[figIdx % len(option.datexmax)], option.dateFmt)
 
     if datemin != '' and datemax != '':
-        print 'datemin,datemax: ', datemin, datemax
+        print('datemin,datemax: ', datemin, datemax)
         ax.set_xlim(datemin, datemax)
 #                ax.format_xdata = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
 #                fig.autofmt_xdate()
@@ -2074,12 +2132,12 @@ def formatXaxisDates(figIdx):
         ymin = option.ymin[figIdx % len(option.ymin)]
     if option.ymax[figIdx % len(option.ymax)] != None:
         ymax = option.ymax[figIdx % len(option.ymax)]
-    print 'setting y limits: %f, %f' % (ymin, ymax)
+    print('setting y limits: %f, %f' % (ymin, ymax))
 #                ylim([ymin,ymax])
     ax.set_ylim(ymin, ymax)
-    print
-    print 'Setting xticklabels rotation: ', option.Rxlabels    
-    print
+    print()
+    print('Setting xticklabels rotation: ', option.Rxlabels)    
+    print()
     setp(ax.get_xticklabels(), rotation=option.Rxlabels, horizontalalignment='center', verticalalignment='top') 
     setp(ax.get_yticklabels(), rotation=option.Rylabels) 
     xticks(rotation=option.Rxlabels)
@@ -2116,8 +2174,8 @@ def filterRows(dataset, i):
 
 def filterData(data, dataFilter, colNames=""):
     for f in dataFilter.split(','):
-        print
-        print "applying data filter: %s" % f
+        print()
+        print("applying data filter: %s" % f)
         filterType = ""
         filter = f.split('==')
         if len(filter) != 2:
@@ -2129,7 +2187,7 @@ def filterData(data, dataFilter, colNames=""):
                     if len(filter) != 2:
                         filter = f.split('>')
                         if len(filter) != 2:
-                            print "unknown filter format, skipping"
+                            print("unknown filter format, skipping")
                         else:
                             filterType = ">"
                     else:
@@ -2145,10 +2203,10 @@ def filterData(data, dataFilter, colNames=""):
     
             filterName = filter[0]
             filterValue = float(filter[1])
-            print "filterType: %s" % filterType
-            print "filterName: %s" % filterName
-            print "filterValue: %s" % filterValue
-            print "searching for the requested column name"
+            print("filterType: %s" % filterType)
+            print("filterName: %s" % filterName)
+            print("filterValue: %s" % filterValue)
+            print("searching for the requested column name")
             colIdx = -1
             i = 0
             if type(colNames) == type(list()):
@@ -2157,9 +2215,9 @@ def filterData(data, dataFilter, colNames=""):
                         colIdx = i
                     i = i + 1
                 if colIdx == -1:
-                    print "error, filter name not found"
+                    print("error, filter name not found")
                 else:
-                    print "ok, filter name found in column %i" % colIdx
+                    print("ok, filter name found in column %i" % colIdx)
                     if filterType == "==":
                         data = data[data[:, colIdx] == filterValue]
                     if filterType == ">=":
@@ -2173,7 +2231,7 @@ def filterData(data, dataFilter, colNames=""):
                         
                             
     
-        print "filtered data has now: %i rows" % len(data)
+        print("filtered data has now: %i rows" % len(data))
         
         
         
@@ -2201,7 +2259,7 @@ def performXdataOperations(datax, i):
 
 def performYdataOperations(datay, i):
     if len(Yoperations) > 0:
-        print "performing Yoperations for dataset " + str(i)
+        print("performing Yoperations for dataset " + str(i))
         if Yoperations[i % len(Yoperations)] == '+':
             datay = datay + YoperationValues[i % len(YoperationValues)]
         if Yoperations[i % len(Yoperations)] == '-':
@@ -2370,17 +2428,17 @@ def getDataMinMaxValues(ax, datax, datay, datasetNo):
         return minx, maxx, miny, maxy
         
     xmin, xmax, ymin, ymax = ax.axis()
-    print "getDataMinMaxValues: ax"
-    print xmin, xmax, ymin, ymax
+    print("getDataMinMaxValues: ax")
+    print(xmin, xmax, ymin, ymax)
 
     minx, maxx, miny, maxy = getDataMinMaxValues2(datax, datay)
     if datasetNo == 0:
-        print 'minx,maxx,miny,maxy: data'
-        print minx, maxx, miny, maxy
+        print('minx,maxx,miny,maxy: data')
+        print(minx, maxx, miny, maxy)
         return minx, maxx, miny, maxy
     
-    print "getDataMinMaxValues: data"
-    print minx, maxx, miny, maxy
+    print("getDataMinMaxValues: data")
+    print(minx, maxx, miny, maxy)
     if minx < xmin:
         xmin = minx;
     if miny < ymin:
@@ -2398,10 +2456,10 @@ def loadDataFromUDP(UDPparams):
     UDPparams = UDPparams.split("=")
     UDPaddr = UDPparams[1].split(":")
     if len(UDPaddr) != 4:
-        print "WRONG UDP format. Should be UDP=host:port:multicast_flag:number_of_UDP_packets_to_read"
-        print "where:"
-        print "multicast_flag = 0 for non-multicast; 1 - for multi-cast"
-        print "number_of_UDP_packets_to_read - number of UDP packages to read from the socket before plotting"
+        print("WRONG UDP format. Should be UDP=host:port:multicast_flag:number_of_UDP_packets_to_read")
+        print("where:")
+        print("multicast_flag = 0 for non-multicast; 1 - for multi-cast")
+        print("number_of_UDP_packets_to_read - number of UDP packages to read from the socket before plotting")
         sys.exit(-1)
     HOST = UDPaddr[0]
     PORT = UDPaddr[1]
@@ -2412,10 +2470,10 @@ def loadDataFromUDP(UDPparams):
     udpCount = int(UDPaddr[3])
     
     
-    print 'listening to port: ', PORT
-    print 'interface: ', HOST
-    print 'multicast: ', isMULTICAST
-    print 'UDP datagrams to read:', udpCount
+    print('listening to port: ', PORT)
+    print('interface: ', HOST)
+    print('multicast: ', isMULTICAST)
+    print('UDP datagrams to read:', udpCount)
 #     while 1:
     bindata = cpedsPythCommon.getUDPdatagram(HOST, int(PORT), udpCount, isMULTICAST)
     adata = list()
@@ -2428,8 +2486,13 @@ def loadDataFromUDP(UDPparams):
     return adata 
     
 def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples=-1, colx=0, coly=1, badX='None', badY='None'):
-    d = np.loadtxt(args[i])
-    print startFrom, rowsCount, loadEvery
+    if fname.endswith('.csv'):
+        d=np.genfromtxt(fname, delimiter=',', skip_header=option.CSVheader, dtype=str)
+    else:
+        d = np.loadtxt(fname, dtype=str)
+        
+#         if option.dateFmt
+    print(startFrom, rowsCount, loadEvery)
     if rowsCount == 0:
         d = d[startFrom::loadEvery]
     else:
@@ -2448,8 +2511,9 @@ def loadDataFromFileStd(fname, startFrom=0, rowsCount=0, loadEvery=1, binSamples
             mean = np.add.reduceat(data, slices[:-1]) / counts
             dbin.append(mean)
         d = np.asanyarray(dbin).T
-    print fname
-    print d
+    print(fname)
+    print('Loaded data:')
+    print(d)
     return d
     
 def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery=1, binSamples=-1, badX='None', badY='None'):
@@ -2461,11 +2525,11 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
     global globalPlotTypeIdx
 
     if option.binDAQd:
-        print 'loading data from file using y-column: %i and x column: %li' % (coly, colx)
+        print('loading data from file using y-column: %i and x column: %li' % (coly, colx))
         import struct
         infile = open (fname, 'rb')
         if rowsCount == -1:
-            print 'loading 10000 records from input file'
+            print('loading 10000 records from input file')
             rowsCount = 10000
 
         for line in arange(rowsCount):
@@ -2486,9 +2550,9 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
         if option.plotType[globalPlotTypeIdx] == 'ts' or " " in option.dateFmt:
             loadingDataTimeWithSpace = option.dateFmt.count(' ')
             dateFmt=option.dateFmt.split()
-            print 'Loading time sequence data with space[s] in format - will load %i columns (%i:%i and %i)' % (loadingDataTimeWithSpace + 1, colx, colx + loadingDataTimeWithSpace, coly)
+            print('Loading time sequence data with space[s] in format - will load %i columns (%i:%i and %i)' % (loadingDataTimeWithSpace + 1, colx, colx + loadingDataTimeWithSpace, coly))
             
-        print 'loading data from file using y-column: %i and x column: %li' % (coly, colx)
+        print('loading data from file using y-column: %i and x column: %li' % (coly, colx))
         if rowsCount == -1:
             for line in infile:
                 if lineNo >= startFrom:
@@ -2528,12 +2592,12 @@ def loadDataFromFile(fname, colx=0, coly=1, startFrom=0, rowsCount=-1, loadEvery
                 if readRows == rowsCount: break
             
         infile.close()
-        print "loaded %i lines" % readRows
+        print("loaded %i lines" % readRows)
     
 #    print 'selecting every %i' % loadEvery
     loaded = array(l)
 #    loaded=loaded[::loadEvery]
-    print "selected %i lines" % len(loaded)
+    print("selected %i lines" % len(loaded))
     
     if badY!='None':
         loaded=loaded[loaded[:,1]!=badY]
@@ -2614,41 +2678,44 @@ def ZTicksFormatter(x, pos):
 #    return False
 
 def removeNans3(datax, datay, datac):
-    print "removing nans3"
+    print("removing nans3")
     tmp = np.array(np.concatenate([[datax], [datay], [datac]], axis=0).T,dtype=np.float64)
-    print "data length before nan removal: %li" % len(datax)
+    print("data length before nan removal: %li" % len(datax))
 #    print tmp
     tmp = tmp[~np.isnan(tmp).any(axis=1)]
 #    print tmp
     datax = tmp[:, 0]
     datay = tmp[:, 1]
     datac = tmp[:, 2]
-    print "data length after nan removal: %li" % len(datax)
+    print("data length after nan removal: %li" % len(datax))
     return datax, datay, datac
 
 def removeNans2(datax, datay):
-    print "removing nans2"
-    print "data length before nan removal: %li" % len(datax)
-    tmp = np.array(np.concatenate([[datax], [datay]], axis=0).T,dtype=np.float64)
+    print("removing nans2")
+    print("data length before nan removal: %li" % len(datax))
+    try:
+        tmp = np.array(np.concatenate([[datax], [datay]], axis=0).T,dtype=np.float64)
+        tmp = tmp[~np.isnan(tmp).any(axis=1)]
 #    print tmp
-    tmp = tmp[~np.isnan(tmp).any(axis=1)]
-#    print tmp
-    datax = tmp[:, 0]
-    datay = tmp[:, 1]
-    print "data length after nan removal: %li" % len(datax)
+        datax = tmp[:, 0]
+        datay = tmp[:, 1]
+        print("data length after nan removal: %li" % len(datax))
+    except:
+        print("Could not remove nans")
+        pass
     return datax, datay
 
 def removeNans1(datax):
-    print "removing nans1"
-    print "data length before nan removal: %li" % len(datax)
+    print("removing nans1")
+    print("data length before nan removal: %li" % len(datax))
     tmp = np.asarray([datax], dtype='float').T
     tmp = tmp[~np.isnan(tmp).any(axis=1)]
     datax = tmp
-    print "data length after nan removal: %li" % len(datax)
+    print("data length after nan removal: %li" % len(datax))
     return datax
 
 def removeNegativesValues(datax, y1, y2):
-    print "removing negative values"
+    print("removing negative values")
     tmp = np.concatenate([[datax], [y1], [y2]], axis=0).T
 #    print tmp
     tmp = tmp[tmp[:, 1] > 0]
@@ -2662,9 +2729,9 @@ def removeNegativesValues(datax, y1, y2):
 
 
 def makeMayaViPlot(dataList):
-    print len(dataList)
+    print(len(dataList))
     for i in np.arange(len(dataList)):
-        print 'plotting dataset: ', i
+        print('plotting dataset: ', i)
         data = dataList[i]
         data *= option.MdataScale
         vvals = cpedsPythCommon.getFloatList(option.Mvrange)
@@ -2672,7 +2739,7 @@ def makeMayaViPlot(dataList):
             vvals[0] = np.amin(data)
             vvals[1] = np.amax(data)
             
-        print 'vvals: ', vvals
+        print('vvals: ', vvals)
     
         ###############################################################################################
         # mayaSurf type plot
@@ -2689,7 +2756,7 @@ def makeMayaViPlot(dataList):
         # mayaScat type plot
         ###############################################################################################
         if option.plotType[i] == 'mayaScat':
-            print data
+            print(data)
     #        mlab.pipeline.volume(mlab.pipeline.scalar_scatter(data))
             colx = option.colx[i % len(option.colx)]
             coly = option.coly[i % len(option.coly)]
@@ -2762,7 +2829,7 @@ def makeMayaViPlot(dataList):
             fname = option.outputFile
             mlab.savefig(fname, size=cpedsPythCommon.getFloatList(option.figSize))
         else:
-            print "no output file name given, will not save"
+            print("no output file name given, will not save")
     else:
         mlab.show()
 #                mlab.outline()
@@ -2771,7 +2838,7 @@ def makeMayaViPlot(dataList):
 
 def mkGrid(datax, datay, gridNbins):
     Nbinx = gridNbins[0]
-    print 'Nbinx', Nbinx
+    print('Nbinx', Nbinx)
     xmin = np.amin(datax)
     xmax = np.amax(datax)
     ymin = np.amin(datay)
@@ -2780,7 +2847,7 @@ def mkGrid(datax, datay, gridNbins):
     if option.logX:
         binsx = np.logspace(np.log10(xmin), np.log10(xmax), Nbinx)
     Nbiny = gridNbins[1]
-    print 'Nbiny', Nbiny
+    print('Nbiny', Nbiny)
     binsy = np.linspace(ymin, ymax, Nbiny)
     if option.logY:
         binsy = np.logspace(np.log10(ymin), np.log10(ymax), Nbiny)
@@ -2840,6 +2907,13 @@ def makeFunctionPlot(inFile):
     global globalCurrentDatasetX
     global globalCurrentDatasetY
     global globalNfiles
+    global globalCurrentDatasetIdx
+    global globalSubPlotGridSpec
+    global globalPlotDs
+    global globalAxes
+    global projectMap
+    global scatterGlobalData
+
     Nfiles = len(inFile)
     globalNfiles = Nfiles
     
@@ -2859,7 +2933,7 @@ def makeFunctionPlot(inFile):
 #    fig=figure(figsize=(float(figSize[0][0]),float(figSize[0][1])), dpi=option.DPIgui)
     
     figSize = cpedsPythCommon.getFloatList(option.figSize)
-    print figSize
+    print(figSize)
 
     if plotFig == None:
         fig = figure(figsize=(float(figSize[0]), float(figSize[1 % len(figSize)])), dpi=option.DPIgui)
@@ -2882,34 +2956,34 @@ def makeFunctionPlot(inFile):
     
     figCols = ast.literal_eval(option.figCols)
     figRows = ast.literal_eval(option.figRows)
-    print 'type(figCols): ', type(figCols)
-    print 'type(figRows): ', type(figRows)
+    print('type(figCols): ', type(figCols))
+    print('type(figRows): ', type(figRows))
     if type(figCols) == type(list()) and type(figRows) == type(list()):
-        print 'setting figCols and figRows'
+        print('setting figCols and figRows')
         option.figCols = figCols
         option.figRows = figRows
         figCols = len(option.figCols)
         figRows = len(option.figRows)
 
     if type(figCols) == type(list()):
-        print 'setting figCols'
+        print('setting figCols')
         option.figCols = figCols
         figCols = len(option.figCols)
-        print 'type(figCols): ', type(figCols)
-        print 'type(figRows): ', type(figRows)
+        print('type(figCols): ', type(figCols))
+        print('type(figRows): ', type(figRows))
         if type(figRows) == type(int):
-            print 'setting figRows2'
+            print('setting figRows2')
             option.figRows = list(figRows)
 
     if type(figRows) == type(list()):
-        print 'setting figRows'
+        print('setting figRows')
         option.figRows = figRows
         figRows = len(option.figRows)
-        print 'type(figCols): ', type(figCols)
-        print 'type(figRows): ', type(figRows)
+        print('type(figCols): ', type(figCols))
+        print('type(figRows): ', type(figRows))
         if type(figCols) == type(int):
             option.figCols = list([figCols])
-            print 'setting fig cols2'
+            print('setting fig cols2')
     
     
 #    figRows=int( np.floor( float(np.round(float(Nfiles) / option.dsPerPlot))/float(figCols) )  )
@@ -2917,14 +2991,14 @@ def makeFunctionPlot(inFile):
         figRows = 1
 #    print "np.round(float(Nfiles) / option.dsPerPlot): %lf" % np.round(float(Nfiles) / option.dsPerPlot)
 #    print " %.15lf" % (float(np.round(float(Nfiles) / option.dsPerPlot))/float(figCols))
-    print "figure plot cols: ", figCols
-    print "figure plot rows: ", figRows
-    print "figure plot cols: ", option.figCols
-    print "figure plot rows: ", option.figRows
-    print "figure datasets per plot: %i" % option.dsPerPlot
-    print "figure datasets distribution: %s" % option.plotDs
+    print("figure plot cols: ", figCols)
+    print("figure plot rows: ", figRows)
+    print("figure plot cols: ", option.figCols)
+    print("figure plot rows: ", option.figRows)
+    print("figure datasets per plot: %i" % option.dsPerPlot)
+    print("figure datasets distribution: %s" % option.plotDs)
     if type(option.figCols) == type(list()) or  type(option.figRows) == type(list()):
-        print 'adjusting subplots'
+        print('adjusting subplots')
         globalSubPlotGridSpec = gridspec.GridSpec(figRows, figCols, width_ratios=option.figCols, height_ratios=option.figRows)
 #     sys.exit(1)
 
@@ -2935,7 +3009,7 @@ def makeFunctionPlot(inFile):
     if plotAxes == None:
         if option.polar:
             ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], polar=True)
-            print "Making polar axes"
+            print("Making polar axes")
         elif option.proj3d:
             ax = fig.add_subplot(111, projection='3d')
         else:
@@ -2980,10 +3054,6 @@ def makeFunctionPlot(inFile):
     
 #    print option.colx
     plotTypeIdx = 0
-    global globalCurrentDatasetIdx
-    global globalSubPlotGridSpec
-    global globalPlotDs
-    global globalAxes
     ax = None
     for i in arange(Nfiles):
         if option.saveData:
@@ -2992,10 +3062,10 @@ def makeFunctionPlot(inFile):
 #         if option.transpose:
 #             inFile[i]=inFile[i].T
             
-        print "=================================================== PLOTTING DATASET %i ====================================================" % i
+        print("=================================================== PLOTTING DATASET %i ====================================================" % i)
         plotTypeIdx = i % len(option.plotType)
         globalCurrentDatasetIdx = i
-        figPlotNum = figRows * 100 + figCols * 10 + (i / option.dsPerPlot + 1)
+        figPlotNum = figRows * 100 + figCols * 10 + (i // option.dsPerPlot + 1)
         figIdx = int(i / option.dsPerPlot)
         newSubplot = True
         isLastDsInSubplot = False
@@ -3031,14 +3101,14 @@ def makeFunctionPlot(inFile):
             shareX=plotAxesList[0]
 
 
-        print "figure plot number: ", figPlotNum
-        print('shareX: ',shareX)
-        print "first dataset in this subplot: ", newSubplot
-        print "lsat dataset in this subplot: ", isLastDsInSubplot
-        print "dataset idx in this subplot: ", dsIdxInSubplot
+        print("figure plot number: ", figPlotNum)
+        print(('shareX: ',shareX))
+        print("first dataset in this subplot: ", newSubplot)
+        print("lsat dataset in this subplot: ", isLastDsInSubplot)
+        print("dataset idx in this subplot: ", dsIdxInSubplot)
         if option.polar:
             ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], polar=True)
-            print "Making polar axes"
+            print("Making polar axes")
         elif option.proj3d:
             ax = fig.add_subplot(111, projection='3d')
         else:
@@ -3062,8 +3132,8 @@ def makeFunctionPlot(inFile):
         globalAxes = ax
         
         if len(inFile[i]) > 0:
-            print "Plotting dataset %i of type: %s" % (i, option.plotType[plotTypeIdx])
-            print "dataset has %i rows" % (len(inFile[i]))
+            print("Plotting dataset %i of type: %s" % (i, option.plotType[plotTypeIdx]))
+            print("dataset has %i rows" % (len(inFile[i])))
             axes(ax)
             
             # select the right data and perform last-minute operations before plotting (only for plotTypes that are not maps)
@@ -3078,11 +3148,11 @@ def makeFunctionPlot(inFile):
                 
                 if option.plotType[plotTypeIdx] == 'barchartH':
                     barchartLabels = np.reshape(data[:, option.colx], (-1))
-                    print barchartLabels
+                    print(barchartLabels)
                     data = np.reshape(np.asarray(data[:, option.coly], dtype='float'), (-1))
 #                     print data
                     data = np.vstack([np.arange(len(data)), data]).T
-                    print data
+                    print(data)
                 else:            
 #                     data = array(inFile[i], dtype='float')
                     data=array(inFile[i])
@@ -3103,12 +3173,12 @@ def makeFunctionPlot(inFile):
 
 
                 if option.logX:
-                    data = data[data[:, colx] > 0]
+                    data = data[data[:, colx].astype(float) > 0.]
                     if option.absX == False:
-                        data = data[data[:, colx] > 0]
+                        data = data[data[:, colx].astype(float) > 0.]
                 if option.logY:
                     if option.absY == False:
-                        data = data[data[:, coly] > 0]
+                        data = data[data[:, coly].astype(float) > 0.]
 
 
                 colxerr = ''
@@ -3137,8 +3207,8 @@ def makeFunctionPlot(inFile):
                     [ datex.append(datetime.datetime.strptime(str(tmpdate), option.dateFmt)) for tmpdate in dt ]
                     datax = datex
                 else:
-                    print "Using data columns: %i, %i" % (colx, coly)
-                    print "Color column (if used): %i" % (colColor)
+                    print("Using data columns: %i, %i" % (colx, coly))
+                    print("Color column (if used): %i" % (colColor))
                     if colx == -1:
         #                if len(data.shape)==1:
         #                    datax=arange(len(data))
@@ -3154,6 +3224,7 @@ def makeFunctionPlot(inFile):
                 datay = ''
                 if option.plotType[plotTypeIdx] != 'hist':
                     datay = data[:, coly]
+                    datay = np.asanyarray(datay, dtype='float')
                 if option.plotType[plotTypeIdx] == 'yerr' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'vect':
                     datayerr = data[:, colyerr]
                     if colyerr2 != '':
@@ -3162,8 +3233,8 @@ def makeFunctionPlot(inFile):
                 
                 
                 if option.plotType[plotTypeIdx] == 'barchartH':
-                    print datax
-                    print datay
+                    print(datax)
+                    print(datay)
                     ax.barh(datax, datay, align='center', color=option.fc[i % len(option.fc)], ecolor=option.ec[i % len(option.ec)])
                     ax.set_yticks(datax)
                     ax.set_yticklabels(barchartLabels)
@@ -3197,9 +3268,9 @@ def makeFunctionPlot(inFile):
                     datay=np.asanyarray(datay,dtype=float)
                     datay = datay - np.mean(datay)
                 if option.polar:
-                    print datax
+                    print(datax)
                     datax = datax * np.pi / 180.0  # conversion to radians
-                    print datax
+                    print(datax)
                 
                 datax = performXdataOperations(datax, i)
                 datay = performYdataOperations(datay, i)
@@ -3207,14 +3278,14 @@ def makeFunctionPlot(inFile):
         
                 if option.colSize == -1:
                     sizeData = option.ps[i % len(option.ps)]
-                    print "marker size to be used in next plot: %f" % sizeData
+                    print("marker size to be used in next plot: %f" % sizeData)
                 else:
                     sizeData = data[:, option.colSize] * option.ps[i % len(option.ps)]
-                    print "marker sizes to be used" 
-                    print sizeData
+                    print("marker sizes to be used") 
+                    print(sizeData)
 
-                print "allocated marker sizes: "
-                print option.ps
+                print("allocated marker sizes: ")
+                print(option.ps)
     
     
             ###############################################################################################
@@ -3250,7 +3321,7 @@ def makeFunctionPlot(inFile):
                 if option.IMGflipY:
                     orig = 'upper'
                 ax2 = fig.add_axes(ax)
-                print img
+                print(img)
                 im = imshow(img, origin=orig, extent=(0, option.IMGextent[0], 0, option.IMGextent[1]), interpolation='bicubic', alpha=option.IMGalpha)
     #            hold(True)
     
@@ -3264,7 +3335,7 @@ def makeFunctionPlot(inFile):
     
                 axes(ax)
                 global projectMap
-                print data
+                print(data)
                 map = data[0]
                 lons = data[1]
                 lats = data[2]
@@ -3294,8 +3365,8 @@ def makeFunctionPlot(inFile):
     #            palette = matplotlib.cm.jet
                 palette.set_over(option.setAbove)  # , 1.0)
                 palette.set_under(option.setBelow, 1)
-                print 'map minimal value: %lE ' % np.amin(map.reshape(-1, 1))
-                print 'map maximal value: %lE ' % np.amax(map.reshape(-1, 1))
+                print('map minimal value: %lE ' % np.amin(map.reshape(-1, 1)))
+                print('map maximal value: %lE ' % np.amax(map.reshape(-1, 1)))
                 
     
                 if option.vmin[figIdx % len(option.vmin)] == option.vmax[figIdx % len(option.vmin)]:
@@ -3305,13 +3376,13 @@ def makeFunctionPlot(inFile):
                     minv = option.vmin[figIdx % len(option.vmin)]
                     maxv = option.vmax[figIdx % len(option.vmin)]
                     
-                print "minv: " + str(minv)
-                print "maxv: " + str(maxv)
+                print("minv: " + str(minv))
+                print("maxv: " + str(maxv))
                 color_num = float(option.levels[i % len(option.levels)])
                 delta = (maxv - minv) / color_num
-                print 'delta: ', delta
+                print('delta: ', delta)
                 levels = arange(minv, maxv, delta)
-                print 'levels: ', levels
+                print('levels: ', levels)
                 x, y = projectMap(lons, lats)
     
                 
@@ -3412,7 +3483,7 @@ def makeFunctionPlot(inFile):
                                 mltmp = meridianLabels[j].split(' ')
                                 if len(mltmp) == 1: 
                                     mltmp.append('')
-                                txt.append(u'%s\N{DEGREE SIGN}%s' % (mltmp[0], mltmp[1]))
+                                txt.append('%s\N{DEGREE SIGN}%s' % (mltmp[0], mltmp[1]))
                             else:
                                 txt.append('%1.0f' % (meridians[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
@@ -3426,8 +3497,8 @@ def makeFunctionPlot(inFile):
                         projectMap.drawparallels(parallels, labels=[1, 0, 0, 0], fontsize=option.MPfontSize, color=option.MPcolor)
                     if (option.proj == 'ortho' or option.proj == 'stere') and option.lat0 == 90:
                         txtl = []; txtb = []; txt = [];
-                        print 'parallels:'
-                        print parallels
+                        print('parallels:')
+                        print(parallels)
                         for j in range(len(parallels)):
                             txtl.append(0);
                             txtb.append(parallels[j]);
@@ -3443,8 +3514,8 @@ def makeFunctionPlot(inFile):
                         projectMap.drawparallels(parallels, labels=[True, True, True, True])
                     else:
                         txtl = []; txtb = []; txt = [];
-                        print 'parallels:'
-                        print parallels
+                        print('parallels:')
+                        print(parallels)
                         for j in range(len(parallels)):
                             txtl.append(0);
                             txtb.append(parallels[j]);
@@ -3492,7 +3563,6 @@ def makeFunctionPlot(inFile):
             
             if option.plotType[plotTypeIdx] == 'sphere':
                 from mpl_toolkits.basemap import Basemap, shiftgrid
-                global projectMap
                 if len(option.label) > 0:
                     plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
                 else:
@@ -3519,7 +3589,7 @@ def makeFunctionPlot(inFile):
                 else:
                     x, y = projectMap(-lons, lats)
                 if option.pt[i % len(option.pt)] != 'o':
-                    print '\n\nThe selected marker type for this plot is not suitable - ".", will change it to "o"\n\n'
+                    print('\n\nThe selected marker type for this plot is not suitable - ".", will change it to "o"\n\n')
                     option.pt[i % len(option.pt)] = 'o'
     
     
@@ -3534,25 +3604,28 @@ def makeFunctionPlot(inFile):
                     minv = option.vmin[figIdx % len(option.vmin)]
                     maxv = option.vmax[figIdx % len(option.vmin)]
                     
-                print "minv: " + str(minv)
-                print "maxv: " + str(maxv)
+                print("minv: " + str(minv))
+                print("maxv: " + str(maxv))
                 color_num = float(option.levels[i % len(option.levels)])
                 delta = (maxv - minv) / color_num
-                print 'delta: ', delta
+                print('delta: ', delta)
                 levels = arange(minv, maxv, delta)
-                print 'levels: ', levels
+                print('levels: ', levels)
                  
 #                 if option.colColor == -1:
                 if option.colColor[i % len(option.colColor)] == -1:
     #                global scatterGlobalData
     #                scatterGlobalData=option.pc[i % len(option.pc) ]
-                    print 'will use points color: ', option.pc[i % len(option.pc) ]
+                    print('will use points color: ', option.pc[i % len(option.pc) ])
                     scatter(x, y, c=option.pc[i % len(option.pc) ], s=sizeData, lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], marker=option.pt[i % len(option.pt)], label=plotLegendLabel)  # , marker=option.pt[i % len(option.pt)]
                 else:
 
     #                global scatterGlobalData
     #                scatterGlobalData=map
-                    scatter(x, y, c=map, s=sizeData, cmap=palette, norm=matplotlib.colors.normalize(vmin=levels[0], vmax=levels[-1], clip=True), lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)] , marker=option.pt[i % len(option.pt)], label=plotLegendLabel)
+#                     scatter(x, y, c=map, s=sizeData, cmap=palette, norm=matplotlib.colors.normalize(vmin=levels[0], vmax=levels[-1], clip=True), lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)] , marker=option.pt[i % len(option.pt)], label=plotLegendLabel)
+                    scatter(x, y, c=map, s=sizeData, cmap=palette, 
+                            vmin=levels[0], vmax=levels[-1], 
+                            lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)] , marker=option.pt[i % len(option.pt)], label=plotLegendLabel)
     #                scatter(x,y, c=map, s=40, lw=option.markerEdgeWidth , marker=option.pt[i % len(option.pt)])
     
                 if option.plotLabelsFromFile != "":
@@ -3586,7 +3659,7 @@ def makeFunctionPlot(inFile):
                                 mltmp = meridianLabels[j].split(' ')
                                 if len(mltmp) == 1: 
                                     mltmp.append('')
-                                txt.append(u'%s\N{DEGREE SIGN}%s' % (mltmp[0], mltmp[1]))
+                                txt.append('%s\N{DEGREE SIGN}%s' % (mltmp[0], mltmp[1]))
                             else:
                                 txt.append('%1.1f' % (meridians[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
@@ -3620,7 +3693,7 @@ def makeFunctionPlot(inFile):
                                 mltmp = meridianLabels[j].split(' ')
                                 if len(mltmp) == 1: 
                                     mltmp.append('')
-                                txt.append(u'%s\N{DEGREE SIGN}%s' % (mltmp[0], mltmp[1]))
+                                txt.append('%s\N{DEGREE SIGN}%s' % (mltmp[0], mltmp[1]))
                             else:
                                 txt.append('%1.1f' % (meridians[j]))
     #                        xpt,ypt = projectMap(txtl[j]+0.01,txtb[j])
@@ -3633,8 +3706,8 @@ def makeFunctionPlot(inFile):
                         projectMap.drawparallels(parallels, labels=[1, 0, 0, 0], fontsize=option.MPfontSize, color=option.MPcolor)
                     if (option.proj == 'ortho' or option.proj == 'stere') and option.lat0 == 90:
                         txtl = []; txtb = []; txt = [];
-                        print 'parallels:'
-                        print parallels
+                        print('parallels:')
+                        print(parallels)
                         for j in range(len(parallels)):
                             txtl.append(0);
                             txtb.append(parallels[j]);
@@ -3723,7 +3796,7 @@ def makeFunctionPlot(inFile):
                             # do the first split for all texts that we want on this figure (if any)
                         if tstr != 'None':
                             xyTextTuple = tstr.split(';')
-                            print 'xyTextTuple', xyTextTuple
+                            print('xyTextTuple', xyTextTuple)
                             for tstr in xyTextTuple:
                                 tstrSplit = re.split(r'(?<!\\),', tstr)  # negative lookbehind assertion
                                 if len(tstrSplit) >= 3:
@@ -3747,7 +3820,7 @@ def makeFunctionPlot(inFile):
                         tstr = option.textfxfy[figIdx]
                         if tstr != 'None':
                             xyTextTuple = tstr.split(';')
-                            print 'xyTextTuple', xyTextTuple
+                            print('xyTextTuple', xyTextTuple)
                             curXlimits = ax.get_xlim()
                             curYlimits = ax.get_ylim()
                             curXspan = curXlimits[1] - curXlimits[0]
@@ -3757,11 +3830,11 @@ def makeFunctionPlot(inFile):
                                 if len(tstrSplit) >= 3:
                                     tx = float(tstrSplit[0]) * (curXspan) + curXlimits[0]
                                     ty = float(tstrSplit[1]) * (curYspan) + curYlimits[0]
-                                    print '*************************************'
-                                    print '*************************************'
-                                    print '*************************************'
-                                    print '*************************************'
-                                    print tx, ty
+                                    print('*************************************')
+                                    print('*************************************')
+                                    print('*************************************')
+                                    print('*************************************')
+                                    print(tx, ty)
                                     t = tstrSplit[2].replace('\,', ',')
                                     trot = 0
                                     tsiz = option.extraTextFontSize
@@ -3782,14 +3855,23 @@ def makeFunctionPlot(inFile):
             if option.plotType[plotTypeIdx] == 'ts':
                 if len(option.label) > 0:
                     if option.label[i % len(option.label)] != "None":
-                        plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
+                        if isinstance(option.label[i % len(option.label)], str):
+                            plotLegendLabel = option.label[i % len(option.label)]
+                        else:
+                            plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
+                            
                     else:
                         plotLegendLabel = None
                 else:
                     plotLegendLabel = None
-                
-                datax = inFile[i][:, 0]
-                datay = inFile[i][:, 1]
+
+                if option.big:
+                    datax = inFile[i][:, 0]
+                    datay = inFile[i][:, 1]
+                else:
+                    datax = inFile[i][:, option.colx[i % len(option.colx)]]
+                    datay = inFile[i][:, option.coly[i % len(option.coly)]]
+                    
                 import matplotlib.dates as mdates
                 import time
                 datex = list()
@@ -3797,13 +3879,13 @@ def makeFunctionPlot(inFile):
                 print(datax)
                 try:
                     [ datex.append(datetime.datetime.strptime(str(tmpdate), option.dateFmt)) for tmpdate in datax ]
-                except ValueError,msg:
-                    print(tmpdate)
+                except ValueError as msg:
+#                    print(tmpdate)
                     print(msg)
                     raise(ValueError)
 #                print 'date X'
 #                print datex
-                print len(datex)
+                print(len(datex))
                 datex = performXdataOperations(datex, i)
 #                print 'date X after operations'
 #                print datex
@@ -3827,15 +3909,40 @@ def makeFunctionPlot(inFile):
                 days = mdates.DayLocator()
                 years = mdates.YearLocator()  # every year
                 months = mdates.MonthLocator()  # every month
-#                yearsFmt = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
-                yearsFmt = mdates.DateFormatter(option.dateFmtPlot)
-                ax.xaxis.set_major_formatter(yearsFmt)
-                # format the ticks
-                ax.xaxis.set_major_locator(days)
-                ax.xaxis.set_major_formatter(yearsFmt)
-#                 ax.xaxis.set_minor_locator(hours)
-#                 ax.xaxis.set_minor_locator(None)
 
+                if option.dateFmtPlot=='concise':
+                    '''
+                    '''
+                    import matplotlib.dates as mdates
+                    import matplotlib.units as munits
+                    try:
+                        converter = mdates.ConciseDateConverter()
+                        munits.registry[np.datetime64] = converter
+                        munits.registry[datetime.date] = converter
+                        munits.registry[datetime.datetime] = converter
+                        locator = mdates.AutoDateLocator(minticks=5, maxticks=7)
+                        dateFormatter = mdates.ConciseDateFormatter(locator)
+                        ax.xaxis.set_major_locator(locator)
+                        ax.xaxis.set_major_formatter(dateFormatter)
+                    except:
+                        raise
+                        pass
+
+                    
+#                     fmt_year = mdates.YearLocator()
+#                     ax.xaxis.set_minor_locator(fmt_year)
+
+                else:
+
+    #                dateFormatter = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
+                    dateFormatter = mdates.DateFormatter(option.dateFmtPlot)
+                    ax.xaxis.set_major_formatter(dateFormatter)
+                    # format the ticks
+                    ax.xaxis.set_major_locator(days)
+                    ax.xaxis.set_major_formatter(dateFormatter)
+    #                 ax.xaxis.set_minor_locator(hours)
+    #                 ax.xaxis.set_minor_locator(None)
+    
                 if option.years:
                     ax.xaxis.set_major_locator(years)
                     if option.minorTicks:
@@ -3861,15 +3968,15 @@ def makeFunctionPlot(inFile):
 #                datemax = datetime.date(2015, 1, 1)
                 datemin = datex[0]
                 datemax = datex[-1]
-                print datemin
-                print datemax
-                print option.datexmin[figIdx % len(option.datexmin)]
-                print option.datexmax
+                print(datemin)
+                print(datemax)
+                print(option.datexmin[figIdx % len(option.datexmin)])
+                print(option.datexmax)
                 if option.datexmin[figIdx % len(option.datexmin)] != -1:
                     datemin = datetime.datetime.strptime(option.datexmin[figIdx % len(option.datexmin)], option.dateFmt)
                 if option.datexmax[figIdx % len(option.datexmax)] != -1:
                     datemax = datetime.datetime.strptime(option.datexmax[figIdx % len(option.datexmax)], option.dateFmt)
-                print 'datemin,datemax: ', datemin, datemax    
+                print('datemin,datemax: ', datemin, datemax)    
                 ax.set_xlim(datemin, datemax)
 #                ax.format_xdata = mdates.DateFormatter('%Y/%m/%d %H:%M:%S')
 #                fig.autofmt_xdate()
@@ -3879,12 +3986,12 @@ def makeFunctionPlot(inFile):
                     ymin = option.ymin[figIdx % len(option.ymin)]
                 if option.ymax[figIdx % len(option.ymax)] != None:
                     ymax = option.ymax[figIdx % len(option.ymax)]
-                print 'setting y limits: %f, %f' % (ymin, ymax)
+                print('setting y limits: %f, %f' % (ymin, ymax))
 #                ylim([ymin,ymax])
                 ax.set_ylim(ymin, ymax)
-                print
-                print 'Setting xticklabels rotation: ', option.Rxlabels    
-                print
+                print()
+                print('Setting xticklabels rotation: ', option.Rxlabels)    
+                print()
                 setp(ax.get_xticklabels(), rotation=option.Rxlabels, horizontalalignment='center', verticalalignment='top') 
                 setp(ax.get_yticklabels(), rotation=option.Rylabels) 
                 xticks(rotation=option.Rxlabels)
@@ -3901,7 +4008,8 @@ def makeFunctionPlot(inFile):
     #            if option.colColor!=-1 or option.colSize!=-1:
                 if len(option.label) > 0:
                     if option.label[i % len(option.label)] != "None":
-                        plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
+#                         plotLegendLabel = option.label[i % len(option.label)].decode('utf8')
+                        plotLegendLabel = option.label[i % len(option.label)]
                     else:
                         plotLegendLabel = None
                 else:
@@ -3918,8 +4026,8 @@ def makeFunctionPlot(inFile):
                         scatterGlobalData = data[:, colColor]
                         if option.logZ:
                             scatterGlobalData = np.log10(scatterGlobalData)
-                    print "marker: %s" % option.pt[i % len(option.pt)]
-                    print "marker size: %s" % option.ps[i % len(option.ps)]
+                    print("marker: %s" % option.pt[i % len(option.pt)])
+                    print("marker size: %s" % option.ps[i % len(option.ps)])
 
                     if option.dateFmt == '':
                         datax, datay, scatterGlobalData = removeNans3(datax, datay, scatterGlobalData)
@@ -3936,7 +4044,7 @@ def makeFunctionPlot(inFile):
                             # remove top white part of the hot colormap
                             interval = np.linspace(CMrange[0], CMrange[1])
     #                         colors = plt.cm.hot(interval)
-                            print 'palette: ',palette
+                            print('palette: ',palette)
                             colors=palette(interval)
                             cmap = LinearSegmentedColormap.from_list('name', colors)                        
                             palette = cm.get_cmap(cmap, int(option.cbLabelsNum))
@@ -3949,7 +4057,7 @@ def makeFunctionPlot(inFile):
 #                    if len(option.levels[i % len(option.levels)])==1:
 #                        option.levels[i % len(option.levels)]=np.arange()
                     if option.pt[i % len(option.pt)] == '.' or option.pt[i % len(option.pt)] == None:
-                        print 'changing the marker for the scatter type plot from "." to "o"'
+                        print('changing the marker for the scatter type plot from "." to "o"')
                         option.pt[i % len(option.pt)] = "o"
 #                        cpedsPythCommon.waitEnter()
 
@@ -4003,7 +4111,7 @@ def makeFunctionPlot(inFile):
                         zA_lin = interp_lin(xA, yA)                        
                         
                         if len(option.levels[i % len(option.levels)]) == 1:
-                            print option.levels[i % len(option.levels)]
+                            print(option.levels[i % len(option.levels)])
                             contourf(xA, yA, zA_lin, int(option.levels[i % len(option.levels)][0]), cmap=palette, zorder=option.zorder[i % len(option.zorder)])
                         else:
 #                             print option.levels[i % len(option.levels)]
@@ -4035,15 +4143,15 @@ def makeFunctionPlot(inFile):
                     
                         
                 elif option.plotType[plotTypeIdx] == 'fn':
-                    print
-                    print "plot %i" % i
-                    print "marker %s" % option.pt[i % len(option.pt)]
-                    print "color %s" % option.pc[i % len(option.pc)]
-                    print "all markers" 
-                    print option.pt
-                    print "all colors" 
-                    print option.pc
-                    print
+                    print()
+                    print("plot %i" % i)
+                    print("marker %s" % option.pt[i % len(option.pt)])
+                    print("color %s" % option.pc[i % len(option.pc)])
+                    print("all markers") 
+                    print(option.pt)
+                    print("all colors") 
+                    print(option.pc)
+                    print()
                     if option.dateFmt == '':
                         datax, datay = removeNans2(datax, datay)
 
@@ -4056,15 +4164,15 @@ def makeFunctionPlot(inFile):
                             plotLine[-1].set_dashes(option.lsdash[i % len(option.lsdash)])
 
                 elif option.plotType[plotTypeIdx] == 'step':
-                    print
-                    print "plot %i" % i
-                    print "marker %s" % option.pt[i % len(option.pt)]
-                    print "color %s" % option.pc[i % len(option.pc)]
-                    print "all markers" 
-                    print option.pt
-                    print "all colors" 
-                    print option.pc
-                    print
+                    print()
+                    print("plot %i" % i)
+                    print("marker %s" % option.pt[i % len(option.pt)])
+                    print("color %s" % option.pc[i % len(option.pc)])
+                    print("all markers") 
+                    print(option.pt)
+                    print("all colors") 
+                    print(option.pc)
+                    print()
                     if option.dateFmt == '':
                         datax, datay = removeNans2(datax, datay)
 
@@ -4077,7 +4185,6 @@ def makeFunctionPlot(inFile):
                             plotLine[-1].set_dashes(option.lsdash[i % len(option.lsdash)])
 
                 elif option.plotType[plotTypeIdx] == 'vect':
-                    global scatterGlobalData
                     if option.colColor[i % len(option.colColor)] == -1:
                         data = arange(len(data))
                         scatterGlobalData = data
@@ -4086,16 +4193,16 @@ def makeFunctionPlot(inFile):
                         scatterGlobalData = data[:, colColor]
                         if option.logZ:
                             scatterGlobalData = np.log10(scatterGlobalData)
-                    print "marker: %s" % option.pt[i % len(option.pt)]
-                    print "marker size: %s" % option.ps[i % len(option.ps)]
+                    print("marker: %s" % option.pt[i % len(option.pt)])
+                    print("marker size: %s" % option.ps[i % len(option.ps)])
 
                     palette = getPalette()
                     
                     
                     dataxerr = None
                     datayerr = None
-                    print colxerr, colyerr
-                    print data
+                    print(colxerr, colyerr)
+                    print(data)
                     if colyerr != '':
                         datayerr = data[:, colyerr]
                     if colyerr2 != '':
@@ -4107,9 +4214,9 @@ def makeFunctionPlot(inFile):
                         dataxerr = data[:, colxerr]
                     if colxerr2 != '':
                         dataxerr = data[:, [colxerr, colxerr2]].T
-                    print dataxerr
+                    print(dataxerr)
                     dataxerr = dataxerr * 100
-                    print dataxerr
+                    print(dataxerr)
                     datayerr = datayerr * 100
                     if option.colColor[i % len(option.colColor)] == -1:
                         Q = quiver(datax, datay, dataxerr, datayerr, scale=option.Qscale, lw=option.width[i % len(option.width)], linestyle=option.ls[i % len(option.ls)], color=option.lc[i % len(option.lc)])
@@ -4121,28 +4228,36 @@ def makeFunctionPlot(inFile):
                 elif option.plotType[plotTypeIdx] == 'err':
                     dataxerr = None
                     datayerr = None
-                    print
-                    print "plot %i" % i
-                    print "marker %s" % option.pt[i % len(option.pt)]
-                    print "color %s" % option.pc[i % len(option.pc)]
+                    datax=np.asarray(datax,dtype=float)
+                    datay=np.asarray(datay,dtype=float)
+                    print(datax,datay)
+                    print("plot %i" % i)
+                    print("marker %s" % option.pt[i % len(option.pt)])
+                    print("color %s" % option.pc[i % len(option.pc)])
                     if colyerr != '':
                         datayerr = data[:, colyerr]
+                        datayerr=np.asarray(datayerr,dtype=float)
                     if colyerr2 != '':
                         datayerr2 = data[:, colyerr2].T
 #                        datayerr=np.vstack([datayerr,datayerr2]).T
                         datayerr = data[:, [colyerr, colyerr2]].T
+                        datayerr=np.asarray(datayerr,dtype=float)
 #                        datayerr=np.concatenate([datayerr,datayerr2],axis=1)
                     if colxerr == -1:
                         dataxerr = np.zeros(len(data))
                     elif colxerr != '':
                         dataxerr = data[:, colxerr]
+                        dataxerr=np.asarray(dataxerr,dtype=float)
                     if colxerr2 != '':
                         dataxerr = data[:, [colxerr, colxerr2]].T
+                        dataxerr=np.asarray(dataxerr,dtype=float)
 #                        dataxerr=np.vstack([dataxerr,dataxerr2]).T
 #                    print dataxerr[:,0]
 #                    sys.exit()
 #                        dataxerr=np.concatenate([dataxerr,dataxerr2],axis=1)
 #                    datax, datay, datayerr = removeNans3(datax, datay, datayerr)
+
+
                     errorbar(datax, datay, xerr=dataxerr, yerr=datayerr, color=option.lc[i % len(option.lc)], ecolor=option.lc[i % len(option.lc)], elinewidth=option.width[i % len(option.width)], barsabove=False, capsize=3, fmt='-', lw=option.width[i % len(option.width)], marker=option.pt[i % len(option.pt)], linestyle=option.ls[i % len(option.ls)], markersize=option.ps[i % len(option.ps)], mew=option.markerEdgeWidth[i % len(option.markerEdgeWidth)], mec=option.ec[i % len(option.ec)], mfc=option.pc[i % len(option.pc)], label=plotLegendLabel, zorder=option.zorder[i % len(option.zorder)])
 
                 elif option.plotType[plotTypeIdx] == 'fillbtwX':
@@ -4162,7 +4277,7 @@ def makeFunctionPlot(inFile):
                 elif option.plotType[plotTypeIdx] == 'fillbtwY':
                     y1 = datay
                     y2 = data[:, option.y2[i % len(option.y2)]]
-                    print y1, y2
+                    print(y1, y2)
                     p = ax.fill_between(datax, y1, y2, facecolor=option.fc[i % len(option.fc)], linestyle=option.ls[i % len(option.ls)], edgecolor=option.lc[i % len(option.lc)], label=plotLegendLabel, zorder=option.zorder[i % len(option.zorder)])
                         
                     if option.fhs != '':
@@ -4176,15 +4291,15 @@ def makeFunctionPlot(inFile):
 #                    plot(datax,datay, lw=option.width[i % len(option.width)], marker=option.pt[i % len(option.pt)], linestyle=option.ls[i % len(option.ls)], c=option.lc[i % len(option.lc)], markersize=option.ps[i % len(option.ps)], mew=option.markerEdgeWidth, mfc=option.pc[i % len(option.pc)], label=plotLegendLabel, zorder=option.zorder[i % len(option.zorder)], picker=True)
                     
                 elif option.plotType[plotTypeIdx] == 'fnshaded':
-                    print
-                    print "plot %i" % i
-                    print "marker %s" % option.pt[i % len(option.pt)]
-                    print "color %s" % option.pc[i % len(option.pc)]
-                    print "all markers" 
-                    print option.pt
-                    print "all colors" 
-                    print option.pc
-                    print
+                    print()
+                    print("plot %i" % i)
+                    print("marker %s" % option.pt[i % len(option.pt)])
+                    print("color %s" % option.pc[i % len(option.pc)])
+                    print("all markers") 
+                    print(option.pt)
+                    print("all colors") 
+                    print(option.pc)
+                    print()
 #                    datax, datay = removeNans2(datax, datay)
 #                    print 'colyerr % i' % colyerr
 #                    print 'colyerr2 % i' % colyerr2
@@ -4222,7 +4337,7 @@ def makeFunctionPlot(inFile):
                     
 #                    if option.colColor==-1:
                     for idx in np.arange(len(datax)):
-                        print "generating circle: ", idx
+                        print("generating circle: ", idx)
                         circ = Circle((datax[idx], datay[idx]), sizeData[idx], fc=None, ec='k', color=None, fill=False)
                         ax.add_patch(circ)
 #                    else:
@@ -4236,7 +4351,10 @@ def makeFunctionPlot(inFile):
                     # map type histogram
                     ###############################################################################################
 #                    print datax
-                    hist(datax, color=option.lc[i % len(option.lc)], bins=option.histNbin, label=plotLegendLabel, cumulative=option.histCuml, normed=option.histNormed)
+                    hist(datax, color=option.lc[i % len(option.lc)], bins=option.histNbin, label=plotLegendLabel, cumulative=option.histCuml, 
+#                          normed=option.histNormed
+                        alpha=0.5
+                         )
 
 #                elif option.plotType[plotTypeIdx]=='ts':
 #                    datax=inFile[i][:,0]
@@ -4313,7 +4431,7 @@ def makeFunctionPlot(inFile):
                     if Vspidx == figIdx:
                         
                         for vidx in range(len(option.Vspan[Vspidx]) / 2):
-                            print 'printing vspan vi: ', vidx
+                            print('printing vspan vi: ', vidx)
                             x1 = option.Vspan[Vspidx][vidx * 2]
                             x2 = option.Vspan[Vspidx][vidx * 2 + 1]
                             axvspan(xmin=x1, xmax=x2, ymin=0, ymax=1, alpha=option.oalpha[vidx % len(option.oalpha)], color=option.ofc[Vspidx][vidx % len(option.ofc[Vspidx])], lw=option.olw[Vspidx % len(option.olw)][vidx % len(option.olw[Vspidx % len(option.olw)])], label=None)
@@ -4324,7 +4442,7 @@ def makeFunctionPlot(inFile):
                     if Hspidx == figIdx:
                         
                         for vidx in range(len(option.Hspan[Hspidx]) / 2):
-                            print 'printing vspan vi: ', vidx
+                            print('printing vspan vi: ', vidx)
                             x1 = option.Hspan[Hspidx][vidx * 2]
                             x2 = option.Hspan[Hspidx][vidx * 2 + 1]
                             axhspan(ymin=x1, ymax=x2, xmin=0, xmax=1, alpha=option.oalpha[vidx % len(option.oalpha)], color=option.ofc[Hspidx][vidx % len(option.ofc[Hspidx])], lw=option.olw[Hspidx % len(option.olw)][vidx % len(option.olw[Hspidx % len(option.olw)])], label=None, zorder=-100)
@@ -4345,7 +4463,7 @@ def makeFunctionPlot(inFile):
                     # do the first split for all texts that we want on this figure (if any)
                     if tstr != 'None':
                         xyTextTuple = tstr.split(';')
-                        print 'xyTextTuple', xyTextTuple
+                        print('xyTextTuple', xyTextTuple)
                         for tstr in xyTextTuple:
                             tstrSplit = re.split(r'(?<!\\),', tstr)  # negative lookbehind assertion
                             if len(tstrSplit) >= 3:
@@ -4369,7 +4487,7 @@ def makeFunctionPlot(inFile):
                         tstr = option.textfxfy[figIdx % len(option.textfxfy)]
                         if tstr != 'None':
                             xyTextTuple = tstr.split(';')
-                            print 'xyTextTuple', xyTextTuple
+                            print('xyTextTuple', xyTextTuple)
                             for tstr in xyTextTuple:
 #                                 tstrSplit=tstr.split(',')
                                 tstrSplit = re.split(r'(?<!\\),', tstr)  # negative lookbehind assertion
@@ -4393,11 +4511,11 @@ def makeFunctionPlot(inFile):
                         tstr = option.annotate[figIdx]
                         if tstr != 'None':
                             xyTextTuple = tstr.split(';')
-                            print 'xyTextTuple', xyTextTuple
+                            print('xyTextTuple', xyTextTuple)
                             for tstr in xyTextTuple:
                                 tstrSplit = re.split(r'(?<!\\),', tstr)  # negative lookbehind assertion
                                 
-                                print tstrSplit
+                                print(tstrSplit)
 #                                 sys.exit()
                                 if len(tstrSplit) >= 5:
                                     arrowx = float(tstrSplit[0])
@@ -4424,14 +4542,14 @@ def makeFunctionPlot(inFile):
                 #
                 if option.plotType[plotTypeIdx] != 'hist' and option.plotType[plotTypeIdx] != 'ts' and option.plotType[plotTypeIdx] != 'barchartH' and option.dateFmt == '':
                     xmin, xmax, ymin, ymax = getDataMinMaxValues(ax, datax, datay, i)
-                    print xmin, xmax, ymin, ymax
+                    print(xmin, xmax, ymin, ymax)
                     if option.nestedGridLevel >= 0:
                         if option.nestedGridDset == i or option.nestedGridDset == -1:
                             makeNestedGridPlot(getDataMinMaxValues2(datax, datay))
 
                     marginFactor = option.marginFactor
                     if (option.logX or option.logY) and marginFactor > 0:
-                        print 'log scale requested and margin factor > 0, will change to 0 for safety'
+                        print('log scale requested and margin factor > 0, will change to 0 for safety')
                         marginFactor = 0
 #                    if xmin <= 0 and option.logX:
 #                        xmin=0;
@@ -4452,11 +4570,11 @@ def makeFunctionPlot(inFile):
                     xmax = xmax + option.marginX
                     ymin = ymin - option.marginY
                     ymax = ymax + option.marginY
-                    print 'xmin,xmax,ymin,ymax: with margin'
-                    print xmin, xmax, ymin, ymax
-                    print 'setting x limits: %f, %f' % (xmin, xmax)
+                    print('xmin,xmax,ymin,ymax: with margin')
+                    print(xmin, xmax, ymin, ymax)
+                    print('setting x limits: %f, %f' % (xmin, xmax))
                     xlim([xmin, xmax])
-                    print 'setting y limits: %f, %f' % (ymin, ymax)
+                    print('setting y limits: %f, %f' % (ymin, ymax))
                     ylim([ymin, ymax])
                     
                     
@@ -4473,7 +4591,7 @@ def makeFunctionPlot(inFile):
                     formatXaxisDates(figIdx)
 
                 if option.plotType[plotTypeIdx] == 'ts':
-                    xmin, xmax, ymin, ymax = getDataMinMaxValues(ax, datax, datay, i)
+#                     xmin, xmax, ymin, ymax = getDataMinMaxValues(ax, datax, datay, i)
 #                     if option.xmin[figIdx % len(option.xmin)]!=-1:
 #                         xmin=option.xmin[figIdx % len(option.xmin)]
 #                     if option.xmax[figIdx % len(option.xmax)]!=-1:
@@ -4492,7 +4610,7 @@ def makeFunctionPlot(inFile):
 #                     print xmin,xmax,ymin,ymax
 #                     print 'setting x limits: %f, %f' % (xmin,xmax)
 #                     xlim([xmin,xmax])
-                    print 'setting y limits: %f, %f' % (ymin, ymax)
+                    print('setting y limits: %f, %f' % (ymin, ymax))
                     ylim([ymin, ymax])
                 #
                 # log scales
@@ -4527,11 +4645,14 @@ def makeFunctionPlot(inFile):
                 # title and labels
                 #
                 if isLastDsInSubplot:
-                    print 'figIdx: ', figIdx
-                    print 'title: ', option.title
-                    print 'title: ', option.title[figIdx % len(option.title)]
+                    print('figIdx: ', figIdx)
+                    print('title: ', option.title)
+                    print('title: ', option.title[figIdx % len(option.title)])
                     if option.title[figIdx % len(option.title)] != "":
-                        tit = option.title[figIdx % len(option.title)].decode('utf8')
+                        if isinstance(option.title[figIdx % len(option.title)], str):
+                            tit = option.title[figIdx % len(option.title)]
+                        else:
+                            tit = option.title[figIdx % len(option.title)].decode('utf8')
                         title(tit, fontsize=option.fontSizeTitle, horizontalalignment=option.titleAlignH, verticalalignment=option.titleAlignV)
 
 #                if i % option.dsPerPlot == 0:
@@ -4541,33 +4662,35 @@ def makeFunctionPlot(inFile):
 #                cpedsPythCommon.waitEnter()
 #                    labidx=i/option.dsPerPlot
                     labidx = figIdx
-                    print 'labidx ', labidx
-                    print 'i ', i
-                    print 'option.fontSize[(2*labidx) % len(option.fontSize)]: ', option.fontSize[(2 * labidx) % len(option.fontSize)]
-                    print 'option.fontSize[(2*labidx+1) % len(option.fontSize)]: ', option.fontSize[(2 * labidx + 1) % len(option.fontSize)]
+                    print('labidx ', labidx)
+                    print('i ', i)
+                    print('option.fontSize[(2*labidx) % len(option.fontSize)]: ', option.fontSize[(2 * labidx) % len(option.fontSize)])
+                    print('option.fontSize[(2*labidx+1) % len(option.fontSize)]: ', option.fontSize[(2 * labidx + 1) % len(option.fontSize)])
                     if option.xlabel[labidx % len(option.xlabel)] != "None":
-                        xlabel(option.xlabel[labidx % len(option.xlabel)].decode('utf8'), fontsize=option.fontSizeLabels[(2 * labidx) % len(option.fontSizeLabels)])
+#                         xlabel(option.xlabel[labidx % len(option.xlabel)].decode('utf8'), fontsize=option.fontSizeLabels[(2 * labidx) % len(option.fontSizeLabels)])
+                        xlabel(option.xlabel[labidx % len(option.xlabel)], fontsize=option.fontSizeLabels[(2 * labidx) % len(option.fontSizeLabels)])
 #                    if option.plotType[plotTypeIdx]!='ts':
                     if option.fontSize[(2 * labidx) % len(option.fontSize)] > 0:
                         setp(ax.get_xticklabels(), fontsize=option.fontSize[(2 * labidx) % len(option.fontSize)])
                     else:
-                        print 'switching off xlabels'
+                        print('switching off xlabels')
                         ax.set_xticklabels([])
-                        print 'done'
+                        print('done')
     #                        ax.set_xticks([])
                         
                     if option.ylabel[labidx % len(option.ylabel)] != "None":
-                        ylabel(option.ylabel[labidx % len(option.ylabel)].decode('utf8'), fontsize=option.fontSizeLabels[(2 * labidx + 1) % len(option.fontSizeLabels)])
+#                         ylabel(option.ylabel[labidx % len(option.ylabel)].decode('utf8'), fontsize=option.fontSizeLabels[(2 * labidx + 1) % len(option.fontSizeLabels)])
+                        ylabel(option.ylabel[labidx % len(option.ylabel)], fontsize=option.fontSizeLabels[(2 * labidx + 1) % len(option.fontSizeLabels)])
                     if option.fontSize[(2 * labidx + 1) % len(option.fontSize)] > 0:
                         setp(ax.get_yticklabels(), fontsize=option.fontSize[(2 * labidx + 1) % len(option.fontSize)])
                     else:
-                        print 'switching off ylabels'
+                        print('switching off ylabels')
                         ax.set_yticklabels([])
 #                        ax.set_yticks([])
 
-                    print
-                    print 'Setting xticklabels rotation'    
-                    print
+                    print()
+                    print('Setting xticklabels rotation')    
+                    print()
                     setp(ax.get_xticklabels(), rotation=option.Rxlabels)  # 
                     setp(ax.get_yticklabels(), rotation=option.Rylabels)  # , horizontalalignment='center', verticalalignment='top'
     
@@ -4604,10 +4727,10 @@ def makeFunctionPlot(inFile):
 #                         yticks(arange(min(tcs[0], option.ymin[figIdx % len(option.ymin)]), max(tcs[-1], option.ymax[figIdx % len(option.ymax)]), option.yticks[figIdx % len(option.yticks)]))
 
 
-                    if option.xticksMinor[figIdx % len(option.xticks)] != None:
+                    if option.xticksMinor[figIdx % len(option.xticksMinor)] != None:
                         minorLocatorX = MultipleLocator(option.xticksMinor[figIdx % len(option.xticksMinor)])
                         ax.xaxis.set_minor_locator(minorLocatorX)
-                    if option.yticksMinor[figIdx % len(option.yticks)] != None:
+                    if option.yticksMinor[figIdx % len(option.yticksMinor)] != None:
                         minorLocatorY = MultipleLocator(option.yticksMinor[figIdx % len(option.yticksMinor)])
                         ax.yaxis.set_minor_locator(minorLocatorY)
 #                     ax1.tick_params(axis='x',which='major',direction='out',length=4,width=4,color='b',pad=10,labelsize=20,labelcolor='g')
@@ -4746,13 +4869,13 @@ def makeFunctionPlot(inFile):
                             cmax = option.vmax[figIdx % len(option.vmin)]
                         cdelta = (cmax - cmin) / (option.cbLabelsNum - 1)
                         cbyticks = np.arange(cmin, cmax + cdelta, cdelta)
-                        print cbyticks
+                        print(cbyticks)
                         cb = colorbar(ticks=cbyticks)
 #                         cb.ax.tick_params(labelsize=option.fontSize[i % len(option.fontSize)])
                         if option.fontSizeCM[figIdx % len(option.fontSizeCM)] > 0:
                             cb.ax.tick_params(labelsize=option.fontSizeCM[figIdx % len(option.fontSizeCM)])
                         else:
-                            print 'switching off zlabels'
+                            print('switching off zlabels')
                             cb.ax.set_yticklabels([])
 
 
@@ -4764,7 +4887,7 @@ def makeFunctionPlot(inFile):
                         
     #                    if option.colorbar:
                         if option.linZtickLabels:
-                            print 'converting color domain labels from log space back to linear space'
+                            print('converting color domain labels from log space back to linear space')
                             cax = cb.ax
     #                        axes(cax)
     #                        print get_yticks()
@@ -4775,8 +4898,8 @@ def makeFunctionPlot(inFile):
                             for lab in cbyticks:
                                 cbyticksLabelsNew.append(option.ZticksFmt % np.power(10, float(lab)))
     #                        yticks(cbyticks)
-                            print 'the new colorbar labels will be'
-                            print cbyticksLabelsNew
+                            print('the new colorbar labels will be')
+                            print(cbyticksLabelsNew)
     #                        axes(ax)
                             
     #                        sys.exit()
@@ -4806,7 +4929,7 @@ def makeFunctionPlot(inFile):
                 #
                 # rectangles
                 #
-                print option.rect
+                print(option.rect)
                 if len(option.rect) > 0:
                     rectanglePatchDef = option.rect[i % len(option.rect)]
                         
@@ -4817,7 +4940,7 @@ def makeFunctionPlot(inFile):
                         rectW = rectanglePatchDef[rect_i][2]
                         rectH = rectanglePatchDef[rect_i][3]
                         rectA = rectanglePatchDef[rect_i][4]
-                        print option.olc[i % len(option.olc)]
+                        print(option.olc[i % len(option.olc)])
     #                         rect = mpatches.Rectangle((rectX[rect_i % len(rectX)]-rectW[rect_i % len(rectX)]/2,rectY[rect_i % len(rectX)]-rectH[rect_i % len(rectX)]/2), rectW[rect_i % len(rectX)],rectH[rect_i % len(rectX)], angle=rectA[rect_i % len(rectX)], fc=None, ec=option.olc[rect_i % len(option.olc)][0], color=None, fill=False)
                         rect = mpatches.Rectangle((rectX - rectW / 2, rectY - rectH / 2), rectW, rectH, angle=rectA, fc=None, ec=option.olc[rect_i % len(option.olc)][0], color=None, fill=False)
                         ax.add_patch(rect)
@@ -4825,7 +4948,7 @@ def makeFunctionPlot(inFile):
 
 
                 if option.plotType[plotTypeIdx] != 'hist' and option.plotType[plotTypeIdx] != 'barchartH' and option.plotType[plotTypeIdx] != 'ts' and option.dateFmt == '':
-                    print 'Reseting limits'
+                    print('Reseting limits')
                     xlim([xmin, xmax])
                     ylim([ymin, ymax])
 
@@ -4837,30 +4960,30 @@ def makeFunctionPlot(inFile):
     
                         ax1_ticks = ax.get_xticks()
                         ax2.set_xticks(ax1_ticks)
-                        print 'ax1_ticks: ',ax1_ticks
-                        print 'ax2_ticks: ',ax2.get_xticks()
+                        print('ax1_ticks: ',ax1_ticks)
+                        print('ax2_ticks: ',ax2.get_xticks())
                         ax2.set_xticklabels(ax.get_xticklabels()) # this is a placeholder because the ticklabes are not defined until show()
-                        print 'ax2_xticklabels: ',ax2.get_xticklabels()
+                        print('ax2_xticklabels: ',ax2.get_xticklabels())
                         ax2_tickLabels=list()
-                        idx=range(len(datax))
-                        for t,tick_idx in zip(ax1_ticks,range(len(ax1_ticks))):
+                        idx=list(range(len(datax)))
+                        for t,tick_idx in zip(ax1_ticks,list(range(len(ax1_ticks)))):
                             # hide labels that have interpolated values from outside the defined range
                             # we use constant extrapolation which would give the labels wrong values, so we hide them
                             if (t<min(datax)):
-                                print 'setting %i invisible (t: %f, min: %f, len: %i)' % (tick_idx,t,min(datax),len(ax2.get_xticklabels()))
+                                print('setting %i invisible (t: %f, min: %f, len: %i)' % (tick_idx,t,min(datax),len(ax2.get_xticklabels())))
                                 setp(ax2.get_xticklabels()[tick_idx], visible=False)
                             elif (t>max(datax)):
-                                print 'setting %i invisible (t: %f, max: %f, len: %i)' % (tick_idx,t,max(datax), len(ax2.get_xticklabels()))
+                                print('setting %i invisible (t: %f, max: %f, len: %i)' % (tick_idx,t,max(datax), len(ax2.get_xticklabels())))
                                 setp(ax2.get_xticklabels()[tick_idx], visible=False)
                             ti=np.interp(t, datax,idx)
     # 
                             ax2_tickLabels.append('%.1f' % np.interp(ti,idx,x2))
     #                         ax2_tickLabels.append('%.1f' % x2[int(round(ti))])
     #                         ax2_tickLabels.append(x2[int(ti)])
-                            print t,ti,np.interp(ti,idx,x2)
+                            print(t,ti,np.interp(ti,idx,x2))
     #  
-                        print 'ax ticks: ',ax.get_xticks()
-                        print ax2_tickLabels
+                        print('ax ticks: ',ax.get_xticks())
+                        print(ax2_tickLabels)
     #                    ax2.set_xticks(ax1_ticks) # set the locations of the xticks at the same places as in the initial x axis
                         ax2.set_xticks(ax1_ticks)
                         ax2.set_xlim(ax.get_xlim())
@@ -4962,7 +5085,7 @@ def makeFunctionPlot(inFile):
                 fname = option.outputFile
                 fig.savefig(fname, dpi=option.DPI, transparent=option.transparent)
             else:
-                print "no output file name given, will not save"
+                print("no output file name given, will not save")
                 
             if option.show:
                 show()
@@ -4986,9 +5109,9 @@ def makeFunctionPlot(inFile):
     
     
 def plotLabelsFromFile(fig, ax, plotType):
-    print "-------------------------------"
-    print "plotting labels from file"
-    print "-------------------------------"
+    print("-------------------------------")
+    print("plotting labels from file")
+    print("-------------------------------")
     # first read the data from the file
     f = open(option.plotLabelsFromFile, "r")
     c1 = list()
@@ -5006,8 +5129,8 @@ def plotLabelsFromFile(fig, ax, plotType):
         if line[0] != '#':
 #            s=line.split([' ','\n'])
             s = line.decode("utf-8").split()
-            print s
-            print s[0]
+            print(s)
+            print(s[0])
             c1.append(s[0])
             c2.append(s[1])
             ps.append(int(s[2]))
@@ -5028,8 +5151,8 @@ def plotLabelsFromFile(fig, ax, plotType):
                 S = S + ' ' + part
             txt.append(S)
     f.close()
-    print ha
-    print va
+    print(ha)
+    print(va)
 
 #    rcParams["text.usetex"] = False
 #    import matplotlib.font_manager as fm
@@ -5045,8 +5168,8 @@ def plotLabelsFromFile(fig, ax, plotType):
                 xpt, ypt = projectMap(-c1[iloc], c2[iloc])
             else:
                 xpt, ypt = projectMap(c1[iloc], c2[iloc])
-            print ha[iloc]
-            print va[iloc]
+            print(ha[iloc])
+            print(va[iloc])
             if ha[iloc] == 'l':
                 hAlign = 'left'
             if ha[iloc] == 'r':
@@ -5059,14 +5182,14 @@ def plotLabelsFromFile(fig, ax, plotType):
                 vAlign = 'bottom'
             if va[iloc] == 'c':
                 hAlign = 'center'
-            print hAlign, vAlign
+            print(hAlign, vAlign)
 #            rc('text', fontsize=labelSize[iloc], color='#000000')
 #            rc('xtick', labelsize=15, color='#000000')
 #            rc('ytick', labelsize=15, color='#000000')
 #    rc('text', labelsize=15, color='#000000')
 #            text(xpt,ypt,txt[iloc],fontsize=labelSize[iloc], horizontalalignment=hAlign, verticalalignment=vAlign, fontproperties=fp1)
 #            rcParams['text.usetex'] = True
-            text(xpt, ypt, unicode(txt[iloc]), fontsize=labelSize[iloc], horizontalalignment=hAlign, verticalalignment=vAlign)
+            text(xpt, ypt, str(txt[iloc]), fontsize=labelSize[iloc], horizontalalignment=hAlign, verticalalignment=vAlign)
 #            Lon.append(xpt)
 #            Lat.append(ypt)
 
@@ -5074,7 +5197,7 @@ def plotLabelsFromFile(fig, ax, plotType):
             scatter([xpt], [ypt], c=pc[iloc], s=ps[iloc], lw=option.markerEdgeWidth[i % len(option.markerEdgeWidth)] , marker=pt[iloc])
             
     else:
-        print "plotLabelsFromFile(fig,ax,plotType): IS NOT SUPPORTED FOR OTHER PLOT TYPES THAN sphere YET, SORRY."    
+        print("plotLabelsFromFile(fig,ax,plotType): IS NOT SUPPORTED FOR OTHER PLOT TYPES THAN sphere YET, SORRY.")    
         sys.exit()
     
 
@@ -5093,8 +5216,8 @@ def plotVerticalLinesWithLabelsFromFile(fig, ax):
             S = S + ' ' + part
         labels.append(S)
     f.close()
-    print freq
-    print labels
+    print(freq)
+    print(labels)
     i = 0
 #    dash_style = (
 #    (0, 20, -15, 30, 10),
@@ -5196,30 +5319,30 @@ while 1:
     #    if option.st==0 and option.en==0:
     #        print "Too few parameters given"
     #        sys.exit(0)
-    print
-    print "Loading data"
-    print
+    print()
+    print("Loading data")
+    print()
     inFile = list()
     for i in arange(len(args)):
         plotTypeIdx = i % len(option.plotType)
         globalPlotTypeIdx = plotTypeIdx
     
-        print "=================================================== LOADING DATASET %i ====================================================" % i
-        print "Loading file: %s" % args[i]
+        print("=================================================== LOADING DATASET %i ====================================================" % i)
+        print("Loading file: %s" % args[i])
         if option.PR:
-            print "this is not implemented yet"
+            print("this is not implemented yet")
             plotPOVray_file(args[i])
         else:
             if option.fits or option.fileFormat[i % len (option.fileFormat)] == 'fits':
                 hdulist = pyfits.open(args[i])
-                print hdulist.info()
+                print(hdulist.info())
                 tbdata = hdulist[option.hdu[i % len(option.hdu)]].data  # assuming the first extension is a table
                 s = array([])
-                print "Selected HDU coluns names"
+                print("Selected HDU coluns names")
                 colNames = hdulist[option.hdu[i % len(option.hdu)]].columns.names
                 colFormats = hdulist[option.hdu[i % len(option.hdu)]].columns.formats
-                print colNames
-                print colFormats
+                print(colNames)
+                print(colFormats)
                 fidx = 0
                 loadedColumns = list()
                 numericColNo = -1
@@ -5228,9 +5351,9 @@ while 1:
                         numericColNo = numericColNo + 1
                         s = np.append(s, array(tbdata.field(c)))
                         loadedColumns.append(c)
-                        print "%i) %s --> %i" % (fidx, c, numericColNo)
+                        print("%i) %s --> %i" % (fidx, c, numericColNo))
                     fidx = fidx + 1
-                print 'len(loadedColumns)', len(loadedColumns)
+                print('len(loadedColumns)', len(loadedColumns))
                 slice = transpose(s.reshape(len(loadedColumns), -1))  # make sure slice is an array, and not scalar in case of a single hdu in file
                 if len(option.where) > 0:
                     slice = filterData(slice, option.where[i % len(option.where)], loadedColumns)
@@ -5288,14 +5411,14 @@ while 1:
                             inFile.append(hdf5data)
                         elif option.plotType[plotTypeIdx] == 'mayaVol' and len(hdf5data) == 3:
                             inFile.append(np.array(hdf5data, dtype='float'))
-                            print len(hdf5data)
+                            print(len(hdf5data))
                         else:
                             if len(hdf5data) == 3:
                                 slice = f[hdf5dset[i % len(hdf5dset)]].value[:, :, option.hdf5slice]
-                                print "slice"
+                                print("slice")
     #                            print slice
                             else:
-                                print "slice2"
+                                print("slice2")
                                 slice = hdf5data
     #                            print slice
                             inFile.append(slice.T)
@@ -5327,10 +5450,10 @@ while 1:
                         if option.plotType[plotTypeIdx] == 'vect' or option.plotType[plotTypeIdx] == 'ts' or option.plotType[plotTypeIdx] == 'fn' or option.plotType[plotTypeIdx] == 'step' or option.plotType[plotTypeIdx] == 'err' or option.plotType[plotTypeIdx] == 'fnshaded' or option.plotType[plotTypeIdx] == 'fillbtwX'  or option.plotType[plotTypeIdx] == 'fillbtwY' or option.plotType[plotTypeIdx] == 'scat' or option.plotType[plotTypeIdx] == 'scat3d' or option.plotType[plotTypeIdx] == 'scatContFill' or option.plotType[plotTypeIdx] == 'scatContFillD' or option.plotType[plotTypeIdx] == 'scatDensContFill' or option.plotType[plotTypeIdx] == 'scatDensCont' or option.plotType[plotTypeIdx] == 'sphere' or option.plotType[plotTypeIdx] == 'hist' or option.plotType[plotTypeIdx] == 'circ' or option.plotType[plotTypeIdx] == 'mayaScat':
                             if option.big:  # or len(option.rows)>0:
                                 if args[i] == "stdin":
-                                    print "warning: option big cannot read from stdin yet. The result might not be what you wanted."
+                                    print("warning: option big cannot read from stdin yet. The result might not be what you wanted.")
                                     sys.exit()
                                 if 'txtCol' in option.fileFormat[i % len (option.fileFormat)]:
-                                    print "warning: format txtCol=X cannot read from stdin yet."
+                                    print("warning: format txtCol=X cannot read from stdin yet.")
                                     sys.exit()
                                 inFile.append(loadDataFromFile(args[i], option.colx[i % len(option.colx)], option.coly[i % len(option.coly)], 
                                                                option.startFrom, option.rows[i % len(option.rows)], option.every[i % len(option.every)], 
@@ -5338,7 +5461,7 @@ while 1:
                             else:
                                 if args[i] == "stdin":
                                     if globalStdInData == '':
-                                        globalStdInData = np.loadtxt(sys.stdin)
+                                        globalStdInData = np.loadtxt(sys.stdin, dtype=str)
         #                            inFile.append(np.loadtxt(sys.stdin))
                                     inFile.append(globalStdInData)
                                 elif 'UDP=' in args[i]:
@@ -5394,7 +5517,10 @@ while 1:
                     if option.plotType[plotTypeIdx] == 'map':
                         cmd = ''
                         if args[i][-7:] == '-Tn-bin':
-                            cmd = 'draw_maps %s -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                            cmd = 'draw_maps %s -o lonlat --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                            # cmd = 'draw_maps %s -o lonlat   --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
+                            if option.reverseLon:
+                                cmd+=' --reverse_l '
                             cpedsPythCommon.sayAndExecute("Exporting data from binary file", cmd, 1)
                         if args[i][-5:] == '.fits':
                             if option.fileFormat[i % len (option.fileFormat)] == 'fitsWMAP':
@@ -5403,32 +5529,32 @@ while 1:
                                 cmd = 'draw_maps %s --ft fitsPL -o lonlat --reverse_l --cyclic  --resX %i --resY %i' % (args[i], option.mapPts, option.mapPts)
                             cpedsPythCommon.sayAndExecute("Exporting data from binary file", cmd, 1)
             
-                        inFile.append(array([np.loadtxt(args[i] + '.lonlatT'), np.loadtxt(args[i] + '.lon'), np.loadtxt(args[i] + '.lat')]))
+                        inFile.append([np.loadtxt(args[i] + '.lonlatT'), np.loadtxt(args[i] + '.lon'), np.loadtxt(args[i] + '.lat')])
         if option.transpose:
             inFile[-1] = inFile[-1].T
-            print inFile[-1]
+            print(inFile[-1])
 
     
     for i in arange(len(inFile)):
-        print i, len(inFile)
+        print(i, len(inFile))
         plotTypeIdx = i
         if option.plotType[plotTypeIdx % len(option.plotType)] != 'img' and option.plotType[plotTypeIdx % len(option.plotType)] != 'map' and option.plotType[plotTypeIdx % len(option.plotType)] != 'PR':
-            print 'shape is:'
-            print inFile[i].shape
-            print 'len shape is:'
-            print len(inFile[i].shape)
+            print('shape is:')
+            print(inFile[i].shape)
+            print('len shape is:')
+            print(len(inFile[i].shape))
             if len(inFile[i].shape) == 0:
-                print 'single number'
+                print('single number')
                 inFile[i] = array([[inFile[i]]])
                 
             if len(inFile[i].shape) == 1 and inFile[i].shape[0] == 2:
-                print 'single pair of numbers'
+                print('single pair of numbers')
                 inFile[i] = array([inFile[i]])
                 
             if len(inFile[i].shape) == 1 and inFile[i].shape[0] > 2:
-                print 'single vector'
+                print('single vector')
                 if option.asCol:
-                    print "treating this as a column vector"
+                    print("treating this as a column vector")
                     inFile[i] = array([inFile[i]]).transpose()
                 else:
                     inFile[i] = array([inFile[i]])
@@ -5437,11 +5563,11 @@ while 1:
     #    print inFile[i]
         sys.exit()
         
-    print
-    print "Generating data"
-    print
+    print()
+    print("Generating data")
+    print()
     for i in arange(len(option.plotCircle)):
-        print "Generating circles"
+        print("Generating circles")
         lbr = array([ toFloat(v) for v in option.plotCircle[i].split(',') ])
         cmd = '%sdraw_maps nofile %s --tl %lf --tb %lf --tv 1 --ts %lf --plot_reg_type emptydot --dont_plot_zero -o lb' % (option.draw_maps_path, option.draw_maps_options, lbr[0], lbr[1], lbr[2])
         os.system(cmd)
@@ -5449,9 +5575,9 @@ while 1:
         os.remove('lb')
         
     if option.mk11line:
-        print "Generating 11line"
+        print("Generating 11line")
         xy = np.array([[option.xmin[0], option.xmin[0]], [option.xmax[0], option.xmax[0]]])
-        print xy
+        print(xy)
         inFile.append(xy)
         option.colx.append(0)
         option.coly.append(1)
@@ -5468,14 +5594,14 @@ while 1:
     # generate z-order
     #
     if len(option.zorder) == 0:
-        print 'GENERATING Z-ORDER'
+        print('GENERATING Z-ORDER')
         for i in np.arange(len(inFile)):
             option.zorder.append(i)
         
     
-    print
-    print "Plotting"
-    print
+    print()
+    print("Plotting")
+    print()
     
     
     
@@ -5488,9 +5614,9 @@ while 1:
         fig, ax = makeFunctionPlot(inFile)
     
     
-    print "done"
-    print "---------- "
-    print
+    print("done")
+    print("---------- ")
+    print()
     
     if option.continuousPotting == False:
         sys.exit(0)

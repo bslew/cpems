@@ -43,7 +43,8 @@ class cpedsRNG {
 /* ---------------------------------------------------------------------------------------------------- */
  public:
 
-	 typedef enum { uniform, gaussian, gaussian_invcdf, gaussian_circle, gaussian_power_law, gaussian_power_law_t, gaussian_power_law_t2, gaussian_power_law_fft, from_array_invCDF, from_array_invCDF2d } distrType;
+	 typedef enum { uniform, gaussian, gaussian_invcdf, gaussian_circle, gaussian_power_law, gaussian_power_law_t, gaussian_power_law_t2, gaussian_power_law_fft, from_array_invCDF, from_array_invCDF2d,
+		 from_array_invCDF_sample} distrType;
 
 /* ------------- */
 /* CLASS FRIENDS */
@@ -70,6 +71,7 @@ class cpedsRNG {
     "gaussianPowerLaw_fft" - gaussian with defined power law spectrum but generated in Fourier space. Once calculated, all numbers are stored in memory.\n
     "invCDF" - random numbers from provided tabulated CDF distribution.
     "invCDF2d" - random numbers from provided tabulated CDF distribution.
+	"invCDF_sample" - as invCDF but the random numbers for sampling CDF are taken from the provided sample set with setRandomSample
 
     @param rn - indicates data type of random numbers: now only "double" supported
     @param generator - specifies the random number generator to be used (default: gsl_rng_mt19937)
@@ -78,6 +80,8 @@ class cpedsRNG {
   */
   cpedsRNG(string distr="uniform", string rn="double", const gsl_rng_type* generator=gsl_rng_mt19937, long seed_ini=0, long seed_offset=0) {
     _seed=seed_ini;
+//    srand (time(NULL));
+//    _seed=rand();
     _seed_offset=seed_offset;
     initiateRNG(distr, rn, generator);
   }
@@ -118,6 +122,8 @@ class cpedsRNG {
   //! define the distribution type
   void setRNsType(distrType distr);
 
+  void setRandomSample(cpedsList<double> sample);
+  
   /*!
     \brief defines the PDF for RNs generation
   \details 
@@ -133,6 +139,14 @@ class cpedsRNG {
   \author Bartosz Lew
   */
   void setPDF(long size, double* x, double *p);
+  /*!
+	\brief alternative to setPDF
+	\details 
+	@param as in setPDF
+
+	\date Jun 12, 2021, 5:22:37 PM
+*/
+  void setCDF(long size, double* x, double *p);
 
   /*!
 	\brief defines the 2-d PDF for RNs generation
@@ -178,11 +192,11 @@ class cpedsRNG {
   //! returns the theoretical requested maximal value for the uniform RNs
   double Max() const {return _max; }
   //! sets the mean and standard deviation (not variance!!) value for the gaussian RNs
-  void setMeanVariance(double m, double v) { _mean=m; _variance=v; }
+  void setMeanStd(double m, double s) { _mean=m; _stdev=s; }
   //! returns the theoretical requested mean for the gaussian RNs
   double mean() const { return _mean; }
   //! returns the theoretical variance mean for the gaussian RNs
-  double variance() const { return _variance; }
+  double gauss_std() const { return _stdev; }
   //! set the number of numbers uniformly distributed that will be used to create the gaussian distributed variate
   void setCentralLimitNumbers(long n) { _centralLimitNumbers=n; }
   //! get the number of numbers uniformly distributed that will be used to create the gaussian distributed variate
@@ -277,7 +291,7 @@ class cpedsRNG {
   long _seed;
   long _seed_offset;
   double _min,_max;
-  double _mean, _variance;
+  double _mean, _stdev;
   long _centralLimitNumbers;
   double *gCDF;
   double *gCDF2d;
@@ -288,7 +302,8 @@ class cpedsRNG {
   long gCDFsize2d;
   long gCDFsizeX, gCDFsizeY; // for the case of 2d PDF
   long long _drawsCount;
-
+  cpedsList<double> random_sample;
+  
   gsl_rng* _state;
   const gsl_rng_type* _generator_type;
   

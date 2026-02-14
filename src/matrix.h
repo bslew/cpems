@@ -213,10 +213,10 @@ inline void _matrix_error (const char* pErrMsg)
 
 #if !defined(_NO_TEMPLATE)
 #  define MAT_TEMPLATE  template <class T>
-#  define matrixT  matrix<T>
+#  define matrixTbl  matrix<T>
 #else
 #  define MAT_TEMPLATE
-#  define matrixT  matrix
+#  define matrixTbl  matrix
 #  ifdef MATRIX_TYPE
      typedef MATRIX_TYPE T;
 #  else
@@ -230,15 +230,15 @@ class matrix
 {
 public:
    // Constructors
-   matrix (const matrixT& m);
+   matrix (const matrixTbl& m);
    matrix (size_t row = 0, size_t col = 0);
 
    // Destructor
    ~matrix ();
 
    // Assignment operators
-   matrixT& operator = (const matrixT& m) _NO_THROW;
-   matrixT& operator = (const T& v) _NO_THROW;
+   matrixTbl& operator = (const matrixTbl& m) _NO_THROW;
+   matrixTbl& operator = (const T& v) _NO_THROW;
 
    // cast operator
    /* operator long(); */
@@ -253,18 +253,18 @@ public:
    T  operator () (size_t row, size_t col) const _THROW_MATRIX_ERROR;
 
    // Unary operators
-   matrixT operator + () _NO_THROW { return *this; }
-   matrixT operator - () _NO_THROW;
+   matrixTbl operator + () _NO_THROW { return *this; }
+   matrixTbl operator - () _NO_THROW;
 
    // Combined assignment - calculation operators
-   matrixT& operator += (const matrixT& m) _THROW_MATRIX_ERROR;
-   matrixT& operator -= (const matrixT& m) _THROW_MATRIX_ERROR;
-   matrixT& operator *= (const matrixT& m) _THROW_MATRIX_ERROR;
-   matrixT& operator -= (const T& c) _NO_THROW;
-   matrixT& operator += (const T& c) _NO_THROW;
-   matrixT& operator *= (const T& c) _NO_THROW;
-   matrixT& operator /= (const T& c) _NO_THROW;
-   matrixT& operator ^= (const size_t& pow) _THROW_MATRIX_ERROR;
+   matrixTbl& operator += (const matrixTbl& m) _THROW_MATRIX_ERROR;
+   matrixTbl& operator -= (const matrixTbl& m) _THROW_MATRIX_ERROR;
+   matrixTbl& operator *= (const matrixTbl& m) _THROW_MATRIX_ERROR;
+   matrixTbl& operator -= (const T& c) _NO_THROW;
+   matrixTbl& operator += (const T& c) _NO_THROW;
+   matrixTbl& operator *= (const T& c) _NO_THROW;
+   matrixTbl& operator /= (const T& c) _NO_THROW;
+   matrixTbl& operator ^= (const size_t& pow) _THROW_MATRIX_ERROR;
 
    // Miscellaneous -methods
    void Null (const size_t& row, const size_t& col) _NO_THROW;
@@ -279,9 +279,9 @@ public:
 
 
    // Utility methods
-   matrixT Solve (const matrixT& v) const _THROW_MATRIX_ERROR;
-   matrixT Adj () _THROW_MATRIX_ERROR;
-   matrixT Inv () _THROW_MATRIX_ERROR;
+   matrixTbl Solve (const matrixTbl& v) const _THROW_MATRIX_ERROR;
+   matrixTbl Adj () _THROW_MATRIX_ERROR;
+   matrixTbl Inv () _THROW_MATRIX_ERROR;
    T Det () const _THROW_MATRIX_ERROR;
    T Norm () _NO_THROW;
    T Cofact (size_t row, size_t col) _THROW_MATRIX_ERROR;
@@ -352,7 +352,7 @@ private:
 
 // constructor
 MAT_TEMPLATE inline
-matrixT::matrix (size_t row, size_t col)
+matrixTbl::matrix (size_t row, size_t col)
 {
   _m = new base_mat( row, col, 0);
   Null(); // BL modification 2009/11/24 01:13:44 
@@ -360,7 +360,7 @@ matrixT::matrix (size_t row, size_t col)
 
 // copy constructor
 MAT_TEMPLATE inline
-matrixT::matrix (const matrixT& m)
+matrixTbl::matrix (const matrixTbl& m)
 {
 	_m = m._m;		
 	_m->Refcnt++;		
@@ -368,7 +368,7 @@ matrixT::matrix (const matrixT& m)
 
 // Internal copy constructor
 MAT_TEMPLATE inline void
-matrixT::clone ()
+matrixTbl::clone ()
 {
     _m->Refcnt--;
     _m = new base_mat( _m->Row, _m->Col, _m->Val);
@@ -376,14 +376,14 @@ matrixT::clone ()
 
 // destructor
 MAT_TEMPLATE inline
-matrixT::~matrix ()
+matrixTbl::~matrix ()
 {
    if (--_m->Refcnt == 0) delete _m;
 }
 
 // assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator = (const matrixT& m) _NO_THROW
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator = (const matrixTbl& m) _NO_THROW
 {
     m._m->Refcnt++;
     if (--_m->Refcnt == 0) delete _m;
@@ -391,8 +391,8 @@ matrixT::operator = (const matrixT& m) _NO_THROW
     return *this;
 }
 
- MAT_TEMPLATE inline matrixT&
-   matrixT::operator = (const T& v) _NO_THROW {
+ MAT_TEMPLATE inline matrixTbl&
+   matrixTbl::operator = (const T& v) _NO_THROW {
    
    if (_m->Refcnt > 1) clone();
    for (size_t i=0; i < _m->Row; i++)
@@ -403,7 +403,7 @@ matrixT::operator = (const matrixT& m) _NO_THROW
 
 //  reallocation method
 MAT_TEMPLATE inline void 
-matrixT::realloc (size_t row, size_t col)
+matrixTbl::realloc (size_t row, size_t col)
 {
    if (row == _m->RowSiz && col == _m->ColSiz)
    {
@@ -428,7 +428,7 @@ matrixT::realloc (size_t row, size_t col)
 
 // public method for resizing matrix
 MAT_TEMPLATE inline void
-matrixT::SetSize (size_t row, size_t col) _NO_THROW
+matrixTbl::SetSize (size_t row, size_t col) _NO_THROW
 {
    size_t i,j;
    size_t oldRow = _m->Row;
@@ -448,12 +448,12 @@ matrixT::SetSize (size_t row, size_t col) _NO_THROW
    return;
 }
  
-MAT_TEMPLATE inline void matrixT::delCol(size_t col) _NO_THROW {
+MAT_TEMPLATE inline void matrixTbl::delCol(size_t col) _NO_THROW {
   size_t i,j;
   size_t oldRow = _m->Row;
   size_t oldCol = _m->Col;
   size_t cols=oldCol-1;
-  matrixT tmp(oldRow,cols);
+  matrixTbl tmp(oldRow,cols);
 
   if (col>=0 && col < oldCol) {  
     for (i=0; i < oldRow; i++) {
@@ -471,13 +471,13 @@ MAT_TEMPLATE inline void matrixT::delCol(size_t col) _NO_THROW {
   }
 }
 
-MAT_TEMPLATE inline void matrixT::delCol(size_t colFrom, size_t colTo) _NO_THROW {
+MAT_TEMPLATE inline void matrixTbl::delCol(size_t colFrom, size_t colTo) _NO_THROW {
   size_t i,j,k;
   size_t oldRow = _m->Row;
   size_t oldCol = _m->Col;
   k=colTo-colFrom+1;
   size_t cols=oldCol-k;
-  matrixT tmp(oldRow,cols);
+  matrixTbl tmp(oldRow,cols);
 
   if (colFrom>=0 && colTo>=0 && colFrom < oldCol && colTo < oldCol && colFrom<=colTo) {  
     for (i=0; i < oldRow; i++) {
@@ -496,12 +496,12 @@ MAT_TEMPLATE inline void matrixT::delCol(size_t colFrom, size_t colTo) _NO_THROW
 
 }
 
-MAT_TEMPLATE inline void matrixT::delRow(size_t row) _NO_THROW {
+MAT_TEMPLATE inline void matrixTbl::delRow(size_t row) _NO_THROW {
   size_t i,j;
   size_t oldRow = _m->Row;
   size_t oldCol = _m->Col;
   size_t rows=oldRow-1;
-  matrixT tmp(rows,oldCol);
+  matrixTbl tmp(rows,oldCol);
   
   if (row>=0 && row < oldRow) {  
     for (j=0; j < oldCol; j++) {
@@ -521,13 +521,13 @@ MAT_TEMPLATE inline void matrixT::delRow(size_t row) _NO_THROW {
   }
 }
 
-MAT_TEMPLATE inline void matrixT::delRow(size_t rowFrom, size_t rowTo) _NO_THROW {
+MAT_TEMPLATE inline void matrixTbl::delRow(size_t rowFrom, size_t rowTo) _NO_THROW {
   size_t i,j,k;
   size_t oldRow = _m->Row;
   size_t oldCol = _m->Col;
   k=rowTo-rowFrom+1;
   size_t rows=oldRow-k;
-  matrixT tmp(rows,oldCol);
+  matrixTbl tmp(rows,oldCol);
   
   if (rowFrom>=0 && rowTo>=0 && rowFrom < oldRow && rowTo < oldRow && rowFrom<=rowTo) {  
     for (j=0; j < oldCol; j++) {
@@ -550,26 +550,26 @@ MAT_TEMPLATE inline void matrixT::delRow(size_t rowFrom, size_t rowTo) _NO_THROW
 
 // subscript operator to get/set individual elements
 MAT_TEMPLATE inline T&
-matrixT::operator () (size_t row, size_t col) _THROW_MATRIX_ERROR
+matrixTbl::operator () (size_t row, size_t col) _THROW_MATRIX_ERROR
 {
    if (row >= _m->Row || col >= _m->Col)
-      REPORT_ERROR( "matrixT::operator(): Index out of range!");
+      REPORT_ERROR( "matrixTbl::operator(): Index out of range!");
    if (_m->Refcnt > 1) clone();
    return _m->Val[row][col];
 }
 
 // subscript operator to get/set individual elements
 MAT_TEMPLATE inline T
-matrixT::operator () (size_t row, size_t col) const _THROW_MATRIX_ERROR
+matrixTbl::operator () (size_t row, size_t col) const _THROW_MATRIX_ERROR
 {
    if (row >= _m->Row || col >= _m->Col)
-      REPORT_ERROR( "matrixT::operator(): Index out of range!");
+      REPORT_ERROR( "matrixTbl::operator(): Index out of range!");
    return _m->Val[row][col];
 }
 
 // input stream function
 MAT_TEMPLATE inline istream&
-operator >> (istream& istrm, matrixT& m)
+operator >> (istream& istrm, matrixTbl& m)
 {
    for (size_t i=0; i < m.RowNo(); i++)
       for (size_t j=0; j < m.ColNo(); j++)
@@ -583,7 +583,7 @@ operator >> (istream& istrm, matrixT& m)
 
 // output stream function
 MAT_TEMPLATE inline ostream&
-operator << (ostream& ostrm, const matrixT& m)
+operator << (ostream& ostrm, const matrixTbl& m)
 {
    for (size_t i=0; i < m.RowNo(); i++)
    {
@@ -600,7 +600,7 @@ operator << (ostream& ostrm, const matrixT& m)
 
 // logical equal-to operator
 MAT_TEMPLATE inline bool
-operator == (const matrixT& m1, const matrixT& m2) _NO_THROW
+operator == (const matrixTbl& m1, const matrixTbl& m2) _NO_THROW
 {
    if (m1.RowNo() != m2.RowNo() || m1.ColNo() != m2.ColNo())
       return false;
@@ -615,17 +615,17 @@ operator == (const matrixT& m1, const matrixT& m2) _NO_THROW
 
 // logical no-equal-to operator
 MAT_TEMPLATE inline bool
-operator != (const matrixT& m1, const matrixT& m2) _NO_THROW
+operator != (const matrixTbl& m1, const matrixTbl& m2) _NO_THROW
 {
     return (m1 == m2) ? false : true;
 }
 
 // combined addition and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator += (const matrixT& m) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator += (const matrixTbl& m) _THROW_MATRIX_ERROR
 {
    if (_m->Row != m._m->Row || _m->Col != m._m->Col)
-      REPORT_ERROR( "matrixT::operator+= : Inconsistent matrix sizes in addition!");
+      REPORT_ERROR( "matrixTbl::operator+= : Inconsistent matrix sizes in addition!");
    if (_m->Refcnt > 1) clone();
    for (size_t i=0; i < m._m->Row; i++)
       for (size_t j=0; j < m._m->Col; j++)
@@ -634,11 +634,11 @@ matrixT::operator += (const matrixT& m) _THROW_MATRIX_ERROR
 }
 
 // combined subtraction and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator -= (const matrixT& m) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator -= (const matrixTbl& m) _THROW_MATRIX_ERROR
 {
    if (_m->Row != m._m->Row || _m->Col != m._m->Col)
-      REPORT_ERROR( "matrixT::operator-= : Inconsistent matrix sizes in subtraction!");
+      REPORT_ERROR( "matrixTbl::operator-= : Inconsistent matrix sizes in subtraction!");
    if (_m->Refcnt > 1) clone();
    for (size_t i=0; i < m._m->Row; i++)
       for (size_t j=0; j < m._m->Col; j++)
@@ -647,8 +647,8 @@ matrixT::operator -= (const matrixT& m) _THROW_MATRIX_ERROR
 }
 
 // combined scalar subtraction and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator -= (const T& c) _NO_THROW
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator -= (const T& c) _NO_THROW
 {
     if (_m->Refcnt > 1) clone();
     for (size_t i=0; i < _m->Row; i++)
@@ -658,8 +658,8 @@ matrixT::operator -= (const T& c) _NO_THROW
 }
 
 // combined scalar addition and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator += (const T& c) _NO_THROW
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator += (const T& c) _NO_THROW
 {
     if (_m->Refcnt > 1) clone();
     for (size_t i=0; i < _m->Row; i++)
@@ -669,8 +669,8 @@ matrixT::operator += (const T& c) _NO_THROW
 }
 
 // combined scalar multiplication and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator *= (const T& c) _NO_THROW
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator *= (const T& c) _NO_THROW
 {
     if (_m->Refcnt > 1) clone();
     for (size_t i=0; i < _m->Row; i++)
@@ -680,13 +680,13 @@ matrixT::operator *= (const T& c) _NO_THROW
 }
 
 // combined matrix multiplication and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator *= (const matrixT& m) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator *= (const matrixTbl& m) _THROW_MATRIX_ERROR
 {
    if (_m->Col != m._m->Row)
-      REPORT_ERROR( "matrixT::operator*= : Inconsistent matrix sizes in multiplication!");
+      REPORT_ERROR( "matrixTbl::operator*= : Inconsistent matrix sizes in multiplication!");
 
-   matrixT temp(_m->Row,m._m->Col);
+   matrixTbl temp(_m->Row,m._m->Col);
 
    for (size_t i=0; i < _m->Row; i++)
       for (size_t j=0; j < m._m->Col; j++)
@@ -701,8 +701,8 @@ matrixT::operator *= (const matrixT& m) _THROW_MATRIX_ERROR
 }
 
 // combined scalar division and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator /= (const T& c) _NO_THROW
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator /= (const T& c) _NO_THROW
 {
     if (_m->Refcnt > 1) clone();
     for (size_t i=0; i < _m->Row; i++)
@@ -713,10 +713,10 @@ matrixT::operator /= (const T& c) _NO_THROW
 }
 
 // combined power and assignment operator
-MAT_TEMPLATE inline matrixT&
-matrixT::operator ^= (const size_t& pow) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl&
+matrixTbl::operator ^= (const size_t& pow) _THROW_MATRIX_ERROR
 {
-	matrixT temp(*this);
+	matrixTbl temp(*this);
 
 	for (size_t i=2; i <= pow; i++)
       *this = *this * temp;
@@ -725,10 +725,10 @@ matrixT::operator ^= (const size_t& pow) _THROW_MATRIX_ERROR
 }
 
 // unary negation operator
-MAT_TEMPLATE inline matrixT
-matrixT::operator - () _NO_THROW
+MAT_TEMPLATE inline matrixTbl
+matrixTbl::operator - () _NO_THROW
 {
-   matrixT temp(_m->Row,_m->Col);
+   matrixTbl temp(_m->Row,_m->Col);
 
    for (size_t i=0; i < _m->Row; i++)
       for (size_t j=0; j < _m->Col; j++)
@@ -738,85 +738,85 @@ matrixT::operator - () _NO_THROW
 }
 
 // binary addition operator
-MAT_TEMPLATE inline matrixT
-operator + (const matrixT& m1, const matrixT& m2) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+operator + (const matrixTbl& m1, const matrixTbl& m2) _THROW_MATRIX_ERROR
 {
-   matrixT temp = m1;
+   matrixTbl temp = m1;
    temp += m2;
    return temp;
 }
 
 // binary subtraction operator
-MAT_TEMPLATE inline matrixT
-operator - (const matrixT& m1, const matrixT& m2) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+operator - (const matrixTbl& m1, const matrixTbl& m2) _THROW_MATRIX_ERROR
 {
-   matrixT temp = m1;
+   matrixTbl temp = m1;
    temp -= m2;
    return temp;
 }
 
 // binary scalar multiplication operator
-MAT_TEMPLATE inline matrixT
-operator * (const matrixT& m, const T& no) _NO_THROW
+MAT_TEMPLATE inline matrixTbl
+operator * (const matrixTbl& m, const T& no) _NO_THROW
 {
-   matrixT temp = m;
+   matrixTbl temp = m;
    temp *= no;
    return temp;
 }
 
 
 // binary scalar multiplication operator
-MAT_TEMPLATE inline matrixT
-operator * (const T& no, const matrixT& m) _NO_THROW
+MAT_TEMPLATE inline matrixTbl
+operator * (const T& no, const matrixTbl& m) _NO_THROW
 {
    return (m * no);
 }
 
 // binary matrix multiplication operator
-MAT_TEMPLATE inline matrixT
-operator * (const matrixT& m1, const matrixT& m2) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+operator * (const matrixTbl& m1, const matrixTbl& m2) _THROW_MATRIX_ERROR
 {
-   matrixT temp = m1;
+   matrixTbl temp = m1;
    temp *= m2;
    return temp;
 }
 
 // binary scalar division operator
-MAT_TEMPLATE inline matrixT
-operator / (const matrixT& m, const T& no) _NO_THROW
+MAT_TEMPLATE inline matrixTbl
+operator / (const matrixTbl& m, const T& no) _NO_THROW
 {
     return (m * (T(1) / no));
 }
 
 
 // binary scalar division operator
-MAT_TEMPLATE inline matrixT
-operator / (const T& no, const matrixT& m) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+operator / (const T& no, const matrixTbl& m) _THROW_MATRIX_ERROR
 {
     return (!m * no);
 }
 
 // binary matrix division operator
-MAT_TEMPLATE inline matrixT
-operator / (const matrixT& m1, const matrixT& m2) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+operator / (const matrixTbl& m1, const matrixTbl& m2) _THROW_MATRIX_ERROR
 {
     return (m1 * !m2);
 }
 
 // binary power operator
-MAT_TEMPLATE inline matrixT
-operator ^ (const matrixT& m, const size_t& pow) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+operator ^ (const matrixTbl& m, const size_t& pow) _THROW_MATRIX_ERROR
 {
-   matrixT temp = m;
+   matrixTbl temp = m;
    temp ^= pow;
    return temp;
 }
 
 // unary transpose operator
-MAT_TEMPLATE inline matrixT
-operator ~ (const matrixT& m) _NO_THROW
+MAT_TEMPLATE inline matrixTbl
+operator ~ (const matrixTbl& m) _NO_THROW
 {
-   matrixT temp(m.ColNo(),m.RowNo());
+   matrixTbl temp(m.ColNo(),m.RowNo());
 
    for (size_t i=0; i < m.RowNo(); i++)
       for (size_t j=0; j < m.ColNo(); j++)
@@ -828,24 +828,24 @@ operator ~ (const matrixT& m) _NO_THROW
 }
 
 // unary inversion operator
-MAT_TEMPLATE inline matrixT
-operator ! (const matrixT m) _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+operator ! (const matrixTbl m) _THROW_MATRIX_ERROR
 {
-   matrixT temp = m;
+   matrixTbl temp = m;
    return temp.Inv();
 }
 
 // inversion function
-MAT_TEMPLATE inline matrixT
-matrixT::Inv () _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+matrixTbl::Inv () _THROW_MATRIX_ERROR
 {
    size_t i,j,k;
    T a1,a2,*rowptr;
 
    if (_m->Row != _m->Col)
-      REPORT_ERROR( "matrixT::operator!: Inversion of a non-square matrix");
+      REPORT_ERROR( "matrixTbl::operator!: Inversion of a non-square matrix");
 
-   matrixT temp(_m->Row,_m->Col);
+   matrixTbl temp(_m->Row,_m->Col);
    if (_m->Refcnt > 1) clone();
 
 
@@ -854,7 +854,7 @@ matrixT::Inv () _THROW_MATRIX_ERROR
    {
       int indx = pivot(k);
       if (indx == -1)
-	      REPORT_ERROR( "matrixT::operator!: Inversion of a singular matrix");
+	      REPORT_ERROR( "matrixTbl::operator!: Inversion of a singular matrix");
 
       if (indx != 0)
       {
@@ -883,16 +883,16 @@ matrixT::Inv () _THROW_MATRIX_ERROR
 }
 
 // solve simultaneous equation
-MAT_TEMPLATE inline matrixT
-matrixT::Solve (const matrixT& v) const _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+matrixTbl::Solve (const matrixTbl& v) const _THROW_MATRIX_ERROR
 {
    size_t i,j,k;
    T a1;
 
    if (!(_m->Row == _m->Col && _m->Col == v._m->Row))
-      REPORT_ERROR( "matrixT::Solve():Inconsistent matrices!");
+      REPORT_ERROR( "matrixTbl::Solve():Inconsistent matrices!");
 
-   matrixT temp(_m->Row,_m->Col+v._m->Col);
+   matrixTbl temp(_m->Row,_m->Col+v._m->Col);
    for (i=0; i < _m->Row; i++)
    {
       for (j=0; j < _m->Col; j++)
@@ -904,7 +904,7 @@ matrixT::Solve (const matrixT& v) const _THROW_MATRIX_ERROR
    {
       int indx = temp.pivot(k);
       if (indx == -1)
-	 REPORT_ERROR( "matrixT::Solve(): Singular matrix!");
+	 REPORT_ERROR( "matrixTbl::Solve(): Singular matrix!");
 
       a1 = temp._m->Val[k][k];
       for (j=k; j < temp._m->Col; j++)
@@ -917,7 +917,7 @@ matrixT::Solve (const matrixT& v) const _THROW_MATRIX_ERROR
 	   temp._m->Val[i][j] -= a1 * temp._m->Val[k][j];
       }
    }
-   matrixT s(v._m->Row,v._m->Col);
+   matrixTbl s(v._m->Row,v._m->Col);
    for (k=0; k < v._m->Col; k++)
       for (int m=int(_m->Row)-1; m >= 0; m--)
       {
@@ -930,7 +930,7 @@ matrixT::Solve (const matrixT& v) const _THROW_MATRIX_ERROR
 
 // set zero to all elements of this matrix
 MAT_TEMPLATE inline void
-matrixT::Null (const size_t& row, const size_t& col) _NO_THROW
+matrixTbl::Null (const size_t& row, const size_t& col) _NO_THROW
 {
     if (row != _m->Row || col != _m->Col)
 	realloc( row,col);
@@ -946,7 +946,7 @@ matrixT::Null (const size_t& row, const size_t& col) _NO_THROW
 
 // set zero to all elements of this matrix
 MAT_TEMPLATE inline void
-matrixT::Null() _NO_THROW
+matrixTbl::Null() _NO_THROW
 {
     if (_m->Refcnt > 1) clone();   
     for (size_t i=0; i < _m->Row; i++)
@@ -957,7 +957,7 @@ matrixT::Null() _NO_THROW
 
 // set this matrix to unity
 MAT_TEMPLATE inline void
-matrixT::Unit (const size_t& row) _NO_THROW
+matrixTbl::Unit (const size_t& row) _NO_THROW
 {
     if (row != _m->Row || row != _m->Col)
 	realloc( row, row);
@@ -973,7 +973,7 @@ matrixT::Unit (const size_t& row) _NO_THROW
 
 // set this matrix to unity
 MAT_TEMPLATE inline void
-matrixT::Unit () _NO_THROW
+matrixTbl::Unit () _NO_THROW
 {
     if (_m->Refcnt > 1) clone();   
     size_t row = min(_m->Row,_m->Col);
@@ -987,7 +987,7 @@ matrixT::Unit () _NO_THROW
 
 // private partial pivoting method
 MAT_TEMPLATE inline int
-matrixT::pivot (size_t row)
+matrixTbl::pivot (size_t row)
 {
   int k = int(row);
   double amax,temp;
@@ -1013,15 +1013,15 @@ matrixT::pivot (size_t row)
 
 // calculate the determinant of a matrix
 MAT_TEMPLATE inline T
-matrixT::Det () const _THROW_MATRIX_ERROR
+matrixTbl::Det () const _THROW_MATRIX_ERROR
 {
    size_t i,j,k;
    T piv,detVal = T(1);
 
    if (_m->Row != _m->Col)
-      REPORT_ERROR( "matrixT::Det(): Determinant a non-square matrix!");
+      REPORT_ERROR( "matrixTbl::Det(): Determinant a non-square matrix!");
    
-   matrixT temp(*this);
+   matrixTbl temp(*this);
    if (temp._m->Refcnt > 1) temp.clone();
 
    for (k=0; k < _m->Row; k++)
@@ -1044,7 +1044,7 @@ matrixT::Det () const _THROW_MATRIX_ERROR
 
 // calculate the norm of a matrix
 MAT_TEMPLATE inline T
-matrixT::Norm () _NO_THROW
+matrixTbl::Norm () _NO_THROW
 {
    T retVal = T(0);
 
@@ -1058,25 +1058,25 @@ matrixT::Norm () _NO_THROW
 
 // calculate the condition number of a matrix
 MAT_TEMPLATE inline T
-matrixT::Cond () _NO_THROW
+matrixTbl::Cond () _NO_THROW
 {
-   matrixT inv = ! (*this);
+   matrixTbl inv = ! (*this);
    return (Norm() * inv.Norm());
 }
 
 // calculate the cofactor of a matrix for a given element
 MAT_TEMPLATE inline T
-matrixT::Cofact (size_t row, size_t col) _THROW_MATRIX_ERROR
+matrixTbl::Cofact (size_t row, size_t col) _THROW_MATRIX_ERROR
 {
    size_t i,i1,j,j1;
 
    if (_m->Row != _m->Col)
-      REPORT_ERROR( "matrixT::Cofact(): Cofactor of a non-square matrix!");
+      REPORT_ERROR( "matrixTbl::Cofact(): Cofactor of a non-square matrix!");
 
    if (row > _m->Row || col > _m->Col)
-      REPORT_ERROR( "matrixT::Cofact(): Index out of range!");
+      REPORT_ERROR( "matrixTbl::Cofact(): Index out of range!");
 
-   matrixT temp (_m->Row-1,_m->Col-1);
+   matrixTbl temp (_m->Row-1,_m->Col-1);
 
    for (i=i1=0; i < _m->Row; i++)
    {
@@ -1100,13 +1100,13 @@ matrixT::Cofact (size_t row, size_t col) _THROW_MATRIX_ERROR
 
 
 // calculate adjoin of a matrix
-MAT_TEMPLATE inline matrixT
-matrixT::Adj () _THROW_MATRIX_ERROR
+MAT_TEMPLATE inline matrixTbl
+matrixTbl::Adj () _THROW_MATRIX_ERROR
 {
    if (_m->Row != _m->Col)
-      REPORT_ERROR( "matrixT::Adj(): Adjoin of a non-square matrix.");
+      REPORT_ERROR( "matrixTbl::Adj(): Adjoin of a non-square matrix.");
 
-   matrixT temp(_m->Row,_m->Col);
+   matrixTbl temp(_m->Row,_m->Col);
 
    for (size_t i=0; i < _m->Row; i++)
       for (size_t j=0; j < _m->Col; j++)
@@ -1116,7 +1116,7 @@ matrixT::Adj () _THROW_MATRIX_ERROR
 
 // Determine if the matrix is singular
 MAT_TEMPLATE inline bool
-matrixT::IsSingular () _NO_THROW
+matrixTbl::IsSingular () _NO_THROW
 {
    if (_m->Row != _m->Col)
       return false;
@@ -1125,7 +1125,7 @@ matrixT::IsSingular () _NO_THROW
 
 // Determine if the matrix is diagonal
 MAT_TEMPLATE inline bool
-matrixT::IsDiagonal () _NO_THROW
+matrixTbl::IsDiagonal () _NO_THROW
 {
    if (_m->Row != _m->Col)
       return false;
@@ -1138,7 +1138,7 @@ matrixT::IsDiagonal () _NO_THROW
 
 // Determine if the matrix is scalar
 MAT_TEMPLATE inline bool
-matrixT::IsScalar () _NO_THROW
+matrixTbl::IsScalar () _NO_THROW
 {
    if (!IsDiagonal())
      return false;
@@ -1151,7 +1151,7 @@ matrixT::IsScalar () _NO_THROW
 
 // Determine if the matrix is a unit matrix
 MAT_TEMPLATE inline bool
-matrixT::IsUnit () _NO_THROW
+matrixTbl::IsUnit () _NO_THROW
 {
    if (IsScalar() && _m->Val[0][0] == T(1))
      return true;
@@ -1160,7 +1160,7 @@ matrixT::IsUnit () _NO_THROW
 
 // Determine if this is a null matrix
 MAT_TEMPLATE inline bool
-matrixT::IsNull () _NO_THROW
+matrixTbl::IsNull () _NO_THROW
 {
    for (size_t i=0; i < _m->Row; i++)
       for (size_t j=0; j < _m->Col; j++)
@@ -1171,7 +1171,7 @@ matrixT::IsNull () _NO_THROW
 
 // Determine if the matrix is symmetric
 MAT_TEMPLATE inline bool
-matrixT::IsSymmetric () _NO_THROW
+matrixTbl::IsSymmetric () _NO_THROW
 {
    if (_m->Row != _m->Col)
       return false;
@@ -1184,7 +1184,7 @@ matrixT::IsSymmetric () _NO_THROW
 	   
 // Determine if the matrix is skew-symmetric
 MAT_TEMPLATE inline bool
-matrixT::IsSkewSymmetric () _NO_THROW
+matrixTbl::IsSkewSymmetric () _NO_THROW
 {
    if (_m->Row != _m->Col)
       return false;
@@ -1197,7 +1197,7 @@ matrixT::IsSkewSymmetric () _NO_THROW
    
 // Determine if the matrix is upper triangular
 MAT_TEMPLATE inline bool
-matrixT::IsUpperTriangular () _NO_THROW
+matrixTbl::IsUpperTriangular () _NO_THROW
 {
    if (_m->Row != _m->Col)
       return false;
@@ -1210,7 +1210,7 @@ matrixT::IsUpperTriangular () _NO_THROW
 
 // Determine if the matrix is lower triangular
 MAT_TEMPLATE inline bool
-matrixT::IsLowerTriangular () _NO_THROW
+matrixTbl::IsLowerTriangular () _NO_THROW
 {
    if (_m->Row != _m->Col)
       return false;
@@ -1223,7 +1223,7 @@ matrixT::IsLowerTriangular () _NO_THROW
    return true;
 }
 
-/* MAT_TEMPLATE inline void matrixT::FindMinMaxVal(T *min, T *max) _NO_THROW { */
+/* MAT_TEMPLATE inline void matrixTbl::FindMinMaxVal(T *min, T *max) _NO_THROW { */
 /*   double mi=_m->Val[0][0],ma=_m->Val[0][0]; */
 /*   for (size_t i=0; i < _m->Row; i++) */
 /*     for (size_t j=0; j < _m->Col; j++) { */
@@ -1235,7 +1235,7 @@ matrixT::IsLowerTriangular () _NO_THROW
 /*   *max = ma; */
 /* } */
 
-/* MAT_TEMPLATE matrixT::operator long() { */
+/* MAT_TEMPLATE matrixTbl::operator long() { */
 /*   matrix<long> ml; */
 /*   ml.SetSize(RowNo(),ColNo()); */
 /*   for (size_t i=0; i < _m->Row; i++) */
@@ -1244,7 +1244,7 @@ matrixT::IsLowerTriangular () _NO_THROW
 
 /*   return ml; */
 /* } */
-MAT_TEMPLATE matrixT::operator matrix<double>() const {
+MAT_TEMPLATE matrixTbl::operator matrix<double>() const {
   matrix<double> md;
   md.SetSize(RowNo(),ColNo());
   for (size_t i=0; i < _m->Row; i++)

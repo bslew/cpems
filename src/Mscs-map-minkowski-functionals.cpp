@@ -417,8 +417,12 @@ mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double mi
 					vnu += absgradi;
 				}
 			}
-		vnu *= 0.25 / dnu * fourPI/(double)(u.pixNum()-u.maskedPixNum());
+		long nonMaskedPixNum=u.pixNum()-u.maskedPixNum();
+		if (nonMaskedPixNum==0) vnu=0;
+		else
+			vnu *= 0.25 / dnu * fourPI/(double)(nonMaskedPixNum);
 		mink_v1.newPoint(nu,vnu);
+//		printf("vnu: %lE\n",vnu);
 		nu+=dnu;   
 		nu_min = nu-dnu/2; 
 		nu_max = nu+dnu/2;
@@ -477,7 +481,10 @@ mscsFunction3dregc mscsMap::calculate_minkowski_v0v1v2(long thres_num, double mi
 				}
 			}
 		
-		vnu *= 1.0 / (twoPI*dnu) * fourPI/(double)(u.pixNum()-u.maskedPixNum());
+		long nonMaskedPixNum=u.pixNum()-u.maskedPixNum();
+		if (nonMaskedPixNum==0) vnu=0;
+		else
+			vnu *= 1.0 / (twoPI*dnu) * fourPI/(double)(nonMaskedPixNum);
 		mink_v2.newPoint(nu,vnu);
 		nu+=dnu;   
 		nu_min = nu-dnu/2; 

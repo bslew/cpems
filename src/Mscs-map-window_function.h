@@ -226,6 +226,7 @@ class mscsWindowFunction : public mscsFunction {
   
   
   static double kernelGadget(double R);
+  static double kernelGadget2b(double R);
 
   
   

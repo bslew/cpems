@@ -186,11 +186,13 @@ int main(int argc, char** argv) {
 		rns->seedOffset(0);
 		
 		long N=70000000;
+		N=_Nx;
 		long i=0;
 		while (i<N) {
-			rns->getRNs(1000000).save("1oftest4-70000000",false,"double",10,true);
+			rns->getRNs(50000).save("1oftest4-70000000",false,"double",10,true);
 			printf("Value of the minimal Kasdin coefficient: %lE\n",rns->getPowerLawNoiseMinimalCoefficient());
 			printf("Number of Kasdin coefficients used: %li\n",rns->getPowerLawNoiseCoefficiensCount());
+			i++;
 		}
 		delete rns;
 		exit(0);

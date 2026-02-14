@@ -360,6 +360,10 @@ double mscsWindowFunction::kernelGadget(double R) {
 	return tmp;
 }
 /***************************************************************************************/
+double mscsWindowFunction::kernelGadget2b(double R) {
+	return kernelGadget(R/2);
+}
+/***************************************************************************************/
 mscsFunction& mscsWindowFunction::mkAirMassElevationRelation(double from, double to, double dh) {
 	double h=from;
 	double fromLoc=from;

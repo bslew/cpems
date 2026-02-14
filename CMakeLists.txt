@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.11)
 
 ################################################################
 ################################################################
@@ -13,13 +13,24 @@ project (cpems CXX C)
 ################################################################
 # Set version number
 #
-set (CPEMS_VERSION "0.2")
+
+set(CPEMSLIB_VERSION_MAJOR 0)
+set(CPEMSLIB_VERSION_MINOR 2)
+set(CPEMSLIB_VERSION_PATCH 11)
+set(CPEMSLIB_VERSION_STRING ${CPEMSLIB_VERSION_MAJOR}.${CPEMSLIB_VERSION_MINOR}.${CPEMSLIB_VERSION_PATCH})
+
+set (CPEMS_VERSION ${CPEMSLIB_VERSION_STRING})
 
 # Set build type
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
+
+MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+#if (CMAKE_BUILD_TYPE EQUAL "Debug")
+#	set(CMAKE_CXX_FLAGS -g)
+#endif()
 
 ################################################################
 ################################################################
@@ -62,6 +73,31 @@ set (CPEMS_SEARCH_PATHS
 #        VERBATIM
 #    )
 
+
+macro(build_CGAL)
+    MESSAGE(STATUS "Building CGAL 4.11")
+    execute_process(
+	COMMAND	/bin/bash -c "curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz"
+    )
+    execute_process(
+    COMMAND /bin/bash -c "mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; "
+    )
+    execute_process(
+    COMMAND /bin/bash -c "cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz CGAL-4.11.1.tar.gz"
+	)
+# compile
+#	set(Ncore 
+#	echo "`cat /proc/cpuinfo |grep processor|wc -l`*2" | bc)
+    execute_process(
+    COMMAND /bin/bash -c "cd ${PROJECT_BINARY_DIR}/external_packages/cgal-releases-CGAL-4.11.1 && cmake . && make -j`cat /proc/cpuinfo |grep processor|wc -l` && sudo make install"
+    )
+# clean up
+    execute_process(
+    COMMAND /bin/bash -c "rm ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz"
+    )
+endmacro()
+
+
 #set (VELKB_LIB_DIR "external_packages/velKB") 
 
 add_custom_target(extdir
@@ -69,31 +105,51 @@ add_custom_target(extdir
     )
     
 add_custom_target(Lib_velKB
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/velKB ${PROJECT_BINARY_DIR}/external_packages
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/velKB ${PROJECT_BINARY_DIR}/external_packages\; fi'
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/velKB && make
     COMMENT "Building velKB"
-    VERBATIM
+#    VERBATIM
     )
 
 add_custom_target(Lib_slaRefr 
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/sla-refr ${PROJECT_BINARY_DIR}/external_packages
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/sla-refr ${PROJECT_BINARY_DIR}/external_packages\; fi'
+#    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/sla-refr ${PROJECT_BINARY_DIR}/external_packages
     COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/sla-refr && make
     COMMENT "Building sla-refr"
-    VERBATIM
+#    VERBATIM
     )
 
 add_custom_target(Lib_novas
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/novas ${PROJECT_BINARY_DIR}/external_packages
-    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/novas && make
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/novas ${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/novas && make -B
     COMMENT "Building novas"
-    VERBATIM
+#    VERBATIM
     )
 
 add_custom_target(Lib_ccSHT3
-    COMMAND cp -rp ${PROJECT_SOURCE_DIR}/external_packages/ccSHT3 ${PROJECT_BINARY_DIR}/external_packages
-    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ccSHT3 && make
+    COMMAND /bin/bash -c 'if [ ${PROJECT_SOURCE_DIR} != ${PROJECT_BINARY_DIR} ]\; then cp -rp ${PROJECT_SOURCE_DIR}/external_packages/ccSHT3 ${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ccSHT3 && make -B
     COMMENT "Building ccSHT3"
-    VERBATIM
+#    VERBATIM
+    )
+
+add_custom_target(proj
+    COMMENT "Building proj"
+    COMMAND /bin/bash -c 'if [ ! -f ${PROJECT_BINARY_DIR}/external_packages/proj-6.3.2.tar.gz ]\; then curl https://download.osgeo.org/proj/proj-6.3.2.tar.gz\; fi'
+#    COMMAND /bin/bash -c 'curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz'
+#    COMMAND /bin/bash -c 'mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz proj-6.3.2.tar.gz 
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/proj-6.3.2 && ./configure && make && sudo make install
+    )
+	
+add_custom_target(Lib_CGAL
+    COMMENT "Building CGAL 4.11"
+    COMMAND /bin/bash -c 'if [ ! -f ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz ]\; then curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output ${PROJECT_BINARY_DIR}/external_packages/CGAL-4.11.1.tar.gz\; fi'
+#    COMMAND /bin/bash -c 'curl https://codeload.github.com/CGAL/cgal/tar.gz/refs/tags/releases/CGAL-4.11.1 --output /tmp/CGAL-4.11.1.tar.gz'
+#    COMMAND /bin/bash -c 'mv /tmp/CGAL-4.11.1.tar.gz ${PROJECT_BINARY_DIR}/external_packages\; fi'
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/ && tar xvfz CGAL-4.11.1.tar.gz 
+    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/cgal-releases-CGAL-4.11.1 && cmake . && make && sudo make install
+#    VERBATIM
     )
 
 add_custom_target(external
@@ -104,7 +160,9 @@ add_dependencies(Lib_velKB extdir)
 add_dependencies(Lib_slaRefr extdir)
 add_dependencies(Lib_novas extdir)
 add_dependencies(Lib_ccSHT3 extdir)
-add_dependencies(external extdir Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
+add_dependencies(Lib_CGAL extdir)
+add_dependencies(external extdir Lib_CGAL Lib_velKB Lib_slaRefr Lib_novas Lib_ccSHT3)
+#add_dependencies(all external)
 
 #add_custom_target(gsl18
 #    COMMAND cd ${PROJECT_BINARY_DIR}/external_packages/gsl-1.8 && ./configure && make -j10
@@ -133,6 +191,14 @@ find_package(CFITSIO)
 if (CFITSIO_FOUND)
 	MESSAGE(STATUS "CFITSIO_INCLUDE_DIR: " ${CFITSIO_INCLUDE_DIR})
 	MESSAGE(STATUS "CFITSIO_LIBRARIES: " ${CFITSIO_LIBRARIES})
+endif()
+
+FIND_PACKAGE(Eigen3)
+if (EIGEN3_FOUND)
+	MESSAGE(STATUS "EIGEN3_INCLUDE_DIR: " ${EIGEN3_INCLUDE_DIR})
+	MESSAGE(STATUS "EIGEN3_INCLUDE_DIR: " ${EIGEN3_INCLUDE_DIRS})
+	MESSAGE(STATUS "EIGEN3_ROOT_DIR: " ${EIGEN3_ROOT_DIR})
+#	MESSAGE(STATUS "EIGEN_LIBRARIES: " ${EIGEN_LIBRARIES})
 endif()
 
 FIND_PACKAGE(GSL 2 )
@@ -167,7 +233,7 @@ find_package(NOVA )
 
 #find_package(m REQUIRED)
 
-find_package(PROJ)
+find_package(PROJ 4.8)
 #    PROJ_INCLUDE_DIR
 #    PROJ_LIBRARY
 
@@ -181,6 +247,14 @@ if (FFTW_FOUND)
 	MESSAGE(STATUS "FFTW_LIBRARIES: " ${FFTW_LIBRARIES})
 endif()
 
+find_package(Boost REQUIRED)
+#if (Boost_FOUND)
+	MESSAGE(STATUS "Boost_INCLUDE_DIR: " ${Boost_INCLUDE_DIR})
+	MESSAGE(STATUS "Boost_INCLUDES: " ${Boost_INCLUDES})
+	MESSAGE(STATUS "Boost_LIBRARIES: " ${Boost_LIBRARIES})
+#endif()
+
+find_package(spdlog 1.5 CONFIG REQUIRED)
 
 find_package(GMP )
 # GMP_INCLUDES
@@ -210,21 +284,25 @@ endif()
 
 
 
-find_package(CGAL )
-# CGAL_INCLUDE_DIRS
-# CGAL_LIBRARIES_DIR
-# CGAL_MODULES_DIR
-if (NOT CGAL_FOUND)
-	find_library (CGAL_LIBRARIES_DIR CGAL
-		PATHS
-		${CPEMS_SEARCH_PATHS}
-		PATH_SUFFIXES lib lib64
-	)
+# find_package(CGAL 4.11 REQUIRED )
+# # CGAL_INCLUDE_DIRS
+# # CGAL_LIBRARIES_DIR
+# # CGAL_MODULES_DIR
+# if (NOT CGAL_FOUND)
+# 	build_CGAL()
+# 	find_package(CGAL 4.11 REQUIRED )
+# 	find_library (CGAL_LIBRARIES_DIR CGAL
+# 		PATHS
+# 		${CPEMS_SEARCH_PATHS}
+# 		PATH_SUFFIXES lib lib64
+# 	)
 
-	MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
-	MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
-	MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
-endif()
+# endif()
+# MESSAGE(STATUS "CGAL_INCLUDE_DIRS: " ${CGAL_INCLUDE_DIRS})
+# MESSAGE(STATUS "CGAL_LIBRARIES_DIR: " ${CGAL_LIBRARIES_DIR})
+# MESSAGE(STATUS "CGAL_MODULES_DIR: " ${CGAL_MODULES_DIR})
+find_package(FMT)
+
 
 find_package(PGPLOT)
 #  PGPLOT_INCLUDES    = Path to the PGPLOT header files
@@ -335,13 +413,15 @@ if (NOT HDF5_FOUND)
 	find_path(HDF_INCLUDE_DIR hdf5.h
 		$ENV{HOME}/anaconda3/include
 		$ENV{HOME}/local/include
-		/usr/local/include/gsl 
-		/usr/include/gsl
+		/usr/local/include/hdf5
+		/usr/include/hdf5
+		/usr/include/hdf5/serial
 		)
 
 	find_library (HDF5_LIBRARIES hdf5 z dl m
 		PATHS
 		${CPEMS_SEARCH_PATHS}
+		/usr/lib/x86_64-linux-gnu/
 		PATH_SUFFIXES lib lib64
 	)
 
@@ -353,7 +433,31 @@ endif()
 
 
 
+# fmt library
+if (NOT FMT_FOUND)
+	find_library (FMT_LIBRARIES fmt
+		PATHS
+		$ENV{HOME}/local
+		PATH_SUFFIXES lib lib64
+	)
 
+endif()
+if (NOT FMT_FOUND)
+	set (FMT_LIBRARY fmt)
+endif()
+MESSAGE(STATUS "FOUND FMT: " )
+MESSAGE(STATUS "FMT_INCLUDE_DIR: " ${FMT_INCLUDE_DIR})
+MESSAGE(STATUS "FMT_LIBRARY: " ${FMT_LIBRARY})
+
+
+if (NOT FMT_FOUND)
+include(FetchContent)
+FetchContent_Declare(fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(fmt)
+endif()
 
 # PGPLOT library
 if (NOT PGPLOT_FOUND)
@@ -369,6 +473,7 @@ endif()
 if (NOT Armadillo_FOUND)
 	find_library (ARMADILLO_LIB armadillo
 		PATHS
+		/usr
 		$ENV{HOME}/local
 		PATH_SUFFIXES lib lib64
 	)
@@ -404,7 +509,7 @@ find_path (STL_INCLUDE_DIR NAMES
 ################################################################
 # find python installation path
 execute_process(
-  COMMAND "python" -c "from distutils import sysconfig as sc
+  COMMAND "python3" -c "from distutils import sysconfig as sc
 print(sc.get_python_lib(prefix='', plat_specific=True))"
   OUTPUT_VARIABLE PYTHON_SITE
   OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -429,17 +534,21 @@ include_directories(
 #	"${PROJECT_BINARY_DIR}/src"
     src
 	external_packages/novas
+	external_packages/ccSHT3
 	external_packages/ccSHT3/include
 	${CFITSIO_INCLUDE_DIR}
 	${GSL_INCLUDE_DIR}
 	${Qt5Core_INCLUDE_DIRS}
 #	${QTCORE_HEADERS}/..
-	${HDF_INCLUDE_DIRS}
+	${HDF5_INCLUDE_DIRS}
+	${HDF_INCLUDE_DIR}
 #	${STL_INCLUDE_DIR}
 #	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
 #	${CPEDS_INCLUDE_DIR}
 #	${MSCS_INCLUDE_DIR}
     /usr/include/python2.7
+    ${Boost_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
 	)
 
 #add_subdirectory(external_packages/novas)
@@ -451,12 +560,14 @@ include_directories(
 # Include project directories to search for libraries
 #
 link_directories(
+	${PROJECT_BINARY_DIR}
     ${PROJECT_BINARY_DIR}/external_packages/velKB
     ${PROJECT_BINARY_DIR}/external_packages/sla-refr
-    ${PROJECT_BINARY_DIR}/external_packages/ccSHT3/lib
+    ${PROJECT_BINARY_DIR}/external_packages/ccSHT3
     ${PROJECT_BINARY_DIR}/external_packages/novas
 #    ${Qt5Core_LIBRARIES}
 #	get_target_property(QtCore_location Qt5::Core LOCATION)
+	${HDF5_LIBRARIES}
     )
 
 
@@ -469,6 +580,7 @@ set (CPEDSLIB_HEADERS
     src/qtbase.h
     src/cpeds-common.h
 	src/cpeds-consts.h
+	src/StringParser.h
 	src/cpeds-rng.h
 	src/cpeds-math.h 
 	src/cpeds-cosmo.h 
@@ -506,7 +618,9 @@ set (CPEDSLIB_HEADERS
 
 set (CPEDSLIB_SOURCES 
     ${CPEDSLIB_HEADERS}
+	src/cpeds-common.cpp
 	src/cpeds-consts.cpp
+	src/StringParser.cpp
 	src/cpeds-rng.cpp
 	src/cpeds-math.cpp 
 	src/cpeds-pixelization.cpp
@@ -515,6 +629,7 @@ set (CPEDSLIB_SOURCES
 	src/cpedsTime.cpp
 	src/cpeds-msgs.cpp
 	src/cpeds-point_set.cpp
+	src/cpeds-point3d.cpp
 	src/cpeds-direction_set.cpp
 	src/cpedsFunctionDistance.cpp
 	src/cpeds-project.cpp
@@ -657,18 +772,29 @@ set (MSCSWMAPLIB_SOURCES
 ################################################################
 # Add library targets
 #
-#add_library(CPEDS STATIC ${CPEDSLIB_SOURCES} )
-#add_library(Mscsfn STATIC ${MSCSFNLIB_SOURCES} )
-#add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
-#add_library(Mscsplot STATIC ${MSCSPLOTLIB_SOURCES} )
-#add_library(MscsWMAP STATIC ${MSCSWMAPLIB_SOURCES} )
 
-add_library(CPEDS SHARED  ${CPEDSLIB_SOURCES} )
+
+# depreciated - in future these targets will be removed
+add_library(CPEDS STATIC  ${CPEDSLIB_SOURCES} )
 #add_library(cpedsRotation SHARED ${CPEDS_PYTHON_BINDINGS} )
-add_library(Mscsfn SHARED  ${MSCSFNLIB_SOURCES} )
-add_library(Mscscore SHARED ${MSCSCORELIB_SOURCES} )
+add_library(Mscsfn STATIC  ${MSCSFNLIB_SOURCES} )
+add_library(Mscscore STATIC ${MSCSCORELIB_SOURCES} )
 add_library(Mscsplot SHARED ${MSCSPLOTLIB_SOURCES} )
 add_library(MscsWMAP SHARED ${MSCSWMAPLIB_SOURCES} )
+
+# current version
+add_library(cpems SHARED 
+	${CPEDSLIB_SOURCES} 
+	${MSCSFNLIB_SOURCES}
+	${MSCSCORELIB_SOURCES}
+	${MSCSPLOTLIB_SOURCES}
+	${MSCSWMAPLIB_SOURCES} 
+	)
+
+set_target_properties(cpems PROPERTIES 
+	VERSION ${CPEMSLIB_VERSION_STRING} 
+	SOVERSION ${CPEMSLIB_VERSION_MAJOR}.${CPEMSLIB_VERSION_MINOR}
+	)
 
 #add_library(${PROJECT_BINARY_DIR}/external_packages/
 #add_dependencies(CPEDS slaRefr novas ccSHT3 velKB)
@@ -684,6 +810,8 @@ add_executable(interpolate src/interpolate.cpp )
 add_executable(compute_CL_ranges src/compute_CL_ranges.cpp )
 add_executable(bin_function src/bin_function.cpp )
 add_executable(coco src/coco.cpp )
+add_executable(cpeds_calculate_cov src/cpeds_calculate_cov.cpp )
+add_executable(cpeds_row_average src/cpeds_row_average.cpp )
 
 # there are many more programs in the package and much more tests that also should be compiled somewhere
 
@@ -696,6 +824,7 @@ add_executable(mkCMBfield src/mkCMBfield.cpp)
 add_executable(smoothPoints src/smoothPoints.cpp)
 add_executable(draw_maps src/draw_maps.cpp)
 add_executable(calculate_minkowski_v src/calculate_minkowski_v.cpp )
+add_executable(calc_ang_dist src/calc_ang_dist.cpp )
 
 #draw_mapsMPI	:
 #	MPIFLAG = -DGOMPI
@@ -707,6 +836,7 @@ add_executable(mkFractal src/mkFractal.cpp)
 add_executable(mk_gauss_map src/mk_gauss_map.cpp)
 add_executable(map_oper src/map_oper.cpp)
 add_executable(calculate_Cth src/calculate_Cth.cpp)
+#add_executable(calculate_alms src/calculate_alms.cpp) # not ported
 
 ################################################################
 ################################################################
@@ -721,6 +851,8 @@ add_executable(test-function-fft tests/test-function-fft.cpp )
 add_executable(test-function-derivative tests/test-function-derivative.cpp )
 add_executable(test-fits-read tests/test-fits-read.cpp )
 add_executable(test-cpedsMCMC-parabola_2param tests/test-cpedsMCMC-parabola_2param.cpp )
+add_executable(test-cpedsMCMC-2Dcontours tests/test-cpedsMCMC-2Dcontours.cpp )
+add_executable(test-cpedsMCMC-gaussXY-independent tests/test-cpedsMCMC-gaussXY-independent.cpp )
 
 
 add_executable(test-hdf-openMP2 tests/test-hdf-openMP2.cpp)
@@ -732,7 +864,9 @@ add_executable(test-hdf-openMP tests/test-hdf-openMP.cpp)
 #test-hdf-openMP-omp	:
 #	$(CC) -DENABLE_OMP $(OFLAGS)   $(DISTR_DIRcpp)/test-hdf-openMP.cpp -o $(OUTDIR)/$@ $(IFLAGS) $(LLFLAGS) $(LFLAGS) 
 
+add_executable(test-SPinterpolation-2d tests/test-SPinterpolation-2d.cpp)
 
+add_executable(test-cpeds_refraction_space tests/unit-tests/test-cpeds_refraction_space.cpp)
 
 #-------------------------------------------
 # test programs
@@ -909,7 +1043,15 @@ set (SLAREFR_LIB slaRefr)
 set (NOVAS_LIB novas)
 set (CCSHT3_LIB ccSHT3)
 
+set (LIBRARIES_BOOST
+	boost_program_options
+	boost_filesystem
+	boost_system
+	)
     
+set (LIBRARIES_FMT
+	fmt
+)
 
 
 #	
@@ -929,11 +1071,12 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# PG - profiler variable that is set during cmake configuration
 SET( CMAKE_CXX_FLAGS  
-	"${CMAKE_CXX_FLAGS} -fopenmp -fPIC"  
+	"${CMAKE_CXX_FLAGS} -fopenmp  ${PG} -fPIC"  
 	)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra") # -fPIC
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-parameter") # -fPIC
 set(CMAKE_CXX_FLAGS_RELEASE "-O3") # -fPIC
 
 add_definitions(
@@ -944,7 +1087,8 @@ add_definitions(
 #	-DDEBUG_USING_FFTW2AND3 
 	-DHAVE_OPENMP 
 #    -DDEBUG_MCMC_PDF
-#    -DDEBUG_MCMC_PDF2
+    -DDEBUG_MCMC_PDF2
+	-DACCEPT_USE_OF_DEPRECATED_PROJ_API_H
 #    -Wall
 	)
 # add -DCMAKE_CXX_FLAGS=-pg when calling cmake to generate gprof-ready binaries
@@ -958,11 +1102,12 @@ add_definitions(
 #
 
 set (CPEMS_LIBS
-	CPEDS
-	Mscsfn
-	Mscscore
-	Mscsplot
-	MscsWMAP
+#	CPEDS
+#	Mscsfn
+#	Mscscore
+#	Mscsplot
+#	MscsWMAP
+	cpems
 	)
 
 set (CPEMS_HEADERS
@@ -973,12 +1118,12 @@ set (CPEMS_HEADERS
 	${MSCSWMAPLIB_HEADERS}
 	)
 
-set (LIBRARIES 
-	${CPEMS_LIBS}
-	${NOVAS_LIB}
+set (EXTERNAL_LIBRARIES
 	${CCSHT3_LIB}
+	${NOVAS_LIB}
 	${VELKB_LIB}
 	${SLAREFR_LIB}
+	${FFTW_LIBRARIES}
 	${NOVA_LIB}
 	${GSL_LIBRARIES}
 	${CGAL_LIBRARIES} CGAL
@@ -990,11 +1135,30 @@ set (LIBRARIES
 	${NOVA_LIBRARIES}
 	${PROJ_LIBRARY}
 	${ARMADILLO_LIBRARIES}
+	${GMP_LIBRARIES}
+	${FMT_LIBRARIES}
+)	
+	
+set (LIBRARIES 
+	${CPEMS_LIBS}
+	${EXTERNAL_LIBRARIES}
 	)
 
 ################################################################
 ################################################################
 ################################################################
+# Link CPEDS targets
+#
+# depreciated - 
+# generates interdependent libraries that cannot be compiled with appropriate depedencies as dynamic
+#target_link_libraries(CPEDS ${EXTERNAL_LIBRARIES} Mscsfn ${GSL_LIBRARIES})
+#target_link_libraries(Mscscore ${EXTERNAL_LIBRARIES} CPEDS)
+#target_link_libraries(Mscsfn ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+#target_link_libraries(Mscsplot ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+#target_link_libraries(MscsWMAP ${EXTERNAL_LIBRARIES} CPEDS Mscscore)
+# new
+target_link_libraries(cpems ${EXTERNAL_LIBRARIES})
+
 # Link CPEDS targets
 #
 target_link_libraries(cosmocalc ${LIBRARIES})
@@ -1003,6 +1167,8 @@ target_link_libraries(interpolate ${LIBRARIES})
 target_link_libraries(compute_CL_ranges ${LIBRARIES})
 target_link_libraries(bin_function ${LIBRARIES})
 target_link_libraries(coco ${LIBRARIES})
+target_link_libraries(cpeds_calculate_cov ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT})
+target_link_libraries(cpeds_row_average ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT})
 
 
 # Link Mscs targets
@@ -1020,6 +1186,7 @@ target_link_libraries(mk_gauss_map ${LIBRARIES})
 target_link_libraries(map_oper ${LIBRARIES} ${LIBRARIES})
 target_link_libraries(calculate_Cth ${LIBRARIES} ${LIBRARIES})
 target_link_libraries(calculate_minkowski_v ${LIBRARIES} ${LIBRARIES})
+target_link_libraries(calc_ang_dist ${LIBRARIES} ${LIBRARIES})
 
 # Link Mscs test targets
 #
@@ -1033,16 +1200,23 @@ target_link_libraries(test-domain-decomposition ${LIBRARIES})
 target_link_libraries(test-function-fft ${LIBRARIES})
 target_link_libraries(test-function-derivative ${LIBRARIES})
 target_link_libraries(test-fits-read ${LIBRARIES})
-target_link_libraries(test-cpedsMCMC-parabola_2param ${LIBRARIES})
+target_link_libraries(test-cpedsMCMC-parabola_2param LINK_PUBLIC ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT} )
+target_link_libraries(test-SPinterpolation-2d ${LIBRARIES})
+target_link_libraries(test-cpedsMCMC-2Dcontours ${LIBRARIES} ${LIBRARIES_BOOST} ${LIBRARIES_FMT})
+target_link_libraries(test-cpedsMCMC-gaussXY-independent ${LIBRARIES} ${LIBRARIES_BOOST}  ${LIBRARIES_FMT})
+target_link_libraries(test-cpeds_refraction_space ${LIBRARIES})
 
+add_subdirectory(tests)
 
 ################################################################
 ################################################################
 ################################################################
 # Install targets
 #
-install (TARGETS 
+set (CPEMS_EXECUTABLES
 	bin_function 
+	cpeds_calculate_cov
+	cpeds_row_average
 	coco 
 	compute_CL_ranges 
 	cosmocalc 
@@ -1061,9 +1235,9 @@ install (TARGETS
 	smoothPoints
 	calculate_Cth
 	calculate_minkowski_v
-	DESTINATION bin)
+)
 
-install(TARGETS
+set (CPEMS_TEST_EXECUTABLES
     test-hdf-openMP2
     test-hdf-openMP
     test-mscsfn
@@ -1074,12 +1248,34 @@ install(TARGETS
     test-function-derivative
     test-fits-read
     test-cpedsMCMC-parabola_2param
+	test-cpedsMCMC-2Dcontours
+)
+
+install (TARGETS 
+	${CPEMS_EXECUTABLES}
+	DESTINATION bin)
+
+install(TARGETS
+	${CPEMS_TEST_EXECUTABLES}
     DESTINATION cpems/tests)
     
 
 install (TARGETS 
 	${CPEMS_LIBS}
+	EXPORT cpemsTargets
 	DESTINATION lib)
+
+install (FILES 
+	${CPEMS_HEADERS}
+	DESTINATION include/cpems)
+#install (TARGETS
+#	${CPEMS_HEADERS}
+#	DESTINATION "${INSTALL_INCLUDE_DIR}/cpems"
+#	COMPONENT dev)
+
+install (DIRECTORY 
+	${PROJECT_BINARY_DIR}/external_packages/ccSHT3/include/
+	DESTINATION include/ccSHT3)
 
 
 install (FILES
@@ -1091,12 +1287,9 @@ install (FILES
     DESTINATION lib)
 
 
-install (FILES 
-	${CPEMS_HEADERS}
-	DESTINATION include/cpems)
 
 #--prefix=${CMAKE_INSTALL_PREFIX} 
-install (CODE "execute_process(COMMAND sudo python setup.py install -f
+install (CODE "execute_process(COMMAND sudo python3 setup.py install -f
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/pyth)")
  
 
@@ -1119,6 +1312,51 @@ install (FILES
 #install (TARGETS 
 #	${CPEMS_LIBS}
 #	DESTINATION lib)
+
+
+
+
+# Make relative paths absolute (needed later on)
+foreach(p LIB BIN INCLUDE CMAKE)
+  set(var INSTALL_${p}_DIR)
+  if(NOT IS_ABSOLUTE "${${var}}")
+    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif()
+endforeach()
+
+# Add all targets to the build-tree export set
+export(TARGETS ${CPEMS_LIBS}
+  FILE "${PROJECT_BINARY_DIR}/cpemsTargets.cmake")
+
+# Export the package for use from the build-tree
+# (this registers the build-tree with a global CMake-registry)
+#export(PACKAGE FooBar)
+
+# Create the cpemsConfig.cmake and cpemsConfigVersion files
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+   "${INSTALL_INCLUDE_DIR}")
+# ... for the build tree
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+configure_file(cpemsConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/cpemsConfig.cmake" @ONLY)
+# ... for the install tree
+set(CONF_INCLUDE_DIRS "\${cpems_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(cpemsConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cpemsConfig.cmake" @ONLY)
+# ... for both
+configure_file(cpemsConfigVersion.cmake.in
+  "${PROJECT_BINARY_DIR}/cpemsConfigVersion.cmake" @ONLY)
+
+# Install the cpemsConfig.cmake and cpemsConfigVersion.cmake
+install(FILES
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cpemsConfig.cmake"
+  "${PROJECT_BINARY_DIR}/cpemsConfigVersion.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+# Install the export set for use with the install-tree
+install(EXPORT cpemsTargets DESTINATION
+  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
 
 ################################################################
 ################################################################
