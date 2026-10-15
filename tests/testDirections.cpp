@@ -7,8 +7,7 @@
  */
 
 #include "cpeds-msgs.h"
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+#include "cpeds-string.h"
 #include <iomanip>
 #include <iostream>
 #include <math.h>
@@ -344,10 +343,9 @@ string getProgramVersionString() {
     string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
     rev = "$Revision: 1.1 $";
-    QString qrev = rev.c_str();
-    QStringList qrevl = qrev.split(' ');
+    const std::vector<std::string> qrevl = cpedsSplit(rev, ' ');
     if (qrevl.size() == 3)
-        rev = qrevl[1].toStdString();
+        rev = qrevl[1];
 #else
     rev = "0.1.1";
 #endif
@@ -967,7 +965,7 @@ void testRTlstCalculation() {
 /***************************************************************************************/
 void testConversionDeg2HMSDMS(double ra, double dec, double jdutc,
                               cpedsMsgs& msgs) {
-    QString cmd, Sradec;
+    string cmd, Sradec;
     char radec[1000];
 
     double H, M, S, d, m, s;
@@ -976,8 +974,8 @@ void testConversionDeg2HMSDMS(double ra, double dec, double jdutc,
     cpeds_angToDMS(dec, &d, &m, &s);
 
     sprintf(radec, "%ih%im%fs %id%im%fs", int(H), int(M), S, int(d), int(m), s);
-    Sradec = QString(radec);
+    Sradec = radec;
     cmd = "ps " + Sradec;
 
-    msgs.say("--->sending to RT: " + cmd.toStdString(), High);
+    msgs.say("--->sending to RT: " + cmd, High);
 }

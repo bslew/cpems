@@ -12,13 +12,11 @@
 #include <fftw3.h>
 #include <iomanip>
 #include <iostream>
+#include "cpeds-string.h"
 #include "Mscs-function.h"
 #include "Mscs-function2dreg.h"
 #include "Mscs-function3dregc.h"
 #include "Mscs-map-window_function.h"
-//#include <QtCore/QList>
-//#include <QtCore/QString>
-//#include <QtCore/QStringList>
 #include <assert.h>
 #include "cpedsTime.h"
 #include "cpeds-list.h"
@@ -559,8 +557,10 @@ int main(int argc, char** argv) {
 					f2*=double(0.3);
 					f+=f2;					
 				}
-				if (QString(_mkSignalType.c_str()).split(':')[0]=="sinesFromDphiFile") {
-					string fname=QString(_mkSignalType.c_str()).split(':')[1].toStdString();
+				const std::vector<std::string> signalParts = cpedsSplit(_mkSignalType, ':');
+				if (signalParts[0]=="sinesFromDphiFile") {
+					if (signalParts.size() < 2) throw std::invalid_argument("Signal type must include a data-file path");
+					string fname=signalParts[1];
 					msgs->say("Generating signal data from D,phi information stored in file.",High);
 					mscsFunction D,phi,tmp,tmp2;
 					D.load(fname,false,0,1);
@@ -573,8 +573,9 @@ int main(int argc, char** argv) {
 						if (i==0) f=tmp; else f+=tmp;
 					}
 				}
-				if (QString(_mkSignalType.c_str()).split(':')[0]=="signalFromReImFile") {
-					string fname=QString(_mkSignalType.c_str()).split(':')[1].toStdString();
+				if (signalParts[0]=="signalFromReImFile") {
+					if (signalParts.size() < 2) throw std::invalid_argument("Signal type must include a data-file path");
+					string fname=signalParts[1];
 					msgs->say("Generating signal data from re,im information stored in file.",High);
 					mscsFunction re,im,tmp,tmp2;
 					re.load(fname,false,0,1);
@@ -752,12 +753,12 @@ int main(int argc, char** argv) {
 				msgs->say("filtering",High);
 				mscsFunction filter("filter");
 				if (_filterData!="") {
-					QString qs=_filterData.c_str();
+					std::string qs=_filterData.c_str();
 					bool ok;
-					QStringList qsl=qs.split(',');
+					std::vector<std::string> qsl=cpedsSplit(qs, ',');
 					if (qsl.size()>1) {
 						for (long i = 0; i < qsl.size(); i++) {
-							filter.newPoint( qsl[i].toDouble(&ok)-_extract_w[i % _extract_w.size()], qsl[i].toDouble(&ok)+_extract_w[i % _extract_w.size()] );
+							filter.newPoint( cpedsToDouble(qsl[i], &ok)-_extract_w[i % _extract_w.size()], cpedsToDouble(qsl[i], &ok)+_extract_w[i % _extract_w.size()] );
 							assert(ok==true);
 						}
 					}
@@ -1492,19 +1493,19 @@ void parseOptions(int argc, char** argv) {
 		_syG=syG.getValue();
 		_szG=szG.getValue();
 		
-		QString extract;
-		QStringList qsl;
+		std::string extract;
+		std::vector<std::string> qsl;
 		bool ok;
 
 		_fromTo=fromTo.getValue();
 		extract=extract_w.getValue().c_str();
 		if (extract.size()>0) {
-			qsl=extract.split(',');
+			qsl=cpedsSplit(extract, ',');
 			//		printf("qsl size: %li\n",qsl.size());
-			//		cout << qsl[0].toStdString();
+			//		cout << qsl[0];
 			//		exit(0);
 			for (long i = 0; i < qsl.size(); i++) {
-				_extract_w.append(qsl[i].toDouble(&ok));
+				_extract_w.append(cpedsToDouble(qsl[i], &ok));
 				assert(ok==true);
 			}
 		}
@@ -1521,10 +1522,10 @@ void parseOptions(int argc, char** argv) {
 				}
 			}
 			else {
-				qsl=extract.split(',');
+				qsl=cpedsSplit(extract, ',');
 				for (long i = 0; i < qsl.size(); i++) {
-					cout << "Will extract frequency range: " << qsl[i].toStdString() << " +_ "<< _extract_w[i % _extract_w.size()] << "\n";
-					_extract_f.append(qsl[i].toDouble(&ok));
+					cout << "Will extract frequency range: " << qsl[i] << " +_ "<< _extract_w[i % _extract_w.size()] << "\n";
+					_extract_f.append(cpedsToDouble(qsl[i], &ok));
 					assert(ok==true);
 				}
 				if (_extract_f.size()>0) assert(_extract_w.size()>0);				
@@ -1632,7 +1633,7 @@ mscsFunction calculateCorrelationFunction(mscsFunction &f1, mscsFunction &f2,cpe
 mscsFunction  calculateDistance1D(mscsFunction &f1, mscsFunction &f2,cpedsMsgs* msgs) {
 	mscsFunction d;
 	double *x = f1.extractArguments();
-	mscsFunction s2=f2.extrapolate(f1.X(0),f1.last().rx(),f1.X(1)-f1.X(0),true,"linear");
+	mscsFunction s2=f2.extrapolate(f1.X(0),f1.last().x(),f1.X(1)-f1.X(0),true,"linear");
 	//	s2.print();
 	s2.interpolate(x,f1.pointsCount(),"linear",true);
 	//	s2.print();

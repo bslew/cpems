@@ -6,7 +6,7 @@
 /****************************************************************************************************/
 cpedsPointSet2D::cpedsPointSet2D() { }
 /****************************************************************************************************/
-cpedsPointSet2D::cpedsPointSet2D(const QList<cpedsPoint2D> &q) {
+cpedsPointSet2D::cpedsPointSet2D(const cpedsList<cpedsPoint2D> &q) {
   clear();
   long N=q.count();
   for (long i=0;i<N;i++) { append(q.at(i));  }
@@ -84,13 +84,13 @@ double cpedsPointSet2D::minY() const { return extremal(1, false); }
 /****************************************************************************************************/
 cpedsPointSet2D& cpedsPointSet2D::operator=(const cpedsPointSet2D &rhs) {
   if (this!=&rhs) {
-//    this->QList<cpedsPoint2D>::operator=(rhs);
+//    this->cpedsList<cpedsPoint2D>::operator=(rhs);
     this->mscsVector<cpedsPoint2D>::operator=(rhs);
   }
   return *this;
 }
 /****************************************************************************************************/
-cpedsPointSet2D& cpedsPointSet2D::operator=(const QList<cpedsPoint2D> &rhs) {
+cpedsPointSet2D& cpedsPointSet2D::operator=(const cpedsList<cpedsPoint2D> &rhs) {
   *this=cpedsPointSet2D(rhs);
   return *this;
 }
@@ -142,7 +142,7 @@ const matrix<double> cpedsPointSet2D::exportAsMatrix() const {
 /****************************************************************************************************/
 cpedsPointSet3D::cpedsPointSet3D() { }
 /****************************************************************************************************/
-cpedsPointSet3D::cpedsPointSet3D(const QList<cpedsPoint3D> &q) {
+cpedsPointSet3D::cpedsPointSet3D(const cpedsList<cpedsPoint3D> &q) {
   clear();
   long N=q.count();
   for (long i=0;i<N;i++) { append(q.at(i));  }
@@ -395,14 +395,14 @@ void cpedsPointSet3D::load(string fname) {
 /****************************************************************************************************/
 const cpedsPointSet3D& cpedsPointSet3D::operator=(const cpedsPointSet3D &rhs) {
   if (this!=&rhs) {
-//    this->QList<cpedsPoint3D>::operator=(rhs);
+//    this->cpedsList<cpedsPoint3D>::operator=(rhs);
     this->mscsVector<cpedsPoint3D>::operator=(rhs);
     values()=rhs.values();
   }
   return *this;
 }
 /****************************************************************************************************/
-const cpedsPointSet3D& cpedsPointSet3D::operator=(const QList<cpedsPoint3D> &rhs) {
+const cpedsPointSet3D& cpedsPointSet3D::operator=(const cpedsList<cpedsPoint3D> &rhs) {
   *this=cpedsPointSet3D(rhs);
   return *this;
 }

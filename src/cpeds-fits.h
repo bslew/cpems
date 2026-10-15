@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <string>
 #include <fitsio.h>
-//#include <QtCore/QList>
 #include "cpeds-common.h"
 #include "cpeds-msgs.h"
 #include "cpeds-list.h"
@@ -112,9 +111,9 @@ class cpedsFits {
 			\author Bartosz Lew
 		*/
 		cpedsStatusCodes addBinTable(string Tname, long rows,
-										QList<string> colName,
-										QList<string> colType,
-										QList<string> colUnit);
+										cpedsList<string> colName,
+										cpedsList<string> colType,
+										cpedsList<string> colUnit);
 
 		/*!
 			\brief generates binary table extension of zero length and without any columns
@@ -189,7 +188,7 @@ class cpedsFits {
 //		cpedsStatusCodes addBinTableData2D(int colNo, long firstRow, cpedsList<double>& data, long sizeN0);
 //		cpedsStatusCodes addBinTableData(int colNo, long firstRow, cpedsList<bool>& data);
 
-//		cpedsStatusCodes saveFunctionsListAsBinArray(QList<mscsFunction> data, QList<string> colName, QList<string> colType, QList<string> colUnit);
+//		cpedsStatusCodes saveFunctionsListAsBinArray(cpedsList<mscsFunction> data, cpedsList<string> colName, cpedsList<string> colType, cpedsList<string> colUnit);
 		
 		/*!
 			\brief save a function to an opened fits file to a new binary table extension
@@ -222,7 +221,7 @@ class cpedsFits {
 			\date Jul 15, 2013, 11:46:53 AM
 			\author Bartosz Lew
 		*/
-		cpedsStatusCodes saveArray(const string Tname, const mscsFunction3dregc& fn,QList<string> colName, QList<string> colUnit);
+		cpedsStatusCodes saveArray(const string Tname, const mscsFunction3dregc& fn,cpedsList<string> colName, cpedsList<string> colUnit);
 		
 		/*!
 			\brief insets column data into colPosition in HDU hduName
@@ -298,7 +297,7 @@ class cpedsFits {
 			\date Nov 19, 2011, 10:59:02 PM
 			\author Bartosz Lew
 		*/
-		cpedsStatusCodes getKeys(QList<headerRow_t> keys, string HDU="");
+		cpedsStatusCodes getKeys(cpedsList<headerRow_t> keys, string HDU="");
 		
 		long getKeysCount(int HDU=1);
 		
@@ -434,4 +433,3 @@ class cpedsFits {
 		
 };
 #endif /* CPEDSFITS */ 
-

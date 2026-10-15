@@ -59,8 +59,8 @@ class cpedsProject {
 /* ---------------------------- */
 /* CONSTRUCTORS AND DESTRUCTORS */
 /* ---------------------------- */
-  /* cpedsProject(QList<cpedsDirection> &dirs, string projection); */
-  /* cpedsProject(QList<cpedsPoint2D> &points, string projection); */
+  /* cpedsProject(cpedsList<cpedsDirection> &dirs, string projection); */
+  /* cpedsProject(cpedsList<cpedsPoint2D> &points, string projection); */
   /*!
     \brief class constructors
     \details 

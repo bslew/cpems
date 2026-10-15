@@ -832,7 +832,7 @@ void  mscsMap::makekill_space_manager(string whattodo, string for_what, long how
 //   msgs->say("coordinates file size in memory: bytes = "+msgs->toStr(2*(n-1)*(long int)sizeof(tmp)),Medium);
 //   msgs->say("coordinates file name: "+msgs->toStr(coordfile),Medium);
 // }
-long mscsMap::loadfits(const string& fileName, const QList<string>& colNames, const QList<string>& dstStructures) {
+long mscsMap::loadfits(const string& fileName, const cpedsList<string>& colNames, const cpedsList<string>& dstStructures) {
 	// long mscsMap::loadfits(string fileName, string data) {
 	fitsfile *fptr;
 	int status = 0;   /*  CFITSIO status value MUST be initialized to zero!  */

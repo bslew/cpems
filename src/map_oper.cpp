@@ -16,8 +16,7 @@
 #include <algorithm>
 #include <vector>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "Mscs-map.h"
 
@@ -36,7 +35,7 @@ string _programVersionString;
 bool _add;
 vector<string> _infiles;
 string _outfile;
-QString _cmd;
+std::string _cmd;
 string _hduName,_mask_file;
 double _const_value;
 
@@ -155,7 +154,7 @@ mscsMap mkNewMap(std::map<string,string> kv) {
 */
 void mkNewMap(string cmd, string outfile);
 void smoothG(vector<string> _infiles);
-void thresold_map(vector<string> _infiles,QString cmd);
+void thresold_map(vector<string> _infiles,std::string cmd);
 void print_map_stat(vector<string> _infiles, string mask_file);
 void count_values(vector<string> _infiles, double val);
 void norm_max(vector<string> _infiles, string mask_file);
@@ -179,13 +178,13 @@ int main(int argc, char **argv) {
 	parseOptions(argc,argv);
 
 	if (_add or _cmd=="add")  { add_files(_infiles);	}
-	if (_cmd.contains("make"))  { mkNewMap(_cmd.toStdString(),_outfile);	}
-	if (_cmd.contains("smoothG"))  { smoothG(_infiles);	}
-	if (_cmd.contains("smoothB"))  { smoothB(_infiles);	}
-	if (_cmd.contains("mask"))  { make_mask(_cmd.toStdString(),_infiles, _mask_file, _outfile); }
-	if (_cmd.contains("pseudoCl"))  { calculate_pseudoCl(_infiles, _mask_file, _outfile, _cmd.toStdString()); }
+	if (_cmd.find("make") != string::npos)  { mkNewMap(_cmd,_outfile);	}
+	if (_cmd.find("smoothG") != string::npos)  { smoothG(_infiles);	}
+	if (_cmd.find("smoothB") != string::npos)  { smoothB(_infiles);	}
+	if (_cmd.find("mask") != string::npos)  { make_mask(_cmd,_infiles, _mask_file, _outfile); }
+	if (_cmd.find("pseudoCl") != string::npos)  { calculate_pseudoCl(_infiles, _mask_file, _outfile, _cmd); }
 //	if (_cmd.contains("pseudoCl") and 
-//			_cmd.contains("mask") )  { calculate_pseudoCl_mask(_infiles,_cmd.toStdString(), _outfile); }
+//			_cmd.contains("mask") )  { calculate_pseudoCl_mask(_infiles,_cmd, _outfile); }
 	if (_cmd=="sub")  { subtract_files(_infiles);	}
 	if (_cmd=="mul")  { multiply_files(_infiles);	}
 	if (_cmd=="mulV")  { multiply_value(_infiles,_const_value);	}
@@ -195,10 +194,10 @@ int main(int argc, char **argv) {
 	if (_cmd == "convbin2Fits") {
 		convbin2Fits(_infiles);
 	}
-	if (_cmd.contains("renside")) {
+	if (_cmd.find("renside") != string::npos) {
 		change_nside(_infiles);
 	}
-	if (_cmd.contains("thres"))  { thresold_map(_infiles,_cmd);	}
+	if (_cmd.find("thres") != string::npos)  { thresold_map(_infiles,_cmd);	}
 	if (_cmd=="count")  { count_values(_infiles,_const_value);	}
 	if (_cmd=="norm_max")  { norm_max(_infiles, _mask_file);	}
 	if (_cmd=="at_lb") { at_lb(_infiles, _lon, _lat); }
@@ -299,9 +298,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(" ");
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, " ");
+	if (qrevl.size()==3) rev=qrevl[1];
 	else rev="could not retrieve version number";
 #else
 	rev="0.1.1";
@@ -370,8 +369,8 @@ void multiply_value(vector<string> _infiles, double val) {
 /***************************************************************************************/
 void smoothG(vector<string> _infiles) {
 	mscsMap m1;
-	QStringList qsl=_cmd.split(",");
-	double fwhm=qsl[1].toDouble()/60; // convert from ' to deg
+	std::vector<std::string> qsl=cpedsSplit(_cmd, ",");
+	double fwhm=cpedsToDouble(qsl[1])/60; // convert from ' to deg
 	
 	for (unsigned long i = 0; i < _infiles.size(); i++) {
 		printf("loading %s\n",_infiles[i].c_str());
@@ -388,15 +387,15 @@ void smoothG(vector<string> _infiles) {
 /***************************************************************************************/
 void smoothB(vector<string> _infiles) {
 	mscsMap m1;
-	QStringList qsl=_cmd.split(",");
-	QString beamFile=qsl[1]; 
+	std::vector<std::string> qsl=cpedsSplit(_cmd, ",");
+	std::string beamFile=qsl[1];
 	mscsFunction b;
-	b.load(beamFile.toStdString());
+	b.load(beamFile);
 	
 	for (unsigned long i = 0; i < _infiles.size(); i++) {
 		printf("loading %s\n",_infiles[i].c_str());
 		m1.loadbinT(_infiles[i]);
-		printf("convolving with transfer function  %s\n",beamFile.toStdString().c_str());
+		printf("convolving with transfer function  %s\n",beamFile.c_str());
 		
 		convolveSH(m1,b);
 		printf("saving to file: %s\n",_outfile.c_str());
@@ -526,8 +525,8 @@ void convbin2Fits(vector<string> _infiles, string hdu) {
 /***************************************************************************************/
 void change_nside(vector<string> _infiles) {
 	mscsMap m1;
-	QStringList qsl=_cmd.split(",");
-	long nside=qsl[1].toLong(); 
+	std::vector<std::string> qsl=cpedsSplit(_cmd, ",");
+	long nside=cpedsToLong(qsl[1]);
 	
 	for (unsigned long i = 0; i < _infiles.size(); i++) {
 		printf("loading %s\n",_infiles[i].c_str());
@@ -541,12 +540,12 @@ void change_nside(vector<string> _infiles) {
 	}
 }
 /* ******************************************************************************************** */
-void thresold_map(vector<string> _infiles,QString cmd) {
+void thresold_map(vector<string> _infiles,std::string cmd) {
 	mscsMap m1;
-	QStringList qsl=_cmd.split(",");
-	double ctr=qsl[1].toDouble(); 
-	double l=qsl[2].toDouble(); 
-	double h=qsl[3].toDouble(); 
+	std::vector<std::string> qsl=cpedsSplit(_cmd, ",");
+	double ctr=cpedsToDouble(qsl[1]);
+	double l=cpedsToDouble(qsl[2]);
+	double h=cpedsToDouble(qsl[3]);
 
 	for (unsigned long i = 0; i < _infiles.size(); i++) {
 		printf("loading %s\n",_infiles[i].c_str());

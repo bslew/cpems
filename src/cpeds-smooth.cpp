@@ -2,7 +2,7 @@
 
 
 /* **************************************************************************************************** */
-/* cpedsSmooth::cpedsProject(QList<cpedsDirection*> &dirs, string projection) { */
+/* cpedsSmooth::cpedsProject(cpedsList<cpedsDirection*> &dirs, string projection) { */
 /*     _=dirs; */
 
 /* } */

@@ -9,11 +9,10 @@
 /* STANDALONE HEADERS */
 #include <libnova/refraction.h>
 #include <libnova/precession.h>
-//#include <QtCore/QPointF>
-#include "qtbase.h"
 #include "cpeds-common.h"
 #include "cpeds-consts.h"
 #include "cpeds-math.h"
+#include "cpeds-point2d.h"
 
 /* INTERDEPENDENT HEADERS */
 
@@ -162,7 +161,7 @@ class cpedsDirection {
   double val() const { return _v; }
 //  double getVal() const { return _v; }
   virtual cpedsDirection& set(double lon, double lat, double val=0) { _d.l=lon; _d.b=lat; _v=val; return *this; }
-  QPointF toQPointF() const { return QPointF(l(),b()); }
+  cpedsPoint2D toPoint2D() const { return cpedsPoint2D(l(),b()); }
 
   virtual cpeds_direction get_direction() const { return _d; }
   virtual cpeds_direction set_direction(cpeds_direction d) {  return _d=d; }

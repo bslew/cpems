@@ -17,9 +17,8 @@
 /* STANDALONE HEADERS */
 #include <sys/time.h>
 #include <sys/resource.h>
-//#include <QtCore/QList>
-//#include <QtCore/QMap>
-#include "qtbase.h"
+#include <map>
+#include "cpeds-list.h"
 /* INTERDEPENDENT HEADERS */
 
 /* FORWARD DECLARATIONS */
@@ -49,9 +48,9 @@ class cpedsTime {
 		double timeDiff(int timer);
 		
 	protected:
-		QList<timeStruct_t> _timeStart; 
-		QList<timeStruct_t> _timeStop; 
-		QMap<int,int> _timer; 
+		cpedsList<timeStruct_t> _timeStart;
+		cpedsList<timeStruct_t> _timeStop;
+		std::map<int,int> _timer;
 		
 		struct rusage ru;
 		timeStruct_t _init;

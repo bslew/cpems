@@ -12,8 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-#include <QtCore/QStringList>
-#include <QtCore/QString>
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "cpeds-direction_set.h"
 #include "cpeds-project.h"
@@ -184,9 +183,8 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(' ');
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	const std::vector<std::string> qrevl=cpedsSplit(rev, ' ');
+	if (qrevl.size()==3) rev=qrevl[1];
 #else
 	rev="0.1.1";
 #endif

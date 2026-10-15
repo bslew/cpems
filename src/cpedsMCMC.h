@@ -123,12 +123,12 @@ class cpedsMCMC {
 		
 		typedef struct {
 				int Nparam; //!< number of parameters
-				QList<double> delta0; //!< defines the grid separations based on _parameter space give
+				cpedsList<double> delta0; //!< defines the grid separations based on _parameter space give
 						
-				QList<mscsFunction> stepGeneratingDistr; //!< cooling distribution functions - one for each dimension
-				QList<cpedsRNG> stepGeneratingRNG; //!< RNGs - one for each dimension
+				cpedsList<mscsFunction> stepGeneratingDistr; //!< cooling distribution functions - one for each dimension
+				cpedsList<cpedsRNG> stepGeneratingRNG; //!< RNGs - one for each dimension
 
-				QList<cpedsRNG> rns; //!< RNGs - one for each dimension: these are used to start the chain from random location
+				cpedsList<cpedsRNG> rns; //!< RNGs - one for each dimension: these are used to start the chain from random location
 
 				cpedsRNG rnSgn; //!< This generator only generates the sign + or -
 				MClink current; //!< The last accepted MClink
@@ -188,16 +188,16 @@ class cpedsMCMC {
 		
 		typedef struct {
 				mscsFunction coolingDistr; //!< 
-				QList<mscsFunction> stepGeneratingDistr; //!< cooling distribution functions - one for each dimension
+				cpedsList<mscsFunction> stepGeneratingDistr; //!< cooling distribution functions - one for each dimension
 				mscsFunction model; //!< contains the best fit model 
 				cpedsList<double> covDiag; //!< diagonal of the covariance matrix
 				long lengthAtStoring;
 				double temperatureAtStoring;
-				QList<MscsPDF1D> posteriors1D; //!< one for each parameter
-				QList<mscsFunction3dregc> posteriors2D; //!< one for each combination of parameters
+				cpedsList<MscsPDF1D> posteriors1D; //!< one for each parameter
+				cpedsList<mscsFunction3dregc> posteriors2D; //!< one for each combination of parameters
 //				map<int, int> params2idx;
 				cpedsList<double> confidenceLevels; //!< CLs for which CR are calculated and stored. By default 68, 95 and 99 %
-				QList<mscsFunction3dregc> confidenceRanges1D; /*!< 1D CRs, one per parameter. Each element is a 3xconfidenceLevels.size() matrix
+				cpedsList<mscsFunction3dregc> confidenceRanges1D; /*!< 1D CRs, one per parameter. Each element is a 3xconfidenceLevels.size() matrix
 					Each row of the matrix contains data for each CL. 
 					1st column is the CL,\n
 					2nd column is CRlow, \n
@@ -249,7 +249,7 @@ class cpedsMCMC {
 				long saveModelEveryNthState, saveModel_lastSavedNumber;
 				bool dumpEveryMCMCstate; //!< toggles if dump chisq, likelichood etc at model saving rate: useful for tracking the run on-fly
 				bool storeBestFitNow; //!< controls storing best fit models
-				QList<string> implementationNote; //!< this list will be stored in the setup file as an extra block. You can describe here the features of your particular implementation of the derived class
+				cpedsList<string> implementationNote; //!< this list will be stored in the setup file as an extra block. You can describe here the features of your particular implementation of the derived class
 				long PDF1d_pointsCount; //!< number of points used to store estimated 1d PDFs
 				long PDF2d_pointsCount; //!< number of points used to store estimated 2d PDFs
 //				bool calculate1Dpdf;				
@@ -513,7 +513,7 @@ class cpedsMCMC {
 		void printInfo() const;
 		void printLastStep() const;
 
-		QList<MscsPDF1D>& posteriors() { return _chisqData.bestFitData.posteriors1D; }
+		cpedsList<MscsPDF1D>& posteriors() { return _chisqData.bestFitData.posteriors1D; }
 		MscsPDF1D get1Dposterior(string paramName, long pdfPoints=50, string interpolationType="steffen");
 		MscsPDF1D get1Dposterior(int paramID, long pdfPoints=50, string interpolationType="steffen", bool recalculate=true);
 		mscsFunction3dregc get2Dposterior(string paramName1, string paramName2, long pdfPoints=50);
@@ -929,7 +929,7 @@ class cpedsMCMC {
 			return _IOcontrol;
 		}
 		
-		const QList<MClink>& getCbestFitChain() const {
+		const cpedsList<MClink>& getCbestFitChain() const {
 			return _MCbestFitChain;
 		}
 		
@@ -1076,7 +1076,7 @@ class cpedsMCMC {
 			\date Feb 1, 2011, 1:09:31 PM
 			\author Bartosz Lew
 		*/
-		void saveChain(QList<MClink>& chain, string fname);
+		void saveChain(cpedsList<MClink>& chain, string fname);
 		
 		/*!
 			\brief save the current index of the starting link to file

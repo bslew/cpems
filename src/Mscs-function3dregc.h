@@ -6,8 +6,7 @@
  */
 
 /*!
-\file mscsFunction3dregc.h - reimplementation of the mscsFunction3dreg class but based on C arrays instead of
-QLists
+\file mscsFunction3dregc.h - reimplementation of the mscsFunction3dreg class based on C arrays
 */
 
 
@@ -68,7 +67,7 @@ x,y,z - are the coordinate values
 i,j,k - are the indexes of the grid cell
 dx,dy,dz - are the grid separations in each dimension.
 
-The 3d function is stored on an linear array of QPointF objects, hence the function can store complex values.
+The 3d function is stored on an linear array of cpedsPoint2D objects, hence the function can store complex values.
 
 The ordering of points in the array is X-major: i.e. the index of the last dimension (Z) changes 
 most frequently. - consistently with fftw conventions, hence the N'th element in the array corresponds to
@@ -1627,7 +1626,6 @@ class mscsFunction3dregc : public mscsObject {
 		cpedsRNG *_rns;
 };
 #endif /* MSCSFUNCTION3DREGC */ 
-
 
 
 

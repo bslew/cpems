@@ -89,3 +89,6 @@ pyth/.plot_function.log
 .clang-format~
 tests/functional_tests/cpems_arithmetic
 tests/functional_tests/test-cpeds-directions
+tests/sunRiseAndSet.ctr.txt
+tests/sunRiseAndSet.lowerLimb.txt
+tests/sunRiseAndSet.upperLimb.txt

@@ -4,7 +4,6 @@
 #include "cpeds-smooth.h"
 #include "cpeds-point_set.h"
 #include "Mscs-map_proj.h"
-//#include <QtGui/QPainter>
 
 //************************************************************************
 // plots the flat map in a requested projection
@@ -215,10 +214,6 @@ long mscsMapPlot::plot(long sizeX, long sizeY, string projection, double l, doub
     maxTloc=Tmax;
     cpgimag(tab, sizeX, sizeY, 1, sizeX, 1, sizeY, minTloc, maxTloc, tr);
 
-    // QPainter painter;
-    // painter.setPen(Qt::blue);
-    // painter.setFont(QFont("Arial", 30));
-    // painter.drawText(rect(), Qt::AlignCenter, "Qt");
 
     // { 
     //   cpgscr(0,0,0,0);

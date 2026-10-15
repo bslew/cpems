@@ -10,10 +10,20 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
-//#include <QtCore/QList>
-//#include <QtCore/QDateTime>
-#include "qtbase.h"
+#include <ctime>
+#include <string>
+#include <tuple>
 #include "cpeds-math.h"
+#include "cpeds-list.h"
+
+struct MscsDateTime {
+	std::tm value = {};
+
+	bool operator<(const MscsDateTime& other) const {
+		return std::tie(value.tm_year, value.tm_mon, value.tm_mday, value.tm_hour, value.tm_min, value.tm_sec) <
+				std::tie(other.value.tm_year, other.value.tm_mon, other.value.tm_mday, other.value.tm_hour, other.value.tm_min, other.value.tm_sec);
+	}
+};
 
 
 /*!
@@ -32,18 +42,18 @@ class MscsDateTimeData {
 	public:
 		
 		typedef struct {
-			QList<double> data;
-			QDateTime dt;
+			cpedsList<double> data;
+			MscsDateTime dt;
 		} row_t;
 		
 		/* ------------- */
 		/* CLASS TYPES */
 		/* ------------- */
 		typedef struct {
-				QList<row_t> rows;
+				cpedsList<row_t> rows;
 				long dtCol;
-				QString dtFmt;
-				QString fname;
+				std::string dtFmt;
+				std::string fname;
 		} DateTimeData_t;
 
 		/* ---------------------------- */
@@ -65,7 +75,7 @@ class MscsDateTimeData {
 		
 			\date Feb 9, 2018, 3:47:28 PM
 		*/
-		void load(string fname, long dtCol, string dtFmt);
+		void load(std::string fname, long dtCol, std::string dtFmt);
 		
 		void printData();
 		
@@ -84,11 +94,11 @@ class MscsDateTimeData {
 		
 			\date Feb 9, 2018, 6:51:19 PM
 		*/
-		double getFirstValueAfter(string dt, long col, long startFrom, long* idx=NULL);
-		double getFirstValueAfter(QDateTime qdt, long col, long startFrom, long* idx=NULL);
+		double getFirstValueAfter(std::string dt, long col, long startFrom, long* idx=NULL);
+		double getFirstValueAfter(MscsDateTime qdt, long col, long startFrom, long* idx=NULL);
 		double getFirstValueAfter(double JD, long col, long startFrom, long* idx=NULL);
 		
-		QDateTime getTime(long idx) { return _DTdata.rows[idx].dt; }
+		MscsDateTime getTime(long idx) { return _DTdata.rows[idx].dt; }
 		double getTimeJD(long idx);
 		double getData(long col, long row) { return _DTdata.rows[row].data[col]; }
 		long getDataCols(long row=0) { return _DTdata.rows[row].data.size(); }
@@ -122,4 +132,3 @@ class MscsDateTimeData {
 //		FILE* _f;
 };
 #endif /* SRC_MSCSDATETIMEDATA_H_ */ 
-

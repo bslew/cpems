@@ -12,7 +12,6 @@ Required dependencies:
 - hdf5 hdf5-devel
 - fftw3 fftw3l fftw3-devel
 - tclap
-- Qt >5 (QtCore)
 - armadillo armadillo-devel
 - gsl >2.1
 

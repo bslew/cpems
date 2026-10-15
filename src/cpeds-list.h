@@ -1,5 +1,5 @@
 /*!
-  \file extends the QList for operations and IO methods
+  \file extends the cpedsList for operations and IO methods
  */
 
 #ifndef CPEDSLIST
@@ -18,8 +18,9 @@
 #include<string.h>
 #include <iomanip>
 #include <complex>
-//#include <QtCore/QList>
-#include "qtbase.h"
+#include <initializer_list>
+#include <utility>
+#include <vector>
 #include "cpeds-math.h"
 #include "Mscs-alm.h"
 #include "mscsVector.h"
@@ -47,7 +48,7 @@ using namespace std;
   \author Bartosz Lew
  */
 template <typename T>
-class cpedsList : public QList<T> {
+class cpedsList : public std::vector<T> {
 		
 		
 		/* ---------------------------------------------------------------------------------------------------- */
@@ -55,19 +56,11 @@ class cpedsList : public QList<T> {
 		/* ---------------------------------------------------------------------------------------------------- */
 	public:
 		
-		using  QList<T>::append;
-		using  QList<T>::size;
-		using  QList<T>::count;
-		using  QList<T>::clear;
-		using  QList<T>::value;
-		using  QList<T>::at;
-		using  QList<T>::mid;
-		using  QList<T>::first;
-		using  QList<T>::last;
-		using  QList<T>::operator[];
-		using  QList<T>::operator<<;
-		using  QList<T>::takeFirst;
-		using  QList<T>::takeLast;
+		using Base = std::vector<T>;
+		using Base::at;
+		using Base::clear;
+		using Base::insert;
+		using Base::operator[];
 		
 		/* ------------- */
 		/* CLASS FRIENDS */
@@ -77,12 +70,46 @@ class cpedsList : public QList<T> {
 		/* ---------------------------- */
 		/* CONSTRUCTORS AND DESTRUCTORS */
 		/* ---------------------------- */
-		cpedsList() : QList<T>() {}
-		cpedsList(T * tab, long N) : QList<T>() { fromCarray(tab,N); }
-		cpedsList(const QList<T>& q) : QList<T>(q) {}
+		cpedsList() = default;
+		cpedsList(T * tab, long N) { fromCarray(tab,N); }
+		cpedsList(const std::vector<T>& q) : Base(q) {}
+		cpedsList(std::initializer_list<T> values) : Base(values) {}
 		cpedsList(const mscsVector<T>& v);
 		~cpedsList() {}
-		
+
+		void append(const T& value) { this->push_back(value); }
+		void append(T&& value) { this->push_back(std::move(value)); }
+		void append(const cpedsList<T>& values) { this->insert(this->end(), values.begin(), values.end()); }
+		long size() const { return static_cast<long>(Base::size()); }
+		long count() const { return size(); }
+		long length() const { return size(); }
+		T value(long index) const {
+			return index >= 0 && static_cast<std::size_t>(index) < this->size()
+				? (*this)[static_cast<std::size_t>(index)] : T();
+		}
+		T& first() { return this->front(); }
+		const T& first() const { return this->front(); }
+		T& last() { return this->back(); }
+		const T& last() const { return this->back(); }
+		cpedsList<T> mid(long firstIndex, long length = -1) const {
+			cpedsList<T> result;
+			if (firstIndex < 0 || static_cast<std::size_t>(firstIndex) >= this->size()) return result;
+			const auto begin = this->begin() + firstIndex;
+			const auto remaining = static_cast<long>(this->size()) - firstIndex;
+			const auto end = begin + (length < 0 || length > remaining ? remaining : length);
+			result.insert(result.end(), begin, end);
+			return result;
+		}
+		T takeFirst() { T result = this->front(); this->erase(this->begin()); return result; }
+		T takeLast() { T result = this->back(); this->pop_back(); return result; }
+		T takeAt(long index) { T result = (*this)[index]; this->erase(this->begin() + index); return result; }
+		void pop_front() { this->erase(this->begin()); }
+		void removeFirst() { this->erase(this->begin()); }
+		void removeLast() { this->pop_back(); }
+		void removeAt(long index) { this->erase(this->begin() + index); }
+		void prepend(T value) { this->insert(this->begin(), std::move(value)); }
+		void insert(long index, const T& value) { Base::insert(this->begin() + index, value); }
+		cpedsList<T>& operator<<(const T& value) { append(value); return *this; }
 		
 		
 		/* ---------------------------- */
@@ -104,9 +131,9 @@ class cpedsList : public QList<T> {
 		 */
 		void makeLength(long N) {
 			if (N<0) return;
-			if (N==0) { QList<T>::clear(); return; }
-			if (count() < N) { while (count() < N) { QList<T>::append(0); }   }
-			if (count() > N) { while (count() > N) { QList<T>::pop_front();  }   }
+			if (N==0) { Base::clear(); return; }
+			if (count() < N) { while (count() < N) { append(T()); }   }
+			if (count() > N) { while (count() > N) { pop_front();  }   }
 		}
 		
 		/*!
@@ -132,7 +159,7 @@ class cpedsList : public QList<T> {
 				return;
 			}
 			T *t=toCarray();
-			cpeds_find_minmax_value(t,QList<T>::size(),min,max,mini,maxi);
+			cpeds_find_minmax_value(t,static_cast<long>(Base::size()),min,max,mini,maxi);
 			delete t;
 		}
 		
@@ -203,10 +230,10 @@ class cpedsList : public QList<T> {
 		cpedsList<T>& operator*=(T v) { multiply(v); return *this; }
 		cpedsList<T>& operator/=(T v) { divide(v); return *this; }
 		
-		cpedsList<T>& operator=(const cpedsList<T>& cl) { if (this!=&cl) { QList<T>::operator=(cl); }  return *this; }
+		cpedsList<T>& operator=(const cpedsList<T>& cl) { if (this!=&cl) { Base::operator=(cl); }  return *this; }
 		cpedsList<T>& operator=(T v) { for (long i=0;i<count();i++) { (*this)[i]=v; } return *this; }
-		/* cpedsList<T>& operator=(const cpedsList& cl) {  (QList<T>::this); return *this; } */
-		cpedsList<T>& operator==(const cpedsList<T>& cl) { if (count()!=cl.count()) return false; for (long i=0;i<cl.count();i++) { if (at(i)!=cl[i]) return false; } return true; }
+		/* cpedsList<T>& operator=(const cpedsList& cl) {  (Base::this); return *this; } */
+		bool operator==(const cpedsList<T>& cl) const { if (count()!=cl.count()) return false; for (long i=0;i<cl.count();i++) { if (at(i)!=cl[i]) return false; } return true; }
 		
 		cpedsList<T> operator+(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.add(cl); return tmp; }
 		cpedsList<T> operator-(const cpedsList<T>& cl) { cpedsList<T> tmp(*this); tmp.subtract(cl); return tmp; }
@@ -234,7 +261,7 @@ class cpedsList : public QList<T> {
 		mscsVector<T> toMscsVector();
 		
 		void fromCarray(T* t, long N) {
-			for (long i=0;i<N;i++) { QList<T>::append(t[i]); }
+			for (long i=0;i<N;i++) { append(t[i]); }
 		}
 		
 		T* toCarray() const {
@@ -281,6 +308,11 @@ class cpedsList : public QList<T> {
 		
 };
 
+template <class T> cpedsList<T> cpems::cpeds_queue<T>::exportList() {
+	cpedsList<T> result;
+	for (long i = 0; i < get_size(); ++i) result.append(getq(i));
+	return result;
+}
 
 
 /* **************************************************************************************************** */
@@ -420,14 +452,14 @@ template <typename T> long cpedsList<T>::load(string file, bool binary, string t
 		if (type == "mscsAlm") {
 			struct {double  RE, IM; } c;
 			size_t s=sizeof(c);
-			/* for (i=0;i<N;i++) { fread(&c,s,1,F); QList<T>::append(mscsAlm(c.RE,c.IM));  } */
+			/* for (i=0;i<N;i++) { fread(&c,s,1,F); append(mscsAlm(c.RE,c.IM));  } */
 			long n;
-			for (i=0;i<N;i++) { n=fread(&c,s,1,F); QList<T>::append(T( mscsAlm(c.RE,c.IM) ));  if (i<N and n==0) return -1; }
+			for (i=0;i<N;i++) { n=fread(&c,s,1,F); append(T( mscsAlm(c.RE,c.IM) ));  if (i<N and n==0) return -1; }
 		} //else
 		/* if (type == "complex") { */
 		/* 	struct {double  RE, IM; } c; */
 		/* 	size_t s=sizeof(c); */
-		/* 	for (i=0;i<N;i++) { fread(&c,s,1,F); QList<T>::append(complex<double>(c.RE,c.IM));  } */
+		/* 	for (i=0;i<N;i++) { fread(&c,s,1,F); cpedsList<T>::append(complex<double>(c.RE,c.IM));  } */
 		/* } */
 		else {
 			

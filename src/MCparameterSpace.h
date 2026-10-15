@@ -5,7 +5,6 @@
 #ifndef SRC_MCPARAMETERSPACE_H_
 #define SRC_MCPARAMETERSPACE_H_
 
-//#include <QtCore/QList>
 #include "Mscs-function.h"
 
 /*!
@@ -16,7 +15,7 @@
  \date created: Jan 24, 2018, 1:15:58 PM 
  \author Bartosz Lew
  */
-class MCparameterSpace : public QList<mscsFunction> {
+class MCparameterSpace : public cpedsList<mscsFunction> {
 		
 		/* ---------------------------------------------------------------------------------------------------- */
 		/* CLASS PUBLIC MEMBERS */
@@ -27,8 +26,8 @@ class MCparameterSpace : public QList<mscsFunction> {
 		/* CLASS TYPES */
 		/* ------------- */
 		typedef struct {
-			QList<string> names; //!< parameter name
-			QList<string> names_full; //!< parameter name with units in latex typesetting used for automatic plot generation
+			cpedsList<string> names; //!< parameter name
+			cpedsList<string> names_full; //!< parameter name with units in latex typesetting used for automatic plot generation
 				
 		} MCparameterSpace_t;
 
@@ -43,9 +42,9 @@ class MCparameterSpace : public QList<mscsFunction> {
 		/* ---------------------------- */
 
 		void addParameter(const mscsFunction& p, string parameter_name="", string parameter_full_name="");
-		QList<string>& names_latex() { return _MCparameterSpace_data.names_full; }
-		QList<string>& names_full() { return _MCparameterSpace_data.names_full; }
-		QList<string>& names() { return _MCparameterSpace_data.names; }
+		cpedsList<string>& names_latex() { return _MCparameterSpace_data.names_full; }
+		cpedsList<string>& names_full() { return _MCparameterSpace_data.names_full; }
+		cpedsList<string>& names() { return _MCparameterSpace_data.names; }
 		double length(long i) const { return at(i).getX(at(i).pointsCount()-1)-at(i).getX(0); }
 		double resolution(long i) const { return length(i)/at(i).pointsCount(); }
 		
@@ -81,4 +80,3 @@ class MCparameterSpace : public QList<mscsFunction> {
 		
 };
 #endif /* SRC_MCPARAMETERSPACE_H_ */ 
-

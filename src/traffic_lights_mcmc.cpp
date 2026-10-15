@@ -12,7 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-#include "qtbase.h"
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "cpeds-list.h"
 
@@ -37,10 +37,10 @@ bool _debug;
 
 cpedsList<double> getRiskFactors(string fs) {
 	cpedsList<double> f;
-	QString qf=fs.c_str();
-	QStringList l=qf.split(",");
+	std::string qf=fs.c_str();
+	std::vector<std::string> l=cpedsSplit(qf, ",");
 	for (long i = 0; i < l.size(); i++) {
-		f.append(l[i].toDouble());
+		f.append(cpedsToDouble(l[i]));
 	}
 	
 	if (f.size()<_ns) {
@@ -242,9 +242,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(" ");
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, " ");
+	if (qrevl.size()==3) rev=qrevl[1];
 	else rev="could not retrieve version number";
 #else
 	rev="0.1.1";

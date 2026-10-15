@@ -42,14 +42,13 @@ mscsCorrelationFunction mscsMap::calculate_angular_correlation_fn_wis(Cthwisdom&
 					while (j_it < pair_it->second.end()) {
 						if (not isMasked((*j_it))) {
 							separation_number++; // this stores the number of given separations on a sky ( for normalization purposes)
-//							Cth[ang_i].rx() += ang;
 							contrib+=T((*j_it));
 						}
 						
 //						j_it++;
 						std::advance(j_it,step);
 					}
-					Cth[ang_i].ry() += T(pair_it->first) *  contrib;
+					Cth[ang_i].y() += T(pair_it->first) * contrib;
 				}
 #pragma omp critical
 				{
@@ -62,8 +61,8 @@ mscsCorrelationFunction mscsMap::calculate_angular_correlation_fn_wis(Cthwisdom&
 				pair_it++;
 			}
 			
-			Cth[ang_i].rx()=wisdom(ang_i);
-			Cth[ang_i].ry()/=separation_number;
+			Cth[ang_i].x()=wisdom(ang_i);
+			Cth[ang_i].y()/=separation_number;
 		}
 	}
 	

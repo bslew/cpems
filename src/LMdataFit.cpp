@@ -12,8 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "Mscs-global-defs.h"
 #include "mscsFunctionFit.h"
@@ -134,10 +133,10 @@ int main(int argc, char **argv) {
 	// define initial parameter values
 	msgs.say("Setting initial parameter guess values",Top);
 	cpedsList<double> Pini;
-	QString qs=_Pini.c_str();
-	QStringList qsl=qs.split(",");
+	std::string qs=_Pini.c_str();
+	std::vector<std::string> qsl=cpedsSplit(qs, ",");
 	for (long i = 0; i < Nparam; i++) {
-		Pini.append(qsl[i].toDouble(&convOK));
+		Pini.append(cpedsToDouble(qsl[i], &convOK));
 		if (convOK==false) msgs.criticalError("could not convert initial parameter value to double.", Top);
 		msgs.say("setting initial guess value for parameter %.0lf to %lE",double(i),Pini.last(),Medium);
 	}
@@ -146,17 +145,17 @@ int main(int argc, char **argv) {
 	// define model constants
 	msgs.say("Setting model constants",Top);
 	cpedsList<double> modelConsts;
-	QString qsConsts=_modelConst.c_str();
-	QStringList qslConsts;
+	std::string qsConsts=_modelConst.c_str();
+	std::vector<std::string> qslConsts;
 	
 	if (_modelConst!="") {
-		qslConsts=qsConsts.split(",");
+		qslConsts=cpedsSplit(qsConsts, ",");
 	}
-//	printf("%li, |%s|\n",qslConsts.size(),qslConsts[0].toStdString().c_str());
+//	printf("%li, |%s|\n",qslConsts.size(),qslConsts[0].c_str());
 //	exit(0);
 
 	for (long i = 0; i < qslConsts.size(); i++) {
-		modelConsts.append(qslConsts[i].toDouble(&convOK));
+		modelConsts.append(cpedsToDouble(qslConsts[i], &convOK));
 		if (convOK==false) msgs.criticalError("could not convert the model constant value to double.", Top);
 	}
 	if (modelConsts.size()!=Nconsts) { msgs.say("The selected model requires %li consts, but only %li are provided. Cannot continue",Nconsts, long(qslConsts.size()), Top); exit(0); }
@@ -189,10 +188,10 @@ int main(int argc, char **argv) {
 	if (_searchRadius!="") {
 		msgs.say("Defining grid search radius",Top);
 		cpedsList<double> Srad;
-		QString qs=_searchRadius.c_str();
-		QStringList qsl=qs.split(",");
+		std::string qs=_searchRadius.c_str();
+		std::vector<std::string> qsl=cpedsSplit(qs, ",");
 		for (long i = 0; i < Nparam; i++) {
-			Srad.append(qsl[i].toDouble(&convOK));
+			Srad.append(cpedsToDouble(qsl[i], &convOK));
 			if (convOK==false) msgs.criticalError("could not convert grid search radius parameter value to double.", Top);
 		}
 		if (Srad.size()!=Nparam) { msgs.say("The selected model requires %li parameters, but only %li are provided for search radius. Cannot continue",Nparam, long(qsl.size()), Top); exit(0); }
@@ -422,9 +421,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(" ");
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, " ");
+	if (qrevl.size()==3) rev=qrevl[1];
 	else rev="could not retrieve version number";
 #else
 	rev="0.1.1";
@@ -452,10 +451,10 @@ void save_fit_result(cpedsList<double>& p,cpedsList<double>& pErr, string fname)
 }
 /***************************************************************************************/
 void calculatePvalue() {
-	QString qs=_calcPvalue.c_str();
-	QStringList qsl=qs.split(",");
-	double chisq=qsl[0].toDouble();
-	double dof=qsl[1].toDouble();
+	std::string qs=_calcPvalue.c_str();
+	std::vector<std::string> qsl=cpedsSplit(qs, ",");
+	double chisq=cpedsToDouble(qsl[0]);
+	double dof=cpedsToDouble(qsl[1]);
 	double p;
 	printf("dof: %lf\n",dof);
 	printf("chisq: %lf\n",chisq);

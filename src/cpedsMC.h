@@ -5,7 +5,6 @@
 #ifndef SRC_CPEDSMC_H_
 #define SRC_CPEDSMC_H_
 
-//#include <QtCore/QList>
 #include "MClink.h"
 
 
@@ -17,7 +16,7 @@
  \date created: Jan 23, 2018, 4:09:22 PM 
  \author Bartosz Lew
  */
-class cpedsMC : public QList<MClink> {
+class cpedsMC : public cpedsList<MClink> {
 		
 		/* ---------------------------------------------------------------------------------------------------- */
 		/* CLASS PUBLIC MEMBERS */
@@ -77,4 +76,3 @@ class cpedsMC : public QList<MClink> {
 		
 };
 #endif /* SRC_CPEDSMC_H_ */ 
-

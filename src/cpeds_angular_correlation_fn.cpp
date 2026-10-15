@@ -52,8 +52,8 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 //					printf("corr_i: %li \n",corr_i);
 					separation_number_priv[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
 					//				separation_vals[corr_i].append()++; // this stores the number of given separations on a sky ( for normalization purposes)
-					Cth_priv[corr_i].rx() += ang;
-					Cth_priv[corr_i].ry() += d1.val() * d2.val(); 
+					Cth_priv[corr_i].x() += ang;
+					Cth_priv[corr_i].y() += d1.val() * d2.val();
 //					CthX[corr_i] += ang;
 //					CthY[corr_i] += ds[i].val() * ds[j].val(); 
 				}
@@ -72,8 +72,8 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 #pragma omp critical
 		{
 			for (long k=0; k<point_num_C_th; k++) {
-				Cth[k].rx()+=Cth_priv[k].rx();
-				Cth[k].ry()+=Cth_priv[k].ry();
+				Cth[k].x()+=Cth_priv[k].x();
+				Cth[k].y()+=Cth_priv[k].y();
 				separation_number[k]+=separation_number_priv[k];
 			}
 		}
@@ -88,8 +88,8 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 				corr_i = (long) round((ang - theta_min) / resolution);
 				separation_number[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
 //				separation_vals[corr_i].append()++; // this stores the number of given separations on a sky ( for normalization purposes)
-				Cth[corr_i].rx() += ang;
-				Cth[corr_i].ry() += ds[i].val() * ds[j].val(); 
+				Cth[corr_i].x() += ang;
+				Cth[corr_i].y() += ds[i].val() * ds[j].val();
 			}
 		}
 		
@@ -102,8 +102,8 @@ mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double
 	
 	for (long i = 0; i < point_num_C_th; i++) {
 //		if (separation_number[i]>0) {
-			Cth[i].rx() *= PI180inv/separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
-			Cth[i].ry() /= separation_number[i]; // normalization of C(th)
+			Cth[i].x() *= PI180inv/separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
+			Cth[i].y() /= separation_number[i]; // normalization of C(th)
 //		}
 	}
 	
@@ -217,8 +217,8 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 				if ((ang >= theta_min) && (ang <= theta_max)) {
 					corr_i = (long) round((ang - theta_min) / resolution);
 					separation_number_priv[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
-					cross_term_priv[corr_i].rx() += ang;
-					cross_term_priv[corr_i].ry() += d1.val() * d2.val(); 
+					cross_term_priv[corr_i].x() += ang;
+					cross_term_priv[corr_i].y() += d1.val() * d2.val();
 
 					auto_term1_priv[corr_i]+=d1.val()*d1.val();
 					auto_term2_priv[corr_i]+=d2.val()*d2.val();
@@ -240,8 +240,8 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 #pragma omp critical
 		{
 			for (long k=0; k<point_num_C_th; k++) {
-				Cth[k].rx()+=cross_term_priv[k].rx();
-				Cth[k].ry()+=cross_term_priv[k].ry();
+				Cth[k].x()+=cross_term_priv[k].x();
+				Cth[k].y()+=cross_term_priv[k].y();
 				separation_number[k]+=separation_number_priv[k];
 				auto_term1[k]+=auto_term1_priv[k];
 				auto_term2[k]+=auto_term2_priv[k];
@@ -254,11 +254,11 @@ mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet d
 	
 	for (long i = 0; i < point_num_C_th; i++) {
 //		if (separation_number[i]>0) {
-			Cth[i].rx() *= PI180inv/separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
-			Cth[i].ry() *= 2.0/separation_number[i]; // normalization of C(th)
+			Cth[i].x() *= PI180inv/separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
+			Cth[i].y() *= 2.0/separation_number[i]; // normalization of C(th)
 			auto_term1[i]/=separation_number[i];
 			auto_term2[i]/=separation_number[i];
-			Cth[i].ry() /= (auto_term1[i] + auto_term2[i]);
+			Cth[i].y() /= (auto_term1[i] + auto_term2[i]);
 //		}
 	}
 	

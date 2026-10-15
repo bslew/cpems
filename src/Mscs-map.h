@@ -208,7 +208,7 @@ class mscsMap : public mscsObject {
     \date 2010/03/12 11:21:23
     \author Bartosz Lew
   */
-  long loadfits(const string& fileName, const QList<string>& colNames, const QList<string>& dstStructures);
+  long loadfits(const string& fileName, const cpedsList<string>& colNames, const cpedsList<string>& dstStructures);
 
   /*!
     \brief load a single column of a given name into a single structure

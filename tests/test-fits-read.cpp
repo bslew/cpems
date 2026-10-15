@@ -14,17 +14,14 @@
 int main() {
 //	string fname="plikTestowy.fits";
 //	cpedsFits f(fname,"new");
-//	QList<string> colName;
 //	colName.append("string");
 //	colName.append("double");
 //	colName.append("long");
 //	colName.append("bool");
-//	QList<string> colType;
 //	colType.append("string20");
 //	colType.append("double");
 //	colType.append("long");
 //	colType.append("bool");
-//	QList<string> colUnit;
 //	colUnit.append("");
 //	colUnit.append("m/s");
 //	colUnit.append("erg/m^3");

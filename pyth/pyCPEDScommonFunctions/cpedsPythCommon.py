@@ -25,9 +25,6 @@ from astropy.time import Time
 
 import csv
 
-#import PySide.QtCore.QSettings
-
-
 ################################################################################################################################################
 ################################################################################################################################################
 ################################################################################################################################################
@@ -235,25 +232,6 @@ def readUserValue(queryStr, inputType, defaultAnswer, timeoutTime=0):
         errCode=1
     
     return ansOut,errCode
-
-def QsaveParameter(paramName,paramValue, quiet=False):
-    from PySide.QtCore import QSettings
-
-    if quiet==False:
-        print(('saving Qparameter: %s' % paramName))
-        print(('    parameter value: ',paramValue))
-    settings = QSettings("TCfA", "CPEDS")
-    settings.setValue(paramName, paramValue)
-
-def QloadParameter(paramName, quiet=False):
-    from PySide.QtCore import QSettings
-    settings = QSettings("TCfA", "CPEDS")
-    paramValue=settings.value(paramName)
-    
-    if quiet==False:
-        print(( 'loading Qparameter: %s' % paramName))
-        print(('    parameter value: ',paramValue))
-    return paramValue
 
 def saveParameter(fname,paramName,paramValue):
     f = open(fname, "a")
@@ -599,5 +577,4 @@ def mad(data, axis=None):
 ################################################################################################################################################
 ################################################################################################################################################
 ################################################################################################################################################
-
 

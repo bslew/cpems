@@ -12,8 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "Mscs-function3dregc.h"
 #include "Mscs-global-defs.h"
@@ -113,20 +112,20 @@ int main(int argc, char **argv) {
 	if (Mscs_getExtension(_mapFile)=="hdf" or Mscs_getExtension(_mapFile)=="hdf5") {
 		cpedsStatusCodes res=f.loadHDF5(_mapFile,_hdf5dset);
 		if (res!=cpedsSuccess) {
-			QString hdf5dset=_hdf5dset.c_str();
-			if (hdf5dset.contains("DLcmb-")) {
+			std::string hdf5dset=_hdf5dset.c_str();
+			if (hdf5dset.find("DLcmb-") != string::npos) {
 				msgs.say("Procedding special case for DLcmb- dataset",High);
 				// we typically don't store such dataset, so try to construct it from other datasets
 				mscsFunction3dregc f1,f2;
-				QString hdf5dset1=hdf5dset;
-				hdf5dset1.replace("DLcmb-","DLcmbTSZ-");
-				QString hdf5dset2=hdf5dset;
-				hdf5dset2.replace("DLcmb-","DLTSZ-");
+				std::string hdf5dset1=hdf5dset;
+				hdf5dset1=cpedsReplaceAll(hdf5dset1, "DLcmb-", "DLcmbTSZ-");
+				std::string hdf5dset2=hdf5dset;
+				hdf5dset2=cpedsReplaceAll(hdf5dset2, "DLcmb-", "DLTSZ-");
 
-				msgs.say("Loading dataset: "+hdf5dset1.toStdString(),High);
-				cpedsStatusCodes res1=f1.loadHDF5(_mapFile,hdf5dset1.toStdString());
-				msgs.say("Loading dataset: "+hdf5dset2.toStdString(),High);
-				cpedsStatusCodes res2=f2.loadHDF5(_mapFile,hdf5dset2.toStdString());
+				msgs.say("Loading dataset: "+hdf5dset1,High);
+				cpedsStatusCodes res1=f1.loadHDF5(_mapFile,hdf5dset1);
+				msgs.say("Loading dataset: "+hdf5dset2,High);
+				cpedsStatusCodes res2=f2.loadHDF5(_mapFile,hdf5dset2);
 				
 				printf("max value1: %lE\n",f1.getMaxValue());
 				printf("max value2: %lE\n",f2.getMaxValue());
@@ -143,18 +142,18 @@ int main(int argc, char **argv) {
 
 	if (_fluxPerBeamList) {
 		mscsFunction3dregc xyList,S;
-		QStringList qsl;
-		QString s=_fpblist.c_str();
-		qsl=s.split(",");
-		msgs.say("assumed list file name: "+qsl[0].toStdString(),Low);
-		msgs.say("assumed X column: "+qsl[1].toStdString(),Low);
-		msgs.say("assumed Y column: "+qsl[2].toStdString(),Low);
+		std::vector<std::string> qsl;
+		std::string s=_fpblist.c_str();
+		qsl=cpedsSplit(s, ",");
+		msgs.say("assumed list file name: "+qsl[0],Low);
+		msgs.say("assumed X column: "+qsl[1],Low);
+		msgs.say("assumed Y column: "+qsl[2],Low);
 		if (qsl.size()!=3) {
 			msgs.criticalError("wrong syntax in --fpblist",Top);
 		}
-		long listX=qsl[1].toDouble();
-		long listY=qsl[2].toDouble();
-		xyList.loadMatrix(qsl[0].toStdString());
+		long listX=cpedsToDouble(qsl[1]);
+		long listY=cpedsToDouble(qsl[2]);
+		xyList.loadMatrix(qsl[0]);
 
 		msgs.say("Calculating flux per beam around a list of locations",Top);
 		// reset the coordinates
@@ -167,23 +166,23 @@ int main(int argc, char **argv) {
 
 	if (_fluxPerBeamRelList) {
 		mscsFunction3dregc xyList,S;
-		QStringList qsl;
-		QString s=_fpblist.c_str();
-		qsl=s.split(",");
-		msgs.say("assumed list file name: "+qsl[0].toStdString(),Low);
-		msgs.say("assumed X column: "+qsl[1].toStdString(),Low);
-		msgs.say("assumed Y column: "+qsl[2].toStdString(),Low);
+		std::vector<std::string> qsl;
+		std::string s=_fpblist.c_str();
+		qsl=cpedsSplit(s, ",");
+		msgs.say("assumed list file name: "+qsl[0],Low);
+		msgs.say("assumed X column: "+qsl[1],Low);
+		msgs.say("assumed Y column: "+qsl[2],Low);
 		if (qsl.size()!=3) {
 			msgs.criticalError("wrong syntax in --fpbrlist",Top);
 		}
-		long listX=qsl[1].toLong();
-		long listY=qsl[2].toLong();
-		xyList.loadMatrix(qsl[0].toStdString());
+		long listX=cpedsToLong(qsl[1]);
+		long listY=cpedsToLong(qsl[2]);
+		xyList.loadMatrix(qsl[0]);
 
 		cpedsList<long> includeCols;
 		s=_includeCols.c_str();
-		qsl=s.split(",");
-		for (long i = 0; i < qsl.size(); i++) {			includeCols.append(qsl[i].toLong());		}
+		qsl=cpedsSplit(s, ",");
+		for (long i = 0; i < qsl.size(); i++) {			includeCols.append(cpedsToLong(qsl[i]));		}
 
 		msgs.say("Calculating flux per beam around a list of locations",Top);
 		// reset the coordinates
@@ -200,23 +199,23 @@ int main(int argc, char **argv) {
 
 //	if (_fluxPerBeamRelList_cmdLineParams) {
 //		mscsFunction3dregc xyList,S;
-//		QStringList qsl;
-//		QString s=_fpblist.c_str();
-//		qsl=s.split(",");
-//		msgs.say("assumed list file name: "+qsl[0].toStdString(),Low);
-//		msgs.say("assumed X column: "+qsl[1].toStdString(),Low);
-//		msgs.say("assumed Y column: "+qsl[2].toStdString(),Low);
+//		std::vector<std::string> qsl;
+//		std::string s=_fpblist.c_str();
+//		qsl=cpedsSplit(s, ",");
+//		msgs.say("assumed list file name: "+qsl[0],Low);
+//		msgs.say("assumed X column: "+qsl[1],Low);
+//		msgs.say("assumed Y column: "+qsl[2],Low);
 //		if (qsl.size()!=3) {
 //			msgs.criticalError("wrong syntax in --fpbrlist",Top);
 //		}
-//		long listX=qsl[1].toLong();
-//		long listY=qsl[2].toLong();
-//		xyList.loadMatrix(qsl[0].toStdString());
+//		long listX=cpedsToLong(qsl[1]);
+//		long listY=cpedsToLong(qsl[2]);
+//		xyList.loadMatrix(qsl[0]);
 //
 //		cpedsList<long> includeCols;
 //		s=_includeCols.c_str();
-//		qsl=s.split(",");
-//		for (long i = 0; i < qsl.size(); i++) {			includeCols.append(qsl[i].toLong());		}
+//		qsl=cpedsSplit(s, ",");
+//		for (long i = 0; i < qsl.size(); i++) {			includeCols.append(cpedsToLong(qsl[i]));		}
 //
 //		msgs.say("Calculating flux per beam around a list of locations",Top);
 //		// reset the coordinates
@@ -414,9 +413,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(" ");
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, " ");
+	if (qrevl.size()==3) rev=qrevl[1];
 	else rev="could not retrieve version number";
 #else
 	rev="0.1.1";

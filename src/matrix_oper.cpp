@@ -12,8 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "Mscs-function3dregc.h"
 #include "Mscs-global-defs.h"
@@ -220,9 +219,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(" ");
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, " ");
+	if (qrevl.size()==3) rev=qrevl[1];
 	else rev="could not retrieve version number";
 #else
 	rev="0.1.1";
@@ -238,14 +237,14 @@ string getProgramVersionString() {
 /***************************************************************************************/
 mscsFunction3dregc make_TcmbtszMap(cpedsMsgs& msgs) {
 
-	QString freqstr=_freq.c_str();
-	QStringList qfl=freqstr.split(",");
+	std::string freqstr=_freq.c_str();
+	std::vector<std::string> qfl=cpedsSplit(freqstr, ",");
 	cpedsList<double> freq;
 	bool ok;
 	double num;
 	double frequency;
 	for (unsigned long i = 0; i < qfl.size(); i++) {
-		num=qfl[i].toDouble(&ok);
+		num=cpedsToDouble(qfl[i], &ok);
 		if (ok) freq.append(num);
 		else msgs.criticalError("could not convert frequency do double. Better stop now.",Top);
 	}

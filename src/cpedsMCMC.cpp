@@ -776,7 +776,7 @@ void cpedsMCMC::startChain(MClink* startingLink, bool followPriors) {
 	saveChain(_MCrej,getPartialFilesDirFull()+"/rejected.mc"); 
 	saveChain(_MCaccepted,getPartialFilesDirFull()+"/accepted.mc"); 
 	saveChain(_MCtest,getPartialFilesDirFull()+"/test.mc"); 
-	//	QList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
+	//	cpedsList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
 	//	saveChain(tmp,getOutputDir()+"/all.mc"); 
 	
 	
@@ -1371,9 +1371,9 @@ void cpedsMCMC::saveCooling() {
 	msgs->say("Saving cooling to file",Medium);
 	cpedsList<double> tmpl;
 	tmps=msgs->toStr(_IOcontrol.saveCoolingPDF_lastSavedNumber,"%05li");
-	_cooling.coolingDistr.save(getPartialFilesDirFull()+"/"+tmps+"-coolingPDF.step_"+msgs->toStr(_MCaccepted.size())); 
-	_cooling.coolingDistrInvCDF.save(getPartialFilesDirFull()+"/"+tmps+"-coolingInvCDF.step_"+msgs->toStr(_MCaccepted.size())); 
-	_acceptWorseRNs.save(getPartialFilesDirFull()+"/"+tmps+"-acceptWorseRNs.step_"+msgs->toStr(_MCaccepted.size())); 
+	_cooling.coolingDistr.save(getPartialFilesDirFull()+"/"+tmps+"-coolingPDF.step_"+msgs->toStr(_MCaccepted.size()));
+	_cooling.coolingDistrInvCDF.save(getPartialFilesDirFull()+"/"+tmps+"-coolingInvCDF.step_"+msgs->toStr(_MCaccepted.size()));
+	_acceptWorseRNs.save(getPartialFilesDirFull()+"/"+tmps+"-acceptWorseRNs.step_"+msgs->toStr(_MCaccepted.size()));
 	tmpl.append(_cooling.acceptWorseThreshold);
 	tmpl.append(_cooling.acceptWorseThresholdAfterBurnIn);
 	tmpl.save(getPartialFilesDirFull()+"/"+tmps+"-acceptWorseThresholds.step_"+msgs->toStr(_MCaccepted.size())); 
@@ -1431,7 +1431,7 @@ void cpedsMCMC::dumpAll(bool dumpNow) {
 		//		saveParams(getOutputDir()+"/params.mc");
 		//		saveChain(_MCrej,getOutputDir()+"/rejected.mc"); 
 		//		saveChain(_MCaccepted,getOutputDir()+"/accepted.mc"); 
-		//		QList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
+		//		cpedsList<MClink> tmp=_MCrej; tmp.append(_MCaccepted);
 		//		saveChain(tmp,getOutputDir()+"/all.mc"); 
 		saveStepPDFs(getPartialFilesDirFull()+"/stepPDFend");				
 		saveModel();
@@ -1566,7 +1566,7 @@ void cpedsMCMC::saveSetup() {
 	
 }
 /***************************************************************************************/
-void cpedsMCMC::saveChain(QList<MClink>& chain, string fname) {	
+void cpedsMCMC::saveChain(cpedsList<MClink>& chain, string fname) {
 	if (chain.size()>0) {
 		string output=getRunDependentFileName(fname);
 		matrix<double> m(chain.size(),dims()+4);
@@ -1640,7 +1640,7 @@ void cpedsMCMC::saveCurrentLength() {
 /***************************************************************************************/
 void cpedsMCMC::saveCurrentTemperature() {
 	cpedsList<double> ct;
-	ct.append(_cooling.temperatureHistory.last().ry());
+	ct.append(_cooling.temperatureHistory.last().y());
 	ct.save(getPartialFilesDirFull()+"/current-temperature"); 			
 }
 /***************************************************************************************/

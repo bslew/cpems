@@ -11,12 +11,12 @@
 
 
 /* STANDALONE HEADERS */
-#include <QtCore/qlist.h>
 #include "cpeds-math.h"
 #include "cpeds-point2d.h"
 #include <vector>
 #include "mscsVector.h"
 #include "subdomain.h"
+#include "cpeds-list.h"
 
 /* INTERDEPENDENT HEADERS */
 
@@ -36,7 +36,7 @@
   \date 2009/11/06 12:51:40
   \author Bartosz Lew
 */
-//class cpedsPointSet2D : public QList<cpedsPoint2D> {
+//class cpedsPointSet2D : public cpedsList<cpedsPoint2D> {
 class cpedsPointSet2D : public mscsVector<cpedsPoint2D> {
 
 
@@ -55,7 +55,7 @@ class cpedsPointSet2D : public mscsVector<cpedsPoint2D> {
 /* CONSTRUCTORS AND DESTRUCTORS */
 /* ---------------------------- */
   cpedsPointSet2D();
-  cpedsPointSet2D(const QList<cpedsPoint2D> &q);
+  cpedsPointSet2D(const cpedsList<cpedsPoint2D> &q);
   cpedsPointSet2D(const cpedsPointSet2D &q);
   cpedsPointSet2D(long N, double *lon, double *lat);
   cpedsPointSet2D(const vector<cpedsPoint2D> &v);
@@ -79,7 +79,7 @@ class cpedsPointSet2D : public mscsVector<cpedsPoint2D> {
   double maxY() const;
 
   virtual cpedsPointSet2D& operator=(const cpedsPointSet2D &rhs);
-  virtual cpedsPointSet2D& operator=(const QList<cpedsPoint2D> &rhs);
+  virtual cpedsPointSet2D& operator=(const cpedsList<cpedsPoint2D> &rhs);
 
   void print() const;
   virtual void save(string fname) const;
@@ -101,7 +101,7 @@ class cpedsPointSet2D : public mscsVector<cpedsPoint2D> {
 /* ---------------------------- */
 /* PROTECTED STRUCTURES */
 /* ---------------------------- */
-//  QList<cpedsPoint2D> _ps; // points set
+//  cpedsList<cpedsPoint2D> _ps; // points set
 
   mscsVector<double> _vals;
   
@@ -151,11 +151,11 @@ class cpedsPointSet2D : public mscsVector<cpedsPoint2D> {
 
 
 /* STANDALONE HEADERS */
-#include <QtCore/qlist.h>
 #include <vector>
 #include "cpeds-math.h"
 #include "cpeds-point3d.h"
 #include "mscsVector.h"
+#include "cpeds-list.h"
 
 /* INTERDEPENDENT HEADERS */
 
@@ -175,7 +175,7 @@ class cpedsPointSet2D : public mscsVector<cpedsPoint2D> {
   \date 2009/11/06 12:51:40
   \author Bartosz Lew
 */
-//class cpedsPointSet3D  : public QList<cpedsPoint3D> {
+//class cpedsPointSet3D  : public cpedsList<cpedsPoint3D> {
 class cpedsPointSet3D  : public mscsVector<cpedsPoint3D> {
 
 
@@ -194,7 +194,7 @@ class cpedsPointSet3D  : public mscsVector<cpedsPoint3D> {
 /* CONSTRUCTORS AND DESTRUCTORS */
 /* ---------------------------- */
   cpedsPointSet3D();
-  cpedsPointSet3D(const QList<cpedsPoint3D> &q);
+  cpedsPointSet3D(const cpedsList<cpedsPoint3D> &q);
   cpedsPointSet3D(const cpedsPointSet3D &q);
   cpedsPointSet3D(const cpedsPointSet2D &q);
   //cpedsPointSet3D(long N, double *lon, double *lat);
@@ -300,7 +300,7 @@ class cpedsPointSet3D  : public mscsVector<cpedsPoint3D> {
   void add(double val);
 
   virtual const cpedsPointSet3D& operator=(const cpedsPointSet3D &rhs);
-  virtual const cpedsPointSet3D& operator=(const QList<cpedsPoint3D> &rhs);
+  virtual const cpedsPointSet3D& operator=(const cpedsList<cpedsPoint3D> &rhs);
   virtual const cpedsPointSet3D& operator=(const cpedsPointSet2D &rhs);
   virtual const cpedsPointSet3D& operator+=(const cpedsPointSet3D &rhs);
   virtual cpedsPointSet3D operator+(const cpedsPointSet3D &rhs);
@@ -480,7 +480,7 @@ class cpedsPointSet3D  : public mscsVector<cpedsPoint3D> {
 /* ---------------------------- */
 /* PROTECTED STRUCTURES */
 /* ---------------------------- */
-//  QList<cpedsPoint2D> _ps; // points set
+//  cpedsList<cpedsPoint2D> _ps; // points set
   mscsVector<double> _vals;
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -501,4 +501,3 @@ class cpedsPointSet3D  : public mscsVector<cpedsPoint3D> {
 
  };
 #endif /* CPEDSPOINTSET3D */
-

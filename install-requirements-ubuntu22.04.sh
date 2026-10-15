@@ -21,9 +21,7 @@ apt install sqlite3 #libproj-dev libproj22 proj-data
 # fftw
 apt install fftw2 libfftw3-long3 libfftw3-quad3 libfftw3-bin libfftw3-dev libfftw3-mpi3 libfftw3-mpi-dev
 # interpolation and other stuff
-apt install libcgal-dev libcgal-qt5-dev libcgal-ipelets
-# qt5 
-apt install qt5-default 
+apt install libcgal-dev
 # fits
 apt install libcfitsio-dev libccfits-dev libcfitsio-bin
 # astro stuff
@@ -42,7 +40,7 @@ apt install libspdlog1 libspdlog-dev
 # gmp
 apt install libgmp-dev libgmp10
 # CGAL
-apt install libcgal-dev libcgal-qt5-dev libcgal-ipelets
+apt install libcgal-dev
 
 # HDF5
 apt install libhdf5-103 libhdf5-cpp-103 libhdf5-dev libhdf5-openmpi-103

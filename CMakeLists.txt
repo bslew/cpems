@@ -218,15 +218,6 @@ if (HDF5_FOUND)
 	MESSAGE(STATUS "HDF5_LIBRARIES: " ${HDF5_LIBRARIES})
 endif()
 
-#find_package(Qt5 COMPONENTS OpenGL Gui Core Script ScriptTools QUIET)
-find_package(Qt5 COMPONENTS Core )
-# the recommended use of Qt5 is different than other packages found see:
-# https://doc.qt.io/qt-5/cmake-manual.html
-if (Qt5Core_FOUND)
-	MESSAGE(STATUS "Qt5Core_INCLUDE_DIRS: " ${Qt5Core_INCLUDE_DIRS})
-	MESSAGE(STATUS "Qt5Core_LIBRARIES: " ${Qt5Core_LIBRARIES})
-endif()
-
 find_package(NOVA )
 #  NOVA_INCLUDE_DIR - the NOVA include directory
 #  NOVA_LIBRARIES - Link these to use NOVA
@@ -381,17 +372,6 @@ if (NOT PROJ_FOUND)
 	MESSAGE(STATUS "PROJ_LIBRARY: " ${PROJ_LIBRARY})
 endif()
 
-# QtCore library
-if (NOT Qt5Core_FOUND)
-	find_library (Qt5Core_LIBRARIES Qt5Core
-		PATHS
-		$ENV{HOME}/local
-		$ENV{HOME}/anaconda3
-		PATH_SUFFIXES lib lib64
-	)
-endif()
-
-
 # FFTW library
 if (NOT FFTW_FOUND)
 	find_library (FFTW_LIBRARIES fftw3 fftw3l
@@ -479,12 +459,6 @@ if (NOT Armadillo_FOUND)
 	)
 endif()
 
-#find_path(QTCORE_HEADERS QList
-#	$ENV{HOME}/anaconda3/include/qt
-#	$ENV{HOME}/anaconda3/include/qt/QtCore
-#    /usr/include/qt5/QtCore
-#)
-
 find_path (STL_INCLUDE_DIR NAMES 
 	stl_iterator.h 
 #	c++/7/bits/ 
@@ -538,12 +512,9 @@ include_directories(
 	external_packages/ccSHT3/include
 	${CFITSIO_INCLUDE_DIR}
 	${GSL_INCLUDE_DIR}
-	${Qt5Core_INCLUDE_DIRS}
-#	${QTCORE_HEADERS}/..
 	${HDF5_INCLUDE_DIRS}
 	${HDF_INCLUDE_DIR}
 #	${STL_INCLUDE_DIR}
-#	get_filename_component(PARENT_DIR ${QTCORE_HEADERS} DIRECTORY)
 #	${CPEDS_INCLUDE_DIR}
 #	${MSCS_INCLUDE_DIR}
     /usr/include/python2.7
@@ -565,8 +536,6 @@ link_directories(
     ${PROJECT_BINARY_DIR}/external_packages/sla-refr
     ${PROJECT_BINARY_DIR}/external_packages/ccSHT3
     ${PROJECT_BINARY_DIR}/external_packages/novas
-#    ${Qt5Core_LIBRARIES}
-#	get_target_property(QtCore_location Qt5::Core LOCATION)
 	${HDF5_LIBRARIES}
     )
 
@@ -577,7 +546,6 @@ link_directories(
 # Define source files
 #
 set (CPEDSLIB_HEADERS 
-    src/qtbase.h
     src/cpeds-common.h
 	src/cpeds-consts.h
 	src/StringParser.h
@@ -607,6 +575,7 @@ set (CPEDSLIB_HEADERS
 	src/mscsVector.h
 	src/Mscs-object.h
 	src/cpeds-list.h
+	src/cpeds-string.h
 	src/MClink.h
 	src/MCparameterSpace.h
     src/cpeds-templates.h
@@ -1127,7 +1096,6 @@ set (EXTERNAL_LIBRARIES
 	${NOVA_LIB}
 	${GSL_LIBRARIES}
 	${CGAL_LIBRARIES} CGAL
-	Qt5::Core
 	${FFTW_LIBRARIES}
 	${PGPLOT_LIBRARIES}
 	${HDF5_LIBRARIES}

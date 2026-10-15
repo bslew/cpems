@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 //			ps.push_back(cpedsPoint3D(cpeds_random_uniform_number(0,1),cpeds_random_uniform_number(0,1),cpeds_random_uniform_number(0,1)));
 			ps.push_back(cpedsPoint3D(cpeds_random_uniform_number(0,1),cpeds_random_uniform_number(0,1),0));
 		}
-		ps3d=ps;
+		ps3d=cpedsPointSet3D(ps);
 		ps3d.save("testData.pts");
 
 		subDomain_region_t reg;

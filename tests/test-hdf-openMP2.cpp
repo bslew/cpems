@@ -131,8 +131,6 @@ int saveHDF5(string filename, string datasetName, double *data,int ix, int iy, i
 	//			H5Ldelete(file,linkName.c_str(),H5P_DEFAULT);
 	//		else {
 	//			// create groups if needed
-	//			QString qs=linkName.c_str();
-	//			QStringList qsl=qs.split("/");
 	//			if (qsl.size()==3)
 	//				hdf5createGroup(file,linkName);
 	//		}

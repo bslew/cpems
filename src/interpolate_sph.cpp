@@ -16,8 +16,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "Mscs-map.h"
 
@@ -50,8 +49,8 @@ int main(int argc, char **argv) {
 	msgs.setSaveRunWriteMode('a');
 	msgs.say("PARSE THE COMMAND LINE ARGUMENTS",High);
 	string s;
-	QStringList qsl;
-	QString qs;
+	std::vector<std::string> qsl;
+	std::string qs;
 	//----------------------------------------------------------------------------------------------------
 	//PARSE THE COMMAND LINE ARGUMENTS
 	//----------------------------------------------------------------------------------------------------
@@ -64,7 +63,7 @@ int main(int argc, char **argv) {
 		return 0;		
 	}
 	qs=_inputFile.c_str();
-	if (qs.contains("-Tn-bin",Qt::CaseSensitive)) {
+	if (qs.find("-Tn-bin") != string::npos) {
 		// interpolate a map file
 		interpolateMap();
 	}
@@ -76,12 +75,12 @@ int main(int argc, char **argv) {
 		while(cin) {
 			getline(cin, input_line);
 			qs=input_line.c_str();
-			printf("read: %s\n",qs.toStdString().c_str());
-			qsl=qs.split(' ');
+			printf("read: %s\n",qs.c_str());
+			qsl=cpedsSplit(qs, ' ');
 			if (qsl.count()==3) { //msgs.criticalError("wrong number of data",Top);
-				l=qsl[0].toDouble(&ok); if (not ok) msgs.criticalError("incorrect conversion: l",Top);
-				b=qsl[1].toDouble(&ok); if (not ok) msgs.criticalError("incorrect conversion: b",Top);
-				T=qsl[2].toDouble(&ok); if (not ok) msgs.criticalError("incorrect conversion: T",Top);
+				l=cpedsToDouble(qsl[0], &ok); if (not ok) msgs.criticalError("incorrect conversion: l",Top);
+				b=cpedsToDouble(qsl[1], &ok); if (not ok) msgs.criticalError("incorrect conversion: b",Top);
+				T=cpedsToDouble(qsl[2], &ok); if (not ok) msgs.criticalError("incorrect conversion: T",Top);
 				ds.append(cpedsDirection(l*PI180, b*PI180, T));
 			}
 		}
@@ -163,9 +162,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(' ');
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, ' ');
+	if (qrevl.size()==3) rev=qrevl[1];
 #else
 	rev="0.1.1";
 #endif

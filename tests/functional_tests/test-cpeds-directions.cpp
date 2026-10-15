@@ -1,4 +1,4 @@
-#include "cpems/cpeds-direction.h"
+#include "cpeds-direction.h"
 #include "gtest/gtest.h"
 
 namespace cpems {

@@ -26,7 +26,7 @@ void MCparameterSpace::addParameter(const mscsFunction& p, string parameter_name
 
 const MCparameterSpace& MCparameterSpace::operator =(const MCparameterSpace& rhs) {
 	if (this!=&rhs) {
-		QList<mscsFunction>::operator=(rhs);
+		cpedsList<mscsFunction>::operator=(rhs);
 		_MCparameterSpace_data=rhs._MCparameterSpace_data;
 	}
 	return *this;

@@ -1,7 +1,5 @@
 #include "Mscs-common.h"
 #include <vector>
-//#include <QtCore/QString>
-//#include <QtCore/QList>
 
 #ifndef MSCS_GLOBAL_DEFS
 #define MSCS_GLOBAL_DEFS
@@ -199,6 +197,6 @@ string Mscs_getExtension(string name);
 vector<string> Mscs_stringToList(string str, string sep=",");
 vector<double> Mscs_stringToDoubleList(string str, string sep);
 vector<long> Mscs_stringToLongList(string str, string sep);
-//QList<QString> Mscs_stringToList(string str, string sep=",");
+//cpedsList<std::string> Mscs_stringToList(string str, string sep=",");
 
 #endif

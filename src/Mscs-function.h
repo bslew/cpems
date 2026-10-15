@@ -7,10 +7,7 @@
 /* **************************************************************************************************** */
 /* INCLUDES */
 /* **************************************************************************************************** */
-//#include <QtCore/QtAlgorithms>
-//#include <QtCore/QPointF>
-//#include <QtCore/QList>
-#include "qtbase.h"
+#include "cpeds-point2d.h"
 #include <string>
 #include <tuple>
 #include <iostream>
@@ -141,13 +138,13 @@ class mscsFunction : public mscsObject {
     \brief initiates the function with the array of points given in x and y objects
     \details
     @param name - name of the function
-    @param x - QList object reference with function arguments
-    @param y - QList object reference with function values
+    @param x - cpedsList object reference with function arguments
+    @param y - cpedsList object reference with function values
 
     \date 2009/05/28 19:20:09
     \author Bartosz Lew
   */
-  mscsFunction(const string name, const QList<double>& x, const QList<double>& y);
+  mscsFunction(const string name, const cpedsList<double>& x, const cpedsList<double>& y);
 
   //! a cloning constructor
   mscsFunction(const mscsFunction& fn);
@@ -225,11 +222,11 @@ class mscsFunction : public mscsObject {
   double finter(double x, string type="linear") const;
 //  double finter(double x, string type="linear");
   //! returns the value reference at the i'th position; use this if you are sure that the i'th value exists in the function
-  double& f(long i) { return _f[i].ry(); }
+  double& f(long i) { return _f[i].y(); }
   //! returns the value reference at the index i treated in the python array index style. This allows to get function values from the end by using negative indexes.
   double& fpsty(long i);
   //! returns the value reference at the i'th position using periodic boundary conditions
-  double& fp(long i) { return _f[i % _f.size()].ry(); }
+  double& fp(long i) { return _f[i % _f.size()].y(); }
   //! returns function value without a check for validity of range i. functionality changed since Jun 28, 2012, 5:17:57 PM. Now Y has the previous functionality
   double y(long i) const { return _f[i].y(); }
   //! same as getY
@@ -239,7 +236,7 @@ class mscsFunction : public mscsObject {
   //! returns the argument value at i'th position
   double getX(long i) const;
   double getx(long i) const { return _f[i].x(); }
-  double& X(long i) { return _f[i].rx(); }
+  double& X(long i) { return _f[i].x(); }
   //! Returns the number of points that build up this function
   long pointsCount() const;
   
@@ -247,14 +244,14 @@ class mscsFunction : public mscsObject {
 	\brief get i'th point from the functio as const reference
 	\details 
 	@param i - index of the point
-	@return QPointF object is returned
+	@return cpedsPoint2D object is returned
 	
 	No checking for wrong indexes is done/
 
 	\date Mar 3, 2011, 9:23:06 PM
 	\author Bartosz Lew
   */
-  const QPointF& get(long i) const { return _f[i]; }
+  const cpedsPoint2D& get(long i) const { return _f[i]; }
   /*!
 	\brief return a range of the data from the function
 	\details 
@@ -297,13 +294,13 @@ class mscsFunction : public mscsObject {
     \brief exports the function arguments as a list
     \details
     @param
-    @return QList object list  of doubles with arguments
+    @return cpedsList object list  of doubles with arguments
     Use this method for compound commands instead of exractArguments to avoid memory leaks when the poiner is not stored
 
     \date 2010/01/29 23:14:26
     \author Bartosz Lew
   */
-  const QList<double> getArguments() const;
+  const cpedsList<double> getArguments() const;
 
   /*!
     \brief returns a newly allocated array with function values
@@ -321,16 +318,16 @@ class mscsFunction : public mscsObject {
     \brief exports the function values as a list
     \details
     @param
-    @return QList object list  of doubles with values
+    @return cpedsList object list  of doubles with values
     Use this method for compound commands instead of exractValues to avoid memory leaks when the poiner is not stored
 
     \date 2010/01/29 23:14:26
     \author Bartosz Lew
   */
-  const QList<double> getValues() const;
+  const cpedsList<double> getValues() const;
 
-  QPointF* extractPoints() const;
-  void importPoints(QPointF* t, long n, bool reverseOrder=false);
+  cpedsPoint2D* extractPoints() const;
+  void importPoints(cpedsPoint2D* t, long n, bool reverseOrder=false);
 
   /*!
     \brief adds points to this function from the X,Y array of size size
@@ -370,7 +367,7 @@ class mscsFunction : public mscsObject {
 	  
 	\date May 21, 2010, 2:17:09 PM
   */
-  const mscsFunction& setX(const QList<double> x);
+  const mscsFunction& setX(const cpedsList<double> x);
 
   const mscsFunction& setX(double v);
 
@@ -388,7 +385,7 @@ class mscsFunction : public mscsObject {
 	  
 	\date May 21, 2010, 2:17:09 PM
   */
-  const mscsFunction& setY(const QList<double> y);
+  const mscsFunction& setY(const cpedsList<double> y);
 
   /*!
     \brief adds new points (or removes points) so that the total number of points was i
@@ -399,10 +396,10 @@ class mscsFunction : public mscsObject {
   */
   void setPointsNum(long num);
 
-  cpeds_point getPoint(long i) const { cpeds_point p; p.x=getX(i); p.y=f(i); return p; }
-  QPointF getQPoint(long i) const { return _f[i]; }
-  void setQPoint(long i,QPointF qp) { _f[i]=qp; }
-  QPointF last() { return _f.last(); }
+  cpeds_point getPointStruct(long i) const { cpeds_point p; p.x=getX(i); p.y=f(i); return p; }
+  cpedsPoint2D getPoint(long i) const { return _f[i]; }
+  void setPoint(long i,cpedsPoint2D qp) { _f[i]=qp; }
+  cpedsPoint2D last() { return _f.last(); }
 
   /*!
     \brief Adds a new point to the function
@@ -411,8 +408,8 @@ class mscsFunction : public mscsObject {
 
     \date 2009/05/28 21:38:45
   */
-//  void addPoint(double x, double y) {  _f.append(QPointF::QPointF(x,y)); } // commented out when switching to the 64bit system; todo need to find out if it still compiles without problems on 32-bit installations in standard configuration
-  void addPoint(double x, double y) {  _f.append(QPointF(x,y)); }
+//  void addPoint(double x, double y) {  _f.append(cpedsPoint2D::cpedsPoint2D(x,y)); } // commented out when switching to the 64bit system; todo need to find out if it still compiles without problems on 32-bit installations in standard configuration
+  void addPoint(double x, double y) {  _f.append(cpedsPoint2D(x,y)); }
 
   /*!
     \brief This and following function adds a new point to the function
@@ -426,7 +423,7 @@ class mscsFunction : public mscsObject {
   */
   void newPoint(double x=0, double y=0);
   void newPoint(cpeds_point p);
-  void newPoint(const QPointF& p);
+  void newPoint(const cpedsPoint2D& p);
 
   /*!
     \brief This and following function inserts a new point to the function
@@ -1662,7 +1659,7 @@ class mscsFunction : public mscsObject {
 
   
   
-  QPointF& operator[](long i) { return _f[i]; }
+  cpedsPoint2D& operator[](long i) { return _f[i]; }
 
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -1688,7 +1685,7 @@ class mscsFunction : public mscsObject {
   //! This doens't do anyting at the moment;
   void initiate_variables();
   //! returns modifiable reference to the function structure
-  QList<QPointF>& f() { return _f; }
+  cpedsList<cpedsPoint2D>& f() { return _f; }
 
 
 
@@ -1740,7 +1737,7 @@ class mscsFunction : public mscsObject {
 /* ---------------------------- */
 /* PROTECTED STRUCTURES */
 /* ---------------------------- */
-  QList<QPointF> _f;
+  cpedsList<cpedsPoint2D> _f;
 //  cpedsList<double> _Xerr;
 //  cpedsList<double> _Yerr;
   cpedsRNG *_rns;
@@ -1757,8 +1754,8 @@ class mscsFunction : public mscsObject {
 /* PRIVATE METHODS */
 /* ---------------------------- */
 
-  static int cmp_points_X(const QPointF &p1, const QPointF &p2);
-  static int cmp_points_Y(const QPointF &p1, const QPointF &p2);
+  static int cmp_points_X(const cpedsPoint2D &p1, const cpedsPoint2D &p2);
+  static int cmp_points_Y(const cpedsPoint2D &p1, const cpedsPoint2D &p2);
 
 
 /* ---------------------------- */
@@ -1768,7 +1765,7 @@ class mscsFunction : public mscsObject {
 
 
   typedef int (*cmpPt)(const void*, const void*);
-  typedef int (*cmpPt2)(const QPointF&, const QPointF&);
+  typedef int (*cmpPt2)(const cpedsPoint2D&, const cpedsPoint2D&);
   string object_name;
 
 

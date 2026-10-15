@@ -16,13 +16,12 @@
 #include <stdio.h>
 #include <cpgplot.h>
 #include <math.h>
+#include <algorithm>
 #include <fitsio.h>
 #include <string.h>
 #include <iostream>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
-//#include <QtCore/QFileInfo>
+#include "cpeds-string.h"
 #include "cpeds-cosmo.h"
 #include "cpeds-function-cosmo.h"
 #include "Mscs-function3dregc.h"
@@ -184,11 +183,10 @@ int main(int argc, char **argv) {
 //		char rac[100],decc[100];
 		string rastr,decstr;
 		for (std::string line; std::getline(std::cin, line);) {
-			QString str=line.c_str();
-			str=str.simplified();
-			QStringList qsl=str.split(" ");
-			rastr=qsl[0].toStdString();
-			decstr=qsl[1].toStdString();
+			std::string str=line.c_str();
+			std::vector<std::string> qsl=cpedsSplitWhitespace(str);
+			rastr=qsl[0];
+			decstr=qsl[1];
 
 			ra=0;
 			dec=0;
@@ -197,10 +195,10 @@ int main(int argc, char **argv) {
 				dec=DMSstrToAng(decstr,":");
 			}
 			if (_inCoordFmt=="deg") {
-				QString ras=rastr.c_str();
-				QString decs=decstr.c_str();
-				ra=ras.toDouble();
-				dec=decs.toDouble();
+				std::string ras=rastr.c_str();
+				std::string decs=decstr.c_str();
+				ra=cpedsToDouble(ras);
+				dec=cpedsToDouble(decs);
 			}
 //			printf("%lf %lf\n",ra,dec);
 			
@@ -219,11 +217,10 @@ int main(int argc, char **argv) {
 //		char rac[100],decc[100];
 		string rastr,decstr;
 		for (std::string line; std::getline(std::cin, line);) {
-			QString str=line.c_str();
-			str=str.simplified();
-			QStringList qsl=str.split(" ");
-			rastr=qsl[0].toStdString();
-			decstr=qsl[1].toStdString();
+			std::string str=line.c_str();
+			std::vector<std::string> qsl=cpedsSplitWhitespace(str);
+			rastr=qsl[0];
+			decstr=qsl[1];
 
 			ra=0;
 			dec=0;
@@ -232,10 +229,10 @@ int main(int argc, char **argv) {
 				dec=DMSstrToAng(decstr,":");
 			}
 			if (_inCoordFmt=="deg") {
-				QString ras=rastr.c_str();
-				QString decs=decstr.c_str();
-				ra=ras.toDouble();
-				dec=decs.toDouble();
+				std::string ras=rastr.c_str();
+				std::string decs=decstr.c_str();
+				ra=cpedsToDouble(ras);
+				dec=cpedsToDouble(decs);
 			}
 //			printf("%lf %lf\n",ra,dec);
 			double JDut1=cpeds_julian_time();
@@ -554,10 +551,10 @@ int main(int argc, char **argv) {
 	
 	if (_lbdeg2dms != "") {
 		cpedsDirection n;
-		QString s = _lbdeg2dms.c_str();
-		QStringList qsl = s.split(',');
-		n.lon() = qsl[0].toDouble() * PI180;
-		n.lat() = qsl[1].toDouble() * PI180;
+		std::string s = _lbdeg2dms.c_str();
+		std::vector<std::string> qsl = cpedsSplit(s, ',');
+		n.lon() = cpedsToDouble(qsl[0]) * PI180;
+		n.lat() = cpedsToDouble(qsl[1]) * PI180;
 		n.print_direction();
 	}
 	
@@ -1333,39 +1330,39 @@ void doRefraction(cpedsMsgs& msgs) {
 	msgs.say("Calculating refraction", High);
 	
 	double T, P, H, alt, lat, lambda, Tlapse, acc, ZDobs;
-	QString str = _refraction.c_str();
-	QStringList qsl = str.split(",");
+	std::string str = _refraction.c_str();
+	std::vector<std::string> qsl = cpedsSplit(str, ",");
 	if (qsl.size() != 9) {
 		msgs.criticalError("Wrong number of parameters given. see help", High);
 	}
 	for (long i = 0; i < qsl.size(); i++) {
 		switch (i) {
 			case 0:
-				ZDobs = qsl[i].toDouble();
+				ZDobs = cpedsToDouble(qsl[i]);
 				break;
 			case 1:
-				T = qsl[i].toDouble();
+				T = cpedsToDouble(qsl[i]);
 				break;
 			case 2:
-				P = qsl[i].toDouble();
+				P = cpedsToDouble(qsl[i]);
 				break;
 			case 3:
-				H = qsl[i].toDouble();
+				H = cpedsToDouble(qsl[i]);
 				break;
 			case 4:
-				lambda = qsl[i].toDouble();
+				lambda = cpedsToDouble(qsl[i]);
 				break;
 			case 5:
-				alt = qsl[i].toDouble();
+				alt = cpedsToDouble(qsl[i]);
 				break;
 			case 6:
-				lat = qsl[i].toDouble();
+				lat = cpedsToDouble(qsl[i]);
 				break;
 			case 7:
-				Tlapse = qsl[i].toDouble();
+				Tlapse = cpedsToDouble(qsl[i]);
 				break;
 			case 8:
-				acc = qsl[i].toDouble();
+				acc = cpedsToDouble(qsl[i]);
 				break;
 				
 			default:
@@ -1408,7 +1405,8 @@ void doRefraction(cpedsMsgs& msgs) {
 		refKBneg.save("refrKBneg.ZD");
 		diff = ref - refKBpos.absoluteValue();
 		diff *= double(1000);
-		string fname = str.replace(',', '_').toStdString();
+		std::replace(str.begin(), str.end(), ',', '_');
+		string fname = str;
 		diff.save("diff--" + fname + "_less_RT32KBneg.mdeg");
 	}
 	
@@ -1425,8 +1423,8 @@ void doMoonRefractionAtDusk(cpedsMsgs& msgs) {
 	double lowEdgeElevTrue,highEdgeElevTrue;
 	double extentHorizObs,extentHorizTrue, extentVertObs, extentVertTrue;
 
-	QString str = _refrMoonAtDusk.c_str();
-	QStringList qsl = str.split(",");
+	std::string str = _refrMoonAtDusk.c_str();
+	std::vector<std::string> qsl = cpedsSplit(str, ",");
 	if (qsl.size() != 12) {
 		printf("Nargs: %li\n",qsl.size());
 		msgs.criticalError("Wrong number of parameters given. see help", High);
@@ -1434,40 +1432,40 @@ void doMoonRefractionAtDusk(cpedsMsgs& msgs) {
 	for (long i = 0; i < qsl.size(); i++) {
 		switch (i) {
 			case 0:
-				ZDobs_start = qsl[i].toDouble();
+				ZDobs_start = cpedsToDouble(qsl[i]);
 				break;
 			case 1:
-				ZDobs_end = qsl[i].toDouble();
+				ZDobs_end = cpedsToDouble(qsl[i]);
 				break;
 			case 2:
-				ZDobs_step= qsl[i].toDouble();
+				ZDobs_step= cpedsToDouble(qsl[i]);
 				break;
 			case 3:
-				MoonSize = qsl[i].toDouble();
+				MoonSize = cpedsToDouble(qsl[i]);
 				break;
 			case 4:
-				T = qsl[i].toDouble();
+				T = cpedsToDouble(qsl[i]);
 				break;
 			case 5:
-				P = qsl[i].toDouble();
+				P = cpedsToDouble(qsl[i]);
 				break;
 			case 6:
-				H = qsl[i].toDouble();
+				H = cpedsToDouble(qsl[i]);
 				break;
 			case 7:
-				lambda = qsl[i].toDouble();
+				lambda = cpedsToDouble(qsl[i]);
 				break;
 			case 8:
-				alt = qsl[i].toDouble();
+				alt = cpedsToDouble(qsl[i]);
 				break;
 			case 9:
-				lat = qsl[i].toDouble();
+				lat = cpedsToDouble(qsl[i]);
 				break;
 			case 10:
-				Tlapse = qsl[i].toDouble();
+				Tlapse = cpedsToDouble(qsl[i]);
 				break;
 			case 11:
-				acc = qsl[i].toDouble();
+				acc = cpedsToDouble(qsl[i]);
 				break;
 				
 			default:
@@ -1618,7 +1616,7 @@ void doMoonRefractionAtDusk(cpedsMsgs& msgs) {
 //		refKBneg.save("refrKBneg.ZD");
 //		diff = ref - refKBpos.absoluteValue();
 //		diff *= double(1000);
-//		string fname = str.replace(',', '_').toStdString();
+//		string fname = str.replace(',', '_');
 //		diff.save("diff--" + fname + "_less_RT32KBneg.mdeg");
 	
 }
@@ -1760,7 +1758,7 @@ void caclulate_sigmaR(cpedsMsgs msgs) {
 	string outf;
 	string outfTinker;
 //	QFileInfo qfi(_tf.c_str());
-//	outf=qfi.baseName().toStdString();
+//	outf=qfi.baseName();
 	outf = "mfn";
 	outfTinker = "-Drho_" + msgs.toStrf(deltaRho, 0);
 	
@@ -2254,20 +2252,20 @@ void doTestVtotRT32() {
 }
 /***************************************************************************************/
 double DMSstrToAng(string DDMMSS,string separator) {
-	QString s=DDMMSS.c_str();
-	QStringList qsl=s.split(separator.c_str());
-	return cpeds_DMSToAng(qsl[0].toDouble(),qsl[1].toDouble(),qsl[2].toDouble());
+	std::string s=DDMMSS.c_str();
+	std::vector<std::string> qsl=cpedsSplit(s, separator.c_str());
+	return cpeds_DMSToAng(cpedsToDouble(qsl[0]),cpedsToDouble(qsl[1]),cpedsToDouble(qsl[2]));
 }
 /***************************************************************************************/
 double HMSstrToAng(string HHMMSS,string separator) {
-	QString s=HHMMSS.c_str();
-	QStringList qsl=s.split(separator.c_str());
-	return cpeds_HMSToAng(qsl[0].toDouble(),qsl[1].toDouble(),qsl[2].toDouble());
+	std::string s=HHMMSS.c_str();
+	std::vector<std::string> qsl=cpedsSplit(s, separator.c_str());
+	return cpeds_HMSToAng(cpedsToDouble(qsl[0]),cpedsToDouble(qsl[1]),cpedsToDouble(qsl[2]));
 }
 /***************************************************************************************/
 double doCal2JDconversion(string cal2JD) {
-	QString str=cal2JD.c_str();
-	QStringList qsl=str.split("-");
-	return cpeds_julian_time(qsl[0].toInt(),qsl[1].toInt(),qsl[2].toInt(),qsl[3].toDouble()+qsl[4].toDouble()/60+qsl[5].toDouble()/3600);
+	std::string str=cal2JD.c_str();
+	std::vector<std::string> qsl=cpedsSplit(str, "-");
+	return cpeds_julian_time(cpedsToInt(qsl[0]),cpedsToInt(qsl[1]),cpedsToInt(qsl[2]),cpedsToDouble(qsl[3])+cpedsToDouble(qsl[4])/60+cpedsToDouble(qsl[5])/3600);
 }
 /***************************************************************************************/

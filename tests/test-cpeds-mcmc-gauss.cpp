@@ -218,7 +218,7 @@ int main() {
 	long idx=3;
 	cpedsMsgs msgs;
 	cpedsList<double> bestFitValues;
-	QList<mscsFunction> bestFitPosteriors;
+	cpedsList<mscsFunction> bestFitPosteriors;
 	for (long i = 7; i < 8; i++) {
 		{
 			// set the dimensionality of the problem
@@ -310,7 +310,6 @@ int main() {
 	cout << "width(variance): " << width_variance << "\n";
 	return 0;
 }
-
 
 
 

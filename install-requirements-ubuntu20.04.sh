@@ -20,9 +20,7 @@ apt install proj-bin libproj-dev proj-data:all libproj12
 # fftw
 apt install fftw2 libfftw3-long3 libfftw3-quad3 libfftw3-bin libfftw3-dev libfftw3-mpi3 libfftw3-mpi-dev
 # interpolation and other stuff
-apt install libcgal-dev libcgal-qt5-13
-# qt5 
-apt install qt5-default 
+apt install libcgal-dev
 # fits
 apt install libcfitsio-dev libccfits-dev libcfitsio-bin
 # astro stuff
@@ -41,7 +39,7 @@ apt install libspdlog1/focal libspdlog-dev/focal
 # gmp
 apt install libgmp-dev/focal libgmp10/focal
 # CGAL
-apt install libcgal-dev/focal libcgal-qt5-dev/focal libcgal-ipelets/focal
+apt install libcgal-dev/focal
 # math
 apt install libarmadillo-dev/focal libarmadillo9/focal libproj-dev/focal libproj15/focal libgsl23/focal libgsl-dev/focal  
 

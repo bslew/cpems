@@ -21,9 +21,7 @@
 #include "Mscs-function.h"
 #include "Mscs-map-window_function.h"
 #include "cpeds-math.h"
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
-#include "qtbase.h"
+#include "cpeds-string.h"
 //#include "cpeds-point3d.h"
 
 string _HDF5currentGroup_tmp;
@@ -53,17 +51,17 @@ void mscsFunction::initiatie_hdf5_params() {
 bool mscsFunction::hdf5DatasetExists(hid_t& file, string dsetName) {
 	bool tf=false;
 	htri_t tfe=0;
-	QString qs=dsetName.c_str();
+	std::string qs=dsetName.c_str();
 	if (qs[0]!='/') qs="/"+qs; // make sure we operate on absolute path
 	
-	QStringList qsl=qs.split("/");
+	std::vector<std::string> qsl=cpedsSplit(qs, "/");
 	if (qsl.size()==2) {
 		tfe=H5Lexists(file, dsetName.c_str(), H5P_DEFAULT);		
 	} 
 	else {
 		if (qsl.size()==3) {
 			qs=qsl[0]+"/"+qsl[1];
-			if (H5Lexists(file, qs.toStdString().c_str(), H5P_DEFAULT)) {
+			if (H5Lexists(file, qs.c_str(), H5P_DEFAULT)) {
 				qs=qsl[0]+"/"+qsl[1]+"/"+qsl[2];
 				if (H5Lexists(file, dsetName.c_str(), H5P_DEFAULT)) { return true; }
 				else return false;
@@ -135,8 +133,8 @@ cpedsStatusCodes mscsFunction::saveHDF5(string filename, string datasetName, str
     	H5Ldelete(file,linkName.c_str(),H5P_DEFAULT);
 	else {
 		// created groups if needed
-		QString qs=linkName.c_str();
-		QStringList qsl=qs.split("/");
+		std::string qs=linkName.c_str();
+		std::vector<std::string> qsl=cpedsSplit(qs, "/");
 		if (qsl.size()==3)
 			hdf5createGroup(file,linkName);
 	}
@@ -697,12 +695,12 @@ string mscsFunction::getHDF5_stringAttribute(string fname, string dsetName, stri
 /***************************************************************************************/
 bool mscsFunction::hdf5createGroup(hid_t& file,string linkName) {
 	bool tf;
-	QString qs=linkName.c_str();
-	QStringList qsl=qs.split("/");
+	std::string qs=linkName.c_str();
+	std::vector<std::string> qsl=cpedsSplit(qs, "/");
 	qs="/"+qsl[1];
-	if (hdf5DatasetExists(file,qs.toStdString())) return true;
+	if (hdf5DatasetExists(file,qs)) return true;
 //	printf("creating group\n");
-	hid_t group1_id = H5Gcreate(file, qs.toStdString().c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	hid_t group1_id = H5Gcreate(file, qs.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 //	printf("res: %li\n",group1_id);
 	H5Gclose(group1_id);
 	if (group1_id!=0) return false;

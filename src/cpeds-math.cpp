@@ -3,6 +3,7 @@
 
 #include <features.h>
 #include <time.h>
+#include <cstdint>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sort_double.h>
 #include <gsl/gsl_cdf.h>

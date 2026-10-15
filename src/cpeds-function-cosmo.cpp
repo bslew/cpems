@@ -9,7 +9,7 @@ const cpedsFunctionCosmo& cpedsFunctionCosmo::operator=(const mscsFunction& rhs)
 		for (long i=0;i<N;i++) {
 			//      newPoint(rhs.getPoint(i)); ---- why this doesn't work ???
 			//      newPoint(rhs.getX(i),rhs.f(i)); -- this works fine
-			newPoint(rhs.getQPoint(i)); // this works fine - but faster
+			newPoint(rhs.getPoint(i)); // this works fine - but faster
 		}
 		return *this; 
 	}

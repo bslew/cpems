@@ -12,7 +12,7 @@
 #include <math.h>
 #include "Mscs-function.h"
 
-double dist(const QPointF& p1, const QPointF& p2) {
+double dist(const cpedsPoint2D& p1, const cpedsPoint2D& p2) {
 	double d=sqrt((p1.x()-p2.x())*(p1.x()-p2.x()) + (p1.y()-p2.y())*(p1.y()-p2.y()));
 	return d;
 }

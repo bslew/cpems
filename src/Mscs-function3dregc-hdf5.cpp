@@ -14,8 +14,7 @@
 #include <fstream>
 #include <sstream>
 #include <sys/dir.h>
-//#include <QtCore/QStringList>
-#include "qtbase.h"
+#include "cpeds-string.h"
 //#include <pthread.h>
 //#include <H5Cpp.h>
 //#include <fftw3.h>
@@ -305,17 +304,17 @@ string mscsFunction3dregc::getHDF5_stringAttribute(hid_t& file, string dsetName,
 bool mscsFunction3dregc::hdf5DatasetExists(hid_t& file, string dsetName) {
 //	bool tf=false;
 //	htri_t tfe=0;
-//	QString qs=dsetName.c_str();
+//	std::string qs=dsetName.c_str();
 //	if (qs[0]!='/') qs="/"+qs; // make sure we operate on absolute path
 //	
-//	QStringList qsl=qs.split("/");
+//	std::vector<std::string> qsl=cpedsSplit(qs, "/");
 //	if (qsl.size()==2) {
 //		tfe=H5Lexists(file, dsetName.c_str(), H5P_DEFAULT);		
 //	} 
 //	else {
 //		if (qsl.size()==3) {
 //			qs=qsl[0]+"/"+qsl[1];
-//			if (H5Lexists(file, qs.toStdString().c_str(), H5P_DEFAULT)) {
+//			if (H5Lexists(file, qs.c_str(), H5P_DEFAULT)) {
 //				qs=qsl[0]+"/"+qsl[1]+"/"+qsl[2];
 //				if (H5Lexists(file, dsetName.c_str(), H5P_DEFAULT)) { return true; }
 //				else return false;
@@ -328,17 +327,17 @@ bool mscsFunction3dregc::hdf5DatasetExists(hid_t& file, string dsetName) {
 //	return tf;
 	bool tf=false;
 	htri_t tfe=0;
-	QString qs=dsetName.c_str();
+	std::string qs=dsetName.c_str();
 	if (qs[0]!='/') qs="/"+qs; // make sure we operate on absolute path
 	
-	QStringList qsl=qs.split("/");
+	std::vector<std::string> qsl=cpedsSplit(qs, "/");
 	if (qsl.size()==2) {
 		tfe=H5Lexists(file, dsetName.c_str(), H5P_DEFAULT);		
 	} 
 	else {
 		if (qsl.size()==3) {
 			qs=qsl[0]+"/"+qsl[1];
-			if (H5Lexists(file, qs.toStdString().c_str(), H5P_DEFAULT)) {
+			if (H5Lexists(file, qs.c_str(), H5P_DEFAULT)) {
 				qs=qsl[0]+"/"+qsl[1]+"/"+qsl[2];
 				if (H5Lexists(file, dsetName.c_str(), H5P_DEFAULT)) { return true; }
 				else return false;
@@ -421,8 +420,8 @@ cpedsStatusCodes mscsFunction3dregc::saveHDF5(string filename, string datasetNam
 	}
 	else {
 		// create groups if needed
-		QString qs=linkName.c_str();
-		QStringList qsl=qs.split("/");
+		std::string qs=linkName.c_str();
+		std::vector<std::string> qsl=cpedsSplit(qs, "/");
 		if (qsl.size()==3)
 			hdf5createGroup(file,linkName);
 	}
@@ -802,11 +801,11 @@ vector<string> mscsFunction3dregc::getHDF5dataSets(string filename) {
 /***************************************************************************************/
 bool mscsFunction3dregc::hdf5createGroup(hid_t& file,string linkName) {
 	bool tf;
-	QString qs=linkName.c_str();
-	QStringList qsl=qs.split("/");
+	std::string qs=linkName.c_str();
+	std::vector<std::string> qsl=cpedsSplit(qs, "/");
 	qs="/"+qsl[1];
-	if (hdf5DatasetExists(file,qs.toStdString())) return true;
-	hid_t group1_id = H5Gcreate(file, qs.toStdString().c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	if (hdf5DatasetExists(file,qs)) return true;
+	hid_t group1_id = H5Gcreate(file, qs.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Gclose(group1_id);
 	if (group1_id!=0) return false;
 	return true;
@@ -816,4 +815,3 @@ bool mscsFunction3dregc::hdf5createGroup(hid_t& file,string linkName) {
 
 
 /***************************************************************************************/
-

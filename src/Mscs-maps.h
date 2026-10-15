@@ -1,7 +1,4 @@
-/* this is an attempt to create a list of Mscs_map class pointers but */
-/* much more resonable idea would seem to be just to use the existing */
-/* class for operating on lists of pointers to objects of the  */
-/* QPtrList from the Qt library. (include "qptrlist.h") */
+/* this is an attempt to create a list of Mscs_map class pointers */
 
 #include "Mscs-map.h"
 
@@ -33,5 +30,4 @@ map_class* Mscs_maps::getq(long i) {  // returns the I'th value in the queue; nu
   for (i=0;i<I;i++) { tmp=tmp->n; }
   return tmp->v;
 }
-
 

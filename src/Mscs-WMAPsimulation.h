@@ -148,7 +148,7 @@ class mscsWMAPsimulation : public mscsGaussianSimulation, public mscsWMAPspecifi
 /* PRIVATE STRUCTURES */
 /* ---------------------------- */
 	 cpedsRNG *rng; //!< RNG for the simulations
-	 QList<mscsMap*> sim;
+	 cpedsList<mscsMap*> sim;
 	 mscsMapINC inc;
 	 DAnames _DA;
 	 WMAPversion _dr;

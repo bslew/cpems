@@ -14,9 +14,9 @@
 #include <stdio.h>
 #include<stdlib.h>  
 #include<string.h>
-//#include <QtCore/qlist.h>
-#include "qtbase.h"
 #include "cpeds-common.h"
+
+template <class T> class cpedsList;
 
 void cpeds_sort_data(long int k, double * t, int direction);
 void cpeds_sort_data(long int k, cpeds_point * t, int direction);
@@ -93,7 +93,7 @@ namespace cpems {
 			void insertq(T v,long I);
 			void insertq_ord(T v,long ord); // this inserts value into the (assumed) sorted queue in a place such as to keep the ordering of the list as indicated by the ord parameter
 			T* export_array();
-			QList<T> exportQList();
+			cpedsList<T> exportList();
 			void import_C_array(T* t);
 			void import_C_array(T* t,long N); // renamed from import_array due to conflicting macro definitions in third party libraries
 			void add_array(T* t,long N);
@@ -439,14 +439,6 @@ template <class T> T* cpeds_queue<T>::export_array() {
 			t[i++]=*it;
 		}
 		return t;
-}
-
-template <class T> QList<T> cpeds_queue<T>::exportQList() {
-		QList<T> q;
-		long i;
-		for (i=0;i<get_size();i++) { q.append(getq(i));  }
-		/* for (i=0;i<get_size();i++) { q.append(0); printf("appending %li\n",i); } */
-		return q;
 }
 
 template <class T> void cpeds_queue<T>::import_C_array(T* t) {

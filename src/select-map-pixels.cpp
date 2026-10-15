@@ -12,8 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
+#include "cpeds-string.h"
 #include "cpeds-msgs.h"
 #include "cpeds-direction_set.h"
 #include "Mscs-map.h"
@@ -86,8 +85,8 @@ int main(int argc, char **argv) {
 	//----------------------------------------------------------------------------------------------------
 	parseOptions(argc,argv);
 
-	QString selection=_sel.c_str();
-	QStringList selectionL=selection.split(",");
+	std::string selection=_sel.c_str();
+	std::vector<std::string> selectionL=cpedsSplit(selection, ",");
 	
 	cpedsDirectionSet selectedDirs;
 	mscsMap map;
@@ -100,7 +99,7 @@ int main(int argc, char **argv) {
 	if (selectionL[0]=="disks") {
 //		map.set_map_coord();
 //		exit(0);
-		selectedDirs=selectSmallDisks_file(map,selectionL[1].toStdString(),selectionL[2].toDouble());
+		selectedDirs=selectSmallDisks_file(map,selectionL[1],cpedsToDouble(selectionL[2]));
 	}
 	msgs.say("saving selection to file: "+_outfile,High);
 	selectedDirs.save(_outfile,"",true);
@@ -185,9 +184,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(" ");
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, " ");
+	if (qrevl.size()==3) rev=qrevl[1];
 	else rev="could not retrieve version number";
 #else
 	rev="0.1.1";
@@ -219,8 +218,8 @@ cpedsDirectionSet selectSmallDisks_file(mscsMap& map,string diskFileName, double
 	cpedsDirection d;
 	dirs0.load(diskFileName);
 	cpedsList<long> pix0,dummy;
-	QList< cpedsList<long> > pix;
-	QList< cpedsDirectionSet > pixd;
+	cpedsList< cpedsList<long> > pix;
+	cpedsList< cpedsDirectionSet > pixd;
 	mscsFunction selected_pix;
 	double th,phi;
 

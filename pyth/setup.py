@@ -20,17 +20,11 @@ os.environ["CXX"] = "c++"
 cpedsRotation = Extension(
     'pyCPEDScommonFunctions/cpedsRotation',
     sources=['pyCPEDScommonFunctions/cpedsRotation.cpp'],
-    include_dirs=['/usr/local/include/cpems', 
-                '/usr/lib64/python3.6/site-packages/numpy/core/include/numpy',
-                  '/usr/lib/python3.6/dist-packages/numpy/core/include/numpy/',
-                  '/usr/include/x86_64-linux-gnu/qt5',
-                  ],
+    include_dirs=[    '/usr/local/include/cpems',
+    '/usr/lib64/python3.6/site-packages/numpy/core/include/numpy',
+      '/usr/lib/python3.6/dist-packages/numpy/core/include/numpy/',
+      ],
     library_dirs=['/usr/local/lib/cpems'],
-    # libraries=['nova',  'gsl', 'gslcblas', 'm', 'proj', 
-    #            'QtCore', 'fftw3', 'fftw3l', 'hdf5', 'CGAL', 'gmp','cfitsio', 'CPEDS', 'Mscsfn', 
-    #            'Mscscore', 'Mscsplot', 'MscsWMAP', 'armadillo', 
-    #            'gsl', 'gslcblas', 'm', 'proj', 'QtCore', 'fftw3', 'ccSHT3', 'novas', 'velKB', 'slaRefr', 
-    #            'fftw3l', 'hdf5', 'CGAL', 'gmp', 'cfitsio', 'cpgplot', 'armadillo'],
     libraries=['cpems',],
     
     language='C++',
@@ -64,5 +58,3 @@ setup(name='pyCPEDScommonFunctions',
 
 #       py_modules = ['pyCPEDScommonFunctions.libcpedsRotation.so'],
 #       py_modules=['RadiometerData.RPG_tau','RadiometerData.RPG_Tatm'],
-
-

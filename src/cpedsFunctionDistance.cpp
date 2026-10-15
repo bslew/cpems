@@ -36,7 +36,7 @@ mscsFunction cpedsFunctionDistance::distance(mscsFunction& s1x, mscsFunction& s1
 mscsFunction cpedsFunctionDistance::calculateDistance(mscsFunction &f1, mscsFunction &f2, mscsFunction &s2interp) {
 	mscsFunction d;
 	double *x = f1.extractArguments();
-	s2interp=f2.extrapolate(f1.X(0),f1.last().rx(),f1.X(1)-f1.X(0),true,"linear");
+	s2interp=f2.extrapolate(f1.X(0),f1.last().x(),f1.X(1)-f1.X(0),true,"linear");
 	s2interp.interpolate(x,f1.pointsCount(),"linear",true);
 	long N=f1.pointsCount();
 	for (long i = 0; i < N; i++) {

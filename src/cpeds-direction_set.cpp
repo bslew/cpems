@@ -6,13 +6,13 @@
 // ****************************************************************************************************
 cpedsDirectionSet::cpedsDirectionSet() {}
 // ****************************************************************************************************
-cpedsDirectionSet::cpedsDirectionSet(const QList<cpedsDirection> &q) {
+cpedsDirectionSet::cpedsDirectionSet(const cpedsList<cpedsDirection> &q) {
   clear();
   long N=q.count();
   for (long i=0;i<N;i++) { append(q.at(i));  }
 }
 // ****************************************************************************************************
-cpedsDirectionSet::cpedsDirectionSet(const cpedsDirectionSet &q) : QList<cpedsDirection>(q) {
+cpedsDirectionSet::cpedsDirectionSet(const cpedsDirectionSet &q) : cpedsList<cpedsDirection>(q) {
   clear();
   *this=q;
 }
@@ -25,7 +25,7 @@ cpedsDirectionSet::cpedsDirectionSet(long N, double *lon, double *lat, double *v
   for (long i=0;i<N;i++) { append(cpedsDirection(lon[i],lat[i],val[i]));  }
 }
 // ****************************************************************************************************
-cpedsDirectionSet::cpedsDirectionSet(const QList<double>& lon, const QList<double>& lat, const QList<double>& val) {
+cpedsDirectionSet::cpedsDirectionSet(const cpedsList<double>& lon, const cpedsList<double>& lat, const cpedsList<double>& val) {
   long N=lon.count();
   for (long i=0;i<N;i++) { append(cpedsDirection(lon[i],lat[i],val[i]));  }
 }
@@ -90,14 +90,14 @@ double cpedsDirectionSet::minLat() const { return extremal(false, false); }
 
 // ****************************************************************************************************
 cpedsDirectionSet& cpedsDirectionSet::operator=(const cpedsDirectionSet &rhs) {
-  if (this!=&rhs) { QList<cpedsDirection>::operator=(rhs); }
+  if (this!=&rhs) { cpedsList<cpedsDirection>::operator=(rhs); }
   // clear();
   // long N=rhs.count();
   // for (long i=0;i<N;i++) { append(rhs.at(i));  }
   return *this;
 }
 // ****************************************************************************************************
-cpedsDirectionSet& cpedsDirectionSet::operator=(const QList<cpedsDirection> &rhs) {
+cpedsDirectionSet& cpedsDirectionSet::operator=(const cpedsList<cpedsDirection> &rhs) {
   *this=cpedsDirectionSet(rhs);
   return *this;
 }
@@ -154,7 +154,7 @@ void cpedsDirectionSet::setLength(long n) {
    if (n<0) return;
    if (n==0) { clear(); return; }
    if (count() < n) { while (count() < n) { append(cpedsDirection()); }   }
-   if (count() > n) { while (count() > n) { erase(0);  }   }
+   if (count() > n) { while (count() > n) { removeAt(0);  }   }
 }
 /***************************************************************************************/
 cpedsDirection cpedsDirectionSet::mean() const {

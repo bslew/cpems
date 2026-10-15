@@ -12,7 +12,6 @@
 
 
 /* STANDALONE HEADERS */
-//#include <QtCore/QList>
 #include <string>
 #include "Mscs-map.h"
 /* INTERDEPENDENT HEADERS */
@@ -73,7 +72,7 @@ class mscsMapINC : public mscsMap {
 
 	mscsMap& getMap(long DA) { return *maps.value(DA); }
 	void removeMap(long DA) { delete maps.value(DA); maps.removeAt(DA); }
-	QList<mscsMap*> getMaps() { return maps; }
+	cpedsList<mscsMap*> getMaps() { return maps; }
 
 	/*!
 		\brief makes INC co-added map from the indicated maps (via useMap method)
@@ -130,11 +129,10 @@ class mscsMapINC : public mscsMap {
 /* ---------------------------- */
 /* PRIVATE STRUCTURES */
 /* ---------------------------- */
-	 QList<mscsMap*> maps; //!< stores maps from individual DAs
-	 QList<double> sigmas; //!< keeps information on sigma0 of a given DA
+	 cpedsList<mscsMap*> maps; //!< stores maps from individual DAs
+	 cpedsList<double> sigmas; //!< keeps information on sigma0 of a given DA
 
  };
 #endif /* MSCS_MAP_INC_H_ */
-
 
 

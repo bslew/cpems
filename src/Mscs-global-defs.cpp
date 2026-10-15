@@ -1,9 +1,7 @@
 #include <string.h>
 #include "Mscs-common.h"
 #include "Mscs-global-defs.h"
-#include "qtbase.h"
-//#include <QtCore/QString>
-//#include <QtCore/QStringList>
+#include "cpeds-string.h"
 //#include "cpeds-math.h"
 
 // package version information
@@ -508,36 +506,36 @@ string Mscs_basename_noext(string file,string ext) {
 
 string Mscs_basename(string name) {
 	//	 QFileInfo fi(name.c_str());
-	QStringList qsl;
-	QString s=name.c_str();
-	qsl=s.split(".");
-	QString base=""; // = fi.baseName();  // base = "archive"	
+	std::vector<std::string> qsl;
+	std::string s=name.c_str();
+	qsl=cpedsSplit(s, ".");
+	std::string base=""; // = fi.baseName();  // base = "archive"
 	if (qsl.size()==1) return name;
 	for (unsigned long i = 0; i < qsl.size()-1; i++) {
 		base+=qsl[i];
 		if (i<qsl.size()-2)
 			base+=".";
 	}
-	return base.toStdString();
+	return base;
 	
 }
 
 string Mscs_getExtension(string name) {
-	QStringList qsl;
-	QString s=name.c_str();
-	qsl=s.split(".");
-	QString ext=""; 
-	if (qsl.size()>0) return qsl.last().toStdString();
-	return ext.toStdString();
+	std::vector<std::string> qsl;
+	std::string s=name.c_str();
+	qsl=cpedsSplit(s, ".");
+	std::string ext="";
+	if (!qsl.empty()) return qsl.back();
+	return ext;
 }
 
 vector<string> Mscs_stringToList(string str, string sep) {
-	QStringList qsl;
-	QString s=str.c_str();
-	qsl=s.split(sep.c_str());
+	std::vector<std::string> qsl;
+	std::string s=str.c_str();
+	qsl=cpedsSplit(s, sep.c_str());
 	vector<string> v;	
 	for (unsigned long i = 0; i < qsl.size(); i++) {
-		v.push_back(qsl[i].toStdString());
+		v.push_back(qsl[i]);
 	}
 	return v;
 	
@@ -546,31 +544,31 @@ vector<string> Mscs_stringToList(string str, string sep) {
 vector<double> Mscs_stringToDoubleList(string str, string sep) {
 	vector<string> sl=Mscs_stringToList(str,sep);
 	vector<double> dl;
-	QString sv;
+	std::string sv;
 	
 	for (unsigned long i = 0; i < sl.size(); i++) {
 		sv=sl[i].c_str();
-		dl.push_back(sv.toDouble());
+		dl.push_back(cpedsToDouble(sv));
 	}
 	return dl;
 }
 vector<long> Mscs_stringToLongList(string str, string sep) {
 	vector<string> sl=Mscs_stringToList(str,sep);
 	vector<long> dl;
-	QString sv;
+	std::string sv;
 	
 	for (unsigned long i = 0; i < sl.size(); i++) {
 		sv=sl[i].c_str();
-		dl.push_back(sv.toLong());
+		dl.push_back(cpedsToLong(sv));
 	}
 	return dl;	
 }
 
-//QList<QString> Mscs_stringToListQ(string str, string sep) {
-//	QStringList qsl;
-//	QString s=str.c_str();
-//	qsl=s.split(sep.c_str());
-//	QList<QString> v;	
+//cpedsList<std::string> Mscs_stringToListQ(string str, string sep) {
+//	std::vector<std::string> qsl;
+//	std::string s=str.c_str();
+//	qsl=cpedsSplit(s, sep.c_str());
+//	cpedsList<std::string> v;
 //	for (unsigned long i = 0; i < qsl.size(); i++) {
 //		v.append(qsl[i]);
 //	}

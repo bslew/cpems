@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <fftw3.h>
@@ -41,7 +42,7 @@ mscsFunction::mscsFunction(const string name, double *x, double *y, long num, cp
 	importFunction(x,y,num);
 }
 /* **************************************************************************************************** */
-mscsFunction::mscsFunction(const string name, const QList<double>& x, const QList<double>& y) : mscsObject(name) {
+mscsFunction::mscsFunction(const string name, const cpedsList<double>& x, const cpedsList<double>& y) : mscsObject(name) {
 	initiate_variables();
 	long num=x.count();
 	for (long i=0;i<num;i++) { newPoint(x.value(i),y.value(i));  }
@@ -165,15 +166,15 @@ cpedsList<double> mscsFunction::toXList() const {
 	return tmp;
 }
 /* **************************************************************************************************** */
-const QList<double> mscsFunction::getArguments() const {
-	QList<double> l;
+const cpedsList<double> mscsFunction::getArguments() const {
+	cpedsList<double> l;
 	long num=_f.count();
 	for (long i=0;i<num;i++) { l.append(_f[i].x());  }
 	return l;
 }
 /* **************************************************************************************************** */
-const QList<double> mscsFunction::getValues() const {
-	QList<double> l;
+const cpedsList<double> mscsFunction::getValues() const {
+	cpedsList<double> l;
 	long num=_f.count();
 	for (long i=0;i<num;i++) { l.append(_f[i].y());  }
 	return l;
@@ -371,7 +372,7 @@ double mscsFunction::finter(double x, string type) const {
 //}
 /* **************************************************************************************************** */
 void mscsFunction::newPoint(double x, double y) {
-	_f.append(QPointF(x,y));
+	_f.append(cpedsPoint2D(x,y));
 	if (_f.count()==1) { range.xmin=x; range.ixmin=_f.count()-1; range.xmax=x; range.ixmax=_f.count()-1; range.ymin=y; range.iymin=_f.count()-1; range.ymax=y; range.iymax=_f.count()-1; }
 	if (x<range.xmin) { range.xmin=x; range.ixmin=_f.count()-1; }
 	if (x>range.xmax) { range.xmax=x; range.ixmax=_f.count()-1; }
@@ -379,14 +380,14 @@ void mscsFunction::newPoint(double x, double y) {
 	if (y>range.ymax) { range.ymax=y; range.iymax=_f.count()-1; }
 }
 /* **************************************************************************************************** */
-void mscsFunction::newPoint(const QPointF& p) {
+void mscsFunction::newPoint(const cpedsPoint2D& p) {
 	newPoint(p.x(),p.y());
 }
 /* **************************************************************************************************** */
 void mscsFunction::newPoint(cpeds_point p) { 
 	printf("WARNING: I am in mscsFunction::newPoint(cpeds_point p) make sure that this routine actually works");
 	newPoint(p.x,p.y); }
-//   _f.append(QPointF(p.x,p.y));
+//   _f.append(cpedsPoint2D(p.x,p.y));
 //  if (p.x<range.xmin) { range.xmin=p.x; range.ixmin=_f.count()-1; }
 //  if (p.x>range.xmax) { range.xmax=p.x; range.ixmax=_f.count()-1; }
 //  if (p.y<range.ymin) { range.ymin=p.y; range.iymin=_f.count()-1; }
@@ -395,7 +396,7 @@ void mscsFunction::newPoint(cpeds_point p) {
 /* **************************************************************************************************** */
 void mscsFunction::insertPoint(double x, double y,long i,long N) {
 	for (long j = 0; j < N; j++) {
-		_f.insert(i,QPointF(x,y));
+		_f.insert(i,cpedsPoint2D(x,y));
 	}
 	if (x<range.xmin) { range.xmin=x; range.ixmin=i; }
 	if (x>range.xmax) { range.xmax=x; range.ixmax=i; }
@@ -404,7 +405,7 @@ void mscsFunction::insertPoint(double x, double y,long i,long N) {
 }
 /* **************************************************************************************************** */
 void mscsFunction::insertPoint(cpeds_point p,long i) {
-	_f.insert(i,QPointF(p.x,p.y));
+	_f.insert(i,cpedsPoint2D(p.x,p.y));
 	if (p.x<range.xmin) { range.xmin=p.x; range.ixmin=i; }
 	if (p.x>range.xmax) { range.xmax=p.x; range.ixmax=i; }
 	if (p.y<range.ymin) { range.ymin=p.y; range.iymin=i; }
@@ -448,7 +449,7 @@ bool mscsFunction::argOK(long i) const {
 double& mscsFunction::fpsty(long i) { 
 	i=i % pointsCount();
 	if (i<0) i=(pointsCount()+i);
-	return _f[i].ry(); 
+	return _f[i].y();
 }
 
 /* **************************************************************************************************** */
@@ -457,7 +458,7 @@ void mscsFunction::importFunction(double* X, double* Y, long size, bool deleteAf
 	if (X!=NULL and Y!=NULL) {
 		for (long i=0;i<size;i++) {
 			newPoint(X[i],Y[i]);
-			// _f.append(QPointF(X[i],Y[i]));
+			// _f.append(cpedsPoint2D(X[i],Y[i]));
 		}
 	}
 	else {
@@ -486,7 +487,7 @@ void mscsFunction::importFunction(cpeds_point* p, long size) {
 
 
 /* **************************************************************************************************** */
-const mscsFunction& mscsFunction::setX(const QList<double> x) {
+const mscsFunction& mscsFunction::setX(const cpedsList<double> x) {
 	//	clearFunction();
 	//	long N=x.size();
 	//	for (long i = 0; i < N; i++) {
@@ -517,7 +518,7 @@ const mscsFunction& mscsFunction::setX(double v) {
 }
 
 /* **************************************************************************************************** */
-const mscsFunction& mscsFunction::setY(const QList<double> y) {
+const mscsFunction& mscsFunction::setY(const cpedsList<double> y) {
 	//	long N=pointsCount();
 	//	for (long i = 0; i < N; i++) {		setf(i,y.at(i));	}
 	//	return *this;
@@ -820,7 +821,7 @@ void mscsFunction::xadd(long i, double v) {   _f[i].setX(_f[i].x()+v);  }
 /* **************************************************************************************************** */
 void mscsFunction::Xadd(double* v) {  
 	long n=pointsCount();
-	for (long i=0;i<n;i++) { _f[i].rx()+=v[i]; }
+	for (long i=0;i<n;i++) { _f[i].x()+=v[i]; }
 }
 /* **************************************************************************************************** */
 void mscsFunction::Xsubtract(long i, double v) { if (argOK(i)) { _f[i].setX(_f[i].x()-v); } }
@@ -1142,41 +1143,41 @@ const mscsFunction mscsFunction::derivative(bool inPlace, double* periodX, doubl
 }
 /* **************************************************************************************************** */
 const mscsFunction& mscsFunction::sortFunctionArgAscending() {
-	QPointF* t= extractPoints();
+	cpedsPoint2D* t= extractPoints();
 	long num=_f.count();
 	cmpPt2 fp=&cmp_points_X;
-	qsort(t,num,sizeof(QPointF),(cmpPt)fp);
+	qsort(t,num,sizeof(cpedsPoint2D),(cmpPt)fp);
 	importPoints(t,num);
 	delete [] t;
 	return *this;
 }
 /* **************************************************************************************************** */
 const mscsFunction& mscsFunction::sortFunctionArgDescending() {
-	QPointF* t= extractPoints();
+	cpedsPoint2D* t= extractPoints();
 	long num=_f.count();
 	cmpPt2 fp=&cmp_points_X;
-	qsort(t,num,sizeof(QPointF),(cmpPt)fp);
+	qsort(t,num,sizeof(cpedsPoint2D),(cmpPt)fp);
 	importPoints(t,num,true);
 	delete [] t;
 	return *this;
 }
 /* **************************************************************************************************** */
-int mscsFunction::cmp_points_X(const QPointF &p1, const QPointF &p2) {
+int mscsFunction::cmp_points_X(const cpedsPoint2D &p1, const cpedsPoint2D &p2) {
 	if (p1.x() < p2.x()) return -1;
 	if (p1.x() > p2.x()) return 1;
 	return 0;
 }
 /* **************************************************************************************************** */
-int mscsFunction::cmp_points_Y(const QPointF &p1, const QPointF &p2) {
+int mscsFunction::cmp_points_Y(const cpedsPoint2D &p1, const cpedsPoint2D &p2) {
 	if (p1.y() < p2.y()) return -1;
 	if (p1.y() > p2.y()) return 1;
 	return 0;
 }
 
 /* **************************************************************************************************** */
-QPointF* mscsFunction::extractPoints() const {
+cpedsPoint2D* mscsFunction::extractPoints() const {
 	long num=_f.count();
-	QPointF* t= new QPointF[num];
+	cpedsPoint2D* t= new cpedsPoint2D[num];
 	
 	for (long i=0;i<num;i++) {
 		t[i]=_f[i];
@@ -1185,7 +1186,7 @@ QPointF* mscsFunction::extractPoints() const {
 }
 
 /* **************************************************************************************************** */
-void mscsFunction::importPoints(QPointF* t, long n, bool reverseOrder) {
+void mscsFunction::importPoints(cpedsPoint2D* t, long n, bool reverseOrder) {
 	clearFunction();
 	if (reverseOrder) {
 		for (long i=1;i<=n;i++) {
@@ -1509,7 +1510,7 @@ const mscsFunction mscsFunction::extrapolate(double from, double to, double dx, 
 /* **************************************************************************************************** */
 const mscsFunction& mscsFunction::concatenate(const mscsFunction& f) {
 	long num=f.pointsCount();
-	for (long i=0;i<num;i++) {    newPoint(f.getQPoint(i));  }
+	for (long i=0;i<num;i++) {    newPoint(f.getPoint(i));  }
 	return *this;
 }
 /* **************************************************************************************************** */
@@ -1518,10 +1519,10 @@ mscsFunction& mscsFunction::paste(const mscsFunction& f, long k, bool overwrite)
 	long j;
 	if (k<0) {	k=pointsCount()+k;	}
 	if (overwrite) {
-		for (long i=0;i<num;i++) {    j=k+i; if (j<pointsCount()) _f[j]=f.getQPoint(i); else { newPoint(f.getQPoint(i));  }	}
+		for (long i=0;i<num;i++) {    j=k+i; if (j<pointsCount()) _f[j]=f.getPoint(i); else { newPoint(f.getPoint(i));  }	}
 	}
 	else {
-		for (long i=0;i<num;i++) {    _f.insert(k+i,f.getQPoint(i));  }
+		for (long i=0;i<num;i++) {    _f.insert(k+i,f.getPoint(i));  }
 	}
 	return *this;
 }
@@ -1555,7 +1556,7 @@ const mscsFunction& mscsFunction::unique() {
 	for (long i=0;i<num;i++) {
 		k=i+1;
 		for (long j=k;j<num;j++) {
-			if (getQPoint(i)==getQPoint(j)) { deletePoint(j); num--;  j--; }
+			if (getPoint(i)==getPoint(j)) { deletePoint(j); num--;  j--; }
 		}
 	}
 	checkRanges();
@@ -2324,7 +2325,7 @@ mscsFunction& mscsFunction::binFunctionLin2(long imin, cpedsList<long>& binSize,
 			cpedsList<double> tmpl;
 			long si=0;
 			tmpl.fromCarray(&Cl[k],kmax-k);
-			qSort(tmpl);
+			std::sort(tmpl.begin(), tmpl.end());
 
 			stats->at(si++).append(cpeds_mean_value(x,kmax-k,k)); // mean x
 			stats->at(si++).append(cpeds_mean_value(Cl,kmax-k,k)); // mean y
@@ -2422,7 +2423,7 @@ mscsFunction mscsFunction::powerSpectrum(mscsFunction* re, mscsFunction* im, dou
 	//
 	// regridding
 	//
-	if (regridX==0) dX=(last().rx()-X(0))/pointsCount(); // assume that function is equally spaced - take separation as an average from the whole signal span
+	if (regridX==0) dX=(last().x()-X(0))/pointsCount(); // assume that function is equally spaced - take separation as an average from the whole signal span
 	if (regridX>0) { // calculate the mean separation of arguments
 		double *X=extractArguments();
 		long M=N-1;
@@ -3526,7 +3527,7 @@ mscsFunction& mscsFunction::remove(const mscsFunction& p) {
 	for (long i = 0; i < p.pointsCount(); i++) {
 		j=0;
 		while (j<pointsCount()) {
-			if (p.getQPoint(i)==_f[i]) deletePoint(j);
+			if (p.getPoint(i)==_f[i]) deletePoint(j);
 			else
 				j++;
 		}

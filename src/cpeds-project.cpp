@@ -2,11 +2,11 @@
 #include <proj_api.h>
 
 // ****************************************************************************************************
-// cpedsProject::cpedsProject(QList<cpedsDirection> &dirs, string projection) {
+// cpedsProject::cpedsProject(cpedsList<cpedsDirection> &dirs, string projection) {
   
 // }
 // ****************************************************************************************************
-// cpedsProject::cpedsProject(QList<cpedsPoint2D> &points, string projection);
+// cpedsProject::cpedsProject(cpedsList<cpedsPoint2D> &points, string projection);
 // ****************************************************************************************************
 cpedsProject::cpedsProject(const cpedsDirectionSet &dirs, string projection) {
   _ds=dirs;

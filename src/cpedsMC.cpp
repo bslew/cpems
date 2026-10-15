@@ -66,7 +66,7 @@ void cpedsMC::load(string fname) {
 /***************************************************************************************/
 const cpedsMC& cpedsMC::operator=(const cpedsMC& rhs) {
 	if (this!=&rhs) {
-		QList<MClink>::operator=(rhs);
+		cpedsList<MClink>::operator=(rhs);
 	}
 	return *this;
 }
@@ -83,13 +83,13 @@ void cpedsMC::save(string fname, long precision) {
 /* ******************************************************************************************** */
 void cpedsMC::append(MClink l, long idx) {
 	l.setIdx(idx);
-	QList::append(l);
+	cpedsList::append(l);
 }
 /* ******************************************************************************************** */
 void cpedsMC::append(MClink l) {
-	QList::append(l);
+	cpedsList::append(l);
 }
 /* ******************************************************************************************** */
 void cpedsMC::append(cpedsMC &mc) {
-	QList::append(mc);
+	cpedsList::append(mc);
 }

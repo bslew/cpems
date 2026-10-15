@@ -11,8 +11,8 @@
 
 
 /* STANDALONE HEADERS */
-//#include <QtCore/qlist.h>
 #include "cpeds-direction.h"
+#include "cpeds-list.h"
 
 /* INTERDEPENDENT HEADERS */
 
@@ -32,7 +32,7 @@
   \date 2009/11/06 12:51:40
   \author Bartosz Lew
 */
-class cpedsDirectionSet : public QList<cpedsDirection> {
+class cpedsDirectionSet : public cpedsList<cpedsDirection> {
 
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -40,18 +40,18 @@ class cpedsDirectionSet : public QList<cpedsDirection> {
 /* ---------------------------------------------------------------------------------------------------- */
  public:
 
-	using  QList<cpedsDirection>::append;
-	using  QList<cpedsDirection>::size;
-	using  QList<cpedsDirection>::count;
-	using  QList<cpedsDirection>::clear;
-	using  QList<cpedsDirection>::value;
-	using  QList<cpedsDirection>::at;
-	using  QList<cpedsDirection>::first;
-	using  QList<cpedsDirection>::last;
-	using  QList<cpedsDirection>::operator[];
-	using  QList<cpedsDirection>::operator<<;
-	using  QList<cpedsDirection>::takeFirst;
-	using  QList<cpedsDirection>::takeLast;
+	using  cpedsList<cpedsDirection>::append;
+	using  cpedsList<cpedsDirection>::size;
+	using  cpedsList<cpedsDirection>::count;
+	using  cpedsList<cpedsDirection>::clear;
+	using  cpedsList<cpedsDirection>::value;
+	using  cpedsList<cpedsDirection>::at;
+	using  cpedsList<cpedsDirection>::first;
+	using  cpedsList<cpedsDirection>::last;
+	using  cpedsList<cpedsDirection>::operator[];
+	using  cpedsList<cpedsDirection>::operator<<;
+	using  cpedsList<cpedsDirection>::takeFirst;
+	using  cpedsList<cpedsDirection>::takeLast;
 
 /* ------------- */
 /* CLASS FRIENDS */
@@ -62,11 +62,11 @@ class cpedsDirectionSet : public QList<cpedsDirection> {
 /* CONSTRUCTORS AND DESTRUCTORS */
 /* ---------------------------- */
   cpedsDirectionSet();
-  cpedsDirectionSet(const QList<cpedsDirection> &q);
+  cpedsDirectionSet(const cpedsList<cpedsDirection> &q);
   cpedsDirectionSet(const cpedsDirectionSet &q);
   cpedsDirectionSet(long N, double *lon, double *lat);
   cpedsDirectionSet(long N, double *lon, double *lat, double *val);
-  cpedsDirectionSet(const QList<double>& lon, const QList<double>& lat, const QList<double>& val);
+  cpedsDirectionSet(const cpedsList<double>& lon, const cpedsList<double>& lat, const cpedsList<double>& val);
   ~cpedsDirectionSet();
 
 /* ---------------------------- */
@@ -96,7 +96,7 @@ class cpedsDirectionSet : public QList<cpedsDirection> {
   cpedsDirection mean() const;
 
   virtual cpedsDirectionSet& operator=(const cpedsDirectionSet &rhs);
-  virtual cpedsDirectionSet& operator=(const QList<cpedsDirection> &rhs);
+  virtual cpedsDirectionSet& operator=(const cpedsList<cpedsDirection> &rhs);
 
   /*!
     \brief sets the length of the set to n using default values;
@@ -157,7 +157,7 @@ class cpedsDirectionSet : public QList<cpedsDirection> {
 /* ---------------------------- */
 /* PROTECTED STRUCTURES */
 /* ---------------------------- */
-//  QList<cpedsDirection> _ps; // points set
+//  cpedsList<cpedsDirection> _ps; // points set
 
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -178,4 +178,3 @@ class cpedsDirectionSet : public QList<cpedsDirection> {
 
  };
 #endif /* CPEDDIRECTIONSET */
-

@@ -855,12 +855,12 @@ if (_load_rot) {
 	  map.set_map_coord(0,0);
 	  if (_dont_plot_zero) {
 		  for (long i = 0; i < map.pixNum(); i++) {
-			  if (map.T(i)!=0) lb.newPoint(map.get_n()[i].toQPointF());
+			  if (map.T(i)!=0) lb.newPoint(map.get_n()[i].toPoint2D());
 		  }
 	  }
 	  else {
 		  for (long i = 0; i < map.pixNum(); i++) {
-			  lb.newPoint(map.get_n()[i].toQPointF());
+			  lb.newPoint(map.get_n()[i].toPoint2D());
 		  }
 	  }
 	  lb.multiply(PI180inv);

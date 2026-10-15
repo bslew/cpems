@@ -6,7 +6,6 @@
  */
 
 #include "cpeds-fits.h"
-//#include <QtCore/QString>
 
 cpedsFits::cpedsFits(cpeds_VerbosityLevel level) {
 	_status=0;
@@ -55,9 +54,9 @@ cpedsStatusCodes cpedsFits::openFile(string fname, string action) {
 
 /***************************************************************************************/
 cpedsStatusCodes cpedsFits::addBinTable(string Tname, long rows,
-                                        QList<string> colName,
-                                        QList<string> colType,
-                                        QList<string> colUnit) {
+                                        cpedsList<string> colName,
+                                        cpedsList<string> colType,
+                                        cpedsList<string> colUnit) {
     long cols = colName.size();
     char* tname[cols];
     char* tform[cols];
@@ -157,7 +156,7 @@ cpedsStatusCodes cpedsFits::addBinTable(string Tname, long rows,
 }
 /***************************************************************************************/
 cpedsStatusCodes cpedsFits::addBinTable(string Tname) {
-	QList<string> cols;
+	cpedsList<string> cols;
 	return addBinTable(Tname,0,cols,cols,cols);
 }
 
@@ -479,7 +478,7 @@ int cpedsFits::getHDUCount() {
 }
 
 /***************************************************************************************/
-//cpedsStatusCodes cpedsFits::saveFunctionsListAsBinArray(QList<cpedsList> data, QList<string> colName, QList<string> colType, QList<string> colUnit) {
+//cpedsStatusCodes cpedsFits::saveFunctionsListAsBinArray(cpedsList<cpedsList> data, cpedsList<string> colName, cpedsList<string> colType, cpedsList<string> colUnit) {
 //	
 //}
 cpedsStatusCodes cpedsFits::readBinTable(string Tname, double** data, long* size, long *rows) {
@@ -549,7 +548,7 @@ cpedsStatusCodes cpedsFits::readBinTableColumn(string Tname, int col, double** d
 }
 /***************************************************************************************/
 cpedsStatusCodes cpedsFits::saveFunction(const string Tname, const mscsFunction& fn,const string argName, const string valName, const string argUnit, const string valUnit) {
-	QList<string> colName, colType, colUnit;
+	cpedsList<string> colName, colType, colUnit;
 	colName << argName << valName;
 	colType << "double" << "double";
 	colUnit << argUnit << valUnit;
@@ -559,9 +558,9 @@ cpedsStatusCodes cpedsFits::saveFunction(const string Tname, const mscsFunction&
 	return cpedsSuccess;
 }
 /***************************************************************************************/
-cpedsStatusCodes cpedsFits::saveArray(const string Tname, const mscsFunction3dregc& fn,QList<string> colName, QList<string> colUnit) {
+cpedsStatusCodes cpedsFits::saveArray(const string Tname, const mscsFunction3dregc& fn,cpedsList<string> colName, cpedsList<string> colUnit) {
 	if (fn.Nz()!=1) return cpedsError;
-	QList<string> colType;
+	cpedsList<string> colType;
 	for (unsigned long i = 0; i < colName.size(); i++) {
 		colType << "double";
 	}

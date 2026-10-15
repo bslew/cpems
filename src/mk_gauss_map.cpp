@@ -12,8 +12,7 @@
 #include <math.h>
 #include <time.h>
 #include <tclap/CmdLine.h>
-//#include <QtCore/QStringList>
-//#include <QtCore/QString>
+#include "cpeds-string.h"
 //#include "qtbase.h"
 #include "cpeds-msgs.h"
 #include "cpeds-consts.h"
@@ -433,9 +432,9 @@ string getProgramVersionString() {
 	string rev;
 #ifdef GENERATE_CVS_VERSION_STRING
 	rev="$Revision: 1.1 $";
-	QString qrev=rev.c_str();
-	QStringList qrevl=qrev.split(" ");
-	if (qrevl.size()==3) rev=qrevl[1].toStdString();
+	std::string qrev=rev.c_str();
+	std::vector<std::string> qrevl=cpedsSplit(qrev, " ");
+	if (qrevl.size()==3) rev=qrevl[1];
 	else rev="could not retrieve version number";
 #else
 	rev="0.1.1";
@@ -478,13 +477,13 @@ void fitNoiseToResolution(mscsMap& map, long target_nside) {
 /* ******************************************************************************************** */
 void mkUniformNoise(string uniform_noise, mscsMap& sim, cpedsMsgs& msgs) {
 	cpedsRNG rns("uniform");
-	QString qs=uniform_noise.c_str();
-	QStringList qsl=qs.split(',');
+	std::string qs=uniform_noise.c_str();
+	std::vector<std::string> qsl=cpedsSplit(qs, ',');
 	if (qsl.size()!=2) {
 		msgs.error("You should provide range",High);
 		exit(-1);
 	}
-	rns.setMinMax(qsl[0].toDouble(),qsl[1].toDouble());
+	rns.setMinMax(cpedsToDouble(qsl[0]),cpedsToDouble(qsl[1]));
 	
 	sim.T()=rns.getRNs(sim.pixNum());
 	
@@ -508,4 +507,3 @@ void mkUniformIntegerNoiseMap(string uniform_noise, mscsMap& sim, cpedsMsgs& msg
 	sim.savebinT(_outFile+"-Tn-bin");
 	msgs.say("done",Low);
 }
-

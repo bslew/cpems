@@ -11,6 +11,7 @@
 
 
 /* STANDALONE HEADERS */
+#include <cmath>
 #include "cpeds-common.h"
 
 /* INTERDEPENDENT HEADERS */
@@ -142,4 +143,3 @@ class cpedsPoint2D {
 //void cout::operator<<(const cpedsPoint2D& vec) const { cout << "x: " << vec.x() << " y: " << vec.y() ;   }
 
 #endif /* CPEDSPOINT2D */ 
-

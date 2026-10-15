@@ -46,7 +46,7 @@ x,y - are the coordinate values
 i,j - are the indexes of the grid cell
 dx,dy - are the grid separations in each dimension.
 
-The 2d function is stored on an linear array of QPointF objects, hence the function can store complex values.
+The 2d function is stored on an linear array of cpedsPoint2D objects, hence the function can store complex values.
 
 The ordering of points in the array is X-major: i.e. the index of the last dimension (y) changes 
 most frequently. - consistently with fftw conventions, hence the N'th element in the array corresponds to
@@ -120,10 +120,10 @@ class mscsFunction2dreg : public mscsFunction {
 //		double f(double x, double y, double z, long* i, long* j, long* k) const;
 
 		//! returns the real part reference at the ij'th position; use this if you are sure that the ijk'th value exists in the function
-		double& f(long i, long j) { return _f[ij2idx(i,j)].rx(); }
-		double& fRe(long i, long j) { return _f[ij2idx(i,j)].rx(); }
+		double& f(long i, long j) { return _f[ij2idx(i,j)].x(); }
+		double& fRe(long i, long j) { return _f[ij2idx(i,j)].x(); }
 		//! returns the complex part reference at the ij'th position; use this if you are sure that the ijk'th value exists in the function
-		double& fIm(long i, long j) { return _f[ij2idx(i,j)].ry(); }
+		double& fIm(long i, long j) { return _f[ij2idx(i,j)].y(); }
 
 		//! returns the coordinate value at i'th position
 //		double getX(long i) const { return _X[i]; }
@@ -316,7 +316,6 @@ class mscsFunction2dreg : public mscsFunction {
 		
 };
 #endif /* MSCSFUNCTION2DREG */ 
-
 
 
 
