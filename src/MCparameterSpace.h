@@ -1,5 +1,5 @@
 /*!
- \file MCparameterSpace.h - 
+ \file MCparameterSpace.h -
  */
 
 #ifndef SRC_MCPARAMETERSPACE_H_
@@ -10,73 +10,83 @@
 /*!
  \class MCparameterSpace
  \brief Encapsulates parameter space for MCMC run
- \details 
- 
- \date created: Jan 24, 2018, 1:15:58 PM 
+ \details
+
+ \date created: Jan 24, 2018, 1:15:58 PM
  \author Bartosz Lew
  */
 class MCparameterSpace : public cpedsList<mscsFunction> {
-		
-		/* ---------------------------------------------------------------------------------------------------- */
-		/* CLASS PUBLIC MEMBERS */
-		/* ---------------------------------------------------------------------------------------------------- */
-	public:
-		
-		/* ------------- */
-		/* CLASS TYPES */
-		/* ------------- */
-		typedef struct {
-			cpedsList<string> names; //!< parameter name
-			cpedsList<string> names_full; //!< parameter name with units in latex typesetting used for automatic plot generation
-				
-		} MCparameterSpace_t;
 
-		/* ---------------------------- */
-		/* CONSTRUCTORS AND DESTRUCTORS */
-		/* ---------------------------- */
-		MCparameterSpace();
-		~MCparameterSpace();
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PUBLIC MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  public:
+    /* ------------- */
+    /* CLASS TYPES */
+    /* ------------- */
+    typedef struct {
+        cpedsList<string> names; //!< parameter name
+        cpedsList<string>
+            names_full; //!< parameter name with units in latex typesetting used
+                        //!< for automatic plot generation
 
-		/* ---------------------------- */
-		/* PUBLIC METHODS */
-		/* ---------------------------- */
+    } MCparameterSpace_t;
 
-		void addParameter(const mscsFunction& p, string parameter_name="", string parameter_full_name="");
-		cpedsList<string>& names_latex() { return _MCparameterSpace_data.names_full; }
-		cpedsList<string>& names_full() { return _MCparameterSpace_data.names_full; }
-		cpedsList<string>& names() { return _MCparameterSpace_data.names; }
-		double length(long i) const { return at(i).getX(at(i).pointsCount()-1)-at(i).getX(0); }
-		double resolution(long i) const { return length(i)/at(i).pointsCount(); }
-		
-		
-		const MCparameterSpace& operator=(const MCparameterSpace& rhs);
+    /* ---------------------------- */
+    /* CONSTRUCTORS AND DESTRUCTORS */
+    /* ---------------------------- */
+    MCparameterSpace();
+    ~MCparameterSpace();
 
-		/* ---------------------------------------------------------------------------------------------------- */
-		/* CLASS PROTECTED MEMBERS */
-		/* ---------------------------------------------------------------------------------------------------- */
-	protected:
-		
-		/* ---------------------------- */
-		/* PROTECTED METHODS */
-		/* ---------------------------- */
+    /* ---------------------------- */
+    /* PUBLIC METHODS */
+    /* ---------------------------- */
 
-		/* ---------------------------- */
-		/* PROTECTED STRUCTURES */
-		/* ---------------------------- */
+    void addParameter(const mscsFunction& p, string parameter_name = "",
+                      string parameter_full_name = "");
+    cpedsList<string>& names_latex() {
+        return _MCparameterSpace_data.names_full;
+    }
+    cpedsList<string>& names_full() {
+        return _MCparameterSpace_data.names_full;
+    }
+    cpedsList<string>& names() { return _MCparameterSpace_data.names; }
+    double length(long i) const {
+        return at(i).getX(at(i).pointsCount() - 1) - at(i).getX(0);
+    }
+    double resolution(long i) const { return length(i) / at(i).pointsCount(); }
 
-		/* ---------------------------------------------------------------------------------------------------- */
-		/* CLASS PRIVATE MEMBERS */
-		/* ---------------------------------------------------------------------------------------------------- */
-	private:
-		
-		/* ---------------------------- */
-		/* PRIVATE METHODS */
-		/* ---------------------------- */
+    const MCparameterSpace& operator=(const MCparameterSpace& rhs);
 
-		/* ---------------------------- */
-		/* PRIVATE STRUCTURES */
-		/* ---------------------------- */
-		MCparameterSpace_t _MCparameterSpace_data;
-		
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PROTECTED MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  protected:
+    /* ---------------------------- */
+    /* PROTECTED METHODS */
+    /* ---------------------------- */
+
+    /* ---------------------------- */
+    /* PROTECTED STRUCTURES */
+    /* ---------------------------- */
+
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PRIVATE MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  private:
+    /* ---------------------------- */
+    /* PRIVATE METHODS */
+    /* ---------------------------- */
+
+    /* ---------------------------- */
+    /* PRIVATE STRUCTURES */
+    /* ---------------------------- */
+    MCparameterSpace_t _MCparameterSpace_data;
 };
-#endif /* SRC_MCPARAMETERSPACE_H_ */ 
+#endif /* SRC_MCPARAMETERSPACE_H_ */

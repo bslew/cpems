@@ -1,5 +1,5 @@
 /*!
- \file cpedsMCMCset.h - 
+ \file cpedsMCMCset.h -
  */
 
 #ifndef CPEDSMCMCSET_H_
@@ -10,68 +10,68 @@
 
 /*!
  \class cpedsMCMCset
- \brief Encapsulates a collection of cpedsMCMC objects and performs marginalization
- \details 
- 
- \date created: May 24, 2017, 10:59:43 AM 
+ \brief Encapsulates a collection of cpedsMCMC objects and performs
+ marginalization \details
+
+ \date created: May 24, 2017, 10:59:43 AM
  \author Bartosz Lew
  */
 class cpedsMCMCset : public cpedsMsgs {
-		
-		/* ---------------------------------------------------------------------------------------------------- */
-		/* CLASS PUBLIC MEMBERS */
-		/* ---------------------------------------------------------------------------------------------------- */
-	public:
-		
-		/* ------------- */
-		/* CLASS TYPES */
-		/* ------------- */
-		typedef struct {
-			cpedsMCMC bflinks; //!< chain containing only the best links from different chains
-			cpedsMCMC alllinks; //!< chain containing all links from different chains 
-		} cpedsMCMCset_t;
 
-		/* ---------------------------- */
-		/* CONSTRUCTORS AND DESTRUCTORS */
-		/* ---------------------------- */
-		cpedsMCMCset(cpeds_VerbosityLevel verb=Zero);
-		~cpedsMCMCset();
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PUBLIC MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  public:
+    /* ------------- */
+    /* CLASS TYPES */
+    /* ------------- */
+    typedef struct {
+        cpedsMCMC bflinks; //!< chain containing only the best links from
+                           //!< different chains
+        cpedsMCMC
+            alllinks; //!< chain containing all links from different chains
+    } cpedsMCMCset_t;
 
-		/* ---------------------------- */
-		/* PUBLIC METHODS */
-		/* ---------------------------- */
-		void addChain(cpedsMCMC& chain);
+    /* ---------------------------- */
+    /* CONSTRUCTORS AND DESTRUCTORS */
+    /* ---------------------------- */
+    cpedsMCMCset(cpeds_VerbosityLevel verb = Zero);
+    ~cpedsMCMCset();
 
-		
-		
-		
-		/* ---------------------------------------------------------------------------------------------------- */
-		/* CLASS PROTECTED MEMBERS */
-		/* ---------------------------------------------------------------------------------------------------- */
-	protected:
-		
-		/* ---------------------------- */
-		/* PROTECTED METHODS */
-		/* ---------------------------- */
+    /* ---------------------------- */
+    /* PUBLIC METHODS */
+    /* ---------------------------- */
+    void addChain(cpedsMCMC& chain);
 
-		/* ---------------------------- */
-		/* PROTECTED STRUCTURES */
-		/* ---------------------------- */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PROTECTED MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  protected:
+    /* ---------------------------- */
+    /* PROTECTED METHODS */
+    /* ---------------------------- */
 
-		/* ---------------------------------------------------------------------------------------------------- */
-		/* CLASS PRIVATE MEMBERS */
-		/* ---------------------------------------------------------------------------------------------------- */
-	private:
-		
-		/* ---------------------------- */
-		/* PRIVATE METHODS */
-		/* ---------------------------- */
+    /* ---------------------------- */
+    /* PROTECTED STRUCTURES */
+    /* ---------------------------- */
 
-		/* ---------------------------- */
-		/* PRIVATE STRUCTURES */
-		/* ---------------------------- */
-		cpedsMCMCset_t _cpedsMCMCset_data;
-		
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PRIVATE MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  private:
+    /* ---------------------------- */
+    /* PRIVATE METHODS */
+    /* ---------------------------- */
+
+    /* ---------------------------- */
+    /* PRIVATE STRUCTURES */
+    /* ---------------------------- */
+    cpedsMCMCset_t _cpedsMCMCset_data;
 };
-#endif /* CPEDSMCMCSET_H_ */ 
-
+#endif /* CPEDSMCMCSET_H_ */

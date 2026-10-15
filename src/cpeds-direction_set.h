@@ -5,10 +5,11 @@
 #ifndef CPEDSDIRECTIONSET
 #define CPEDSDIRECTIONSET
 
-/* **************************************************************************************************** */
+/* ****************************************************************************************************
+ */
 /* INCLUDES */
-/* **************************************************************************************************** */
-
+/* ****************************************************************************************************
+ */
 
 /* STANDALONE HEADERS */
 #include "cpeds-direction.h"
@@ -20,10 +21,11 @@
 
 /* USING NAMESPACES (only for inside-header files implementations) */
 
-
-/* **************************************************************************************************** */
+/* ****************************************************************************************************
+ */
 /* CLASS DEFINITION */
-/* **************************************************************************************************** */
+/* ****************************************************************************************************
+ */
 /*!
   \class cpedsDirectionSet
   \brief Encapsulates a set of cpeds direction objects
@@ -34,147 +36,150 @@
 */
 class cpedsDirectionSet : public cpedsList<cpedsDirection> {
 
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PUBLIC MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  public:
+    using cpedsList<cpedsDirection>::append;
+    using cpedsList<cpedsDirection>::size;
+    using cpedsList<cpedsDirection>::count;
+    using cpedsList<cpedsDirection>::clear;
+    using cpedsList<cpedsDirection>::value;
+    using cpedsList<cpedsDirection>::at;
+    using cpedsList<cpedsDirection>::first;
+    using cpedsList<cpedsDirection>::last;
+    using cpedsList<cpedsDirection>::operator[];
+    using cpedsList<cpedsDirection>::operator<<;
+    using cpedsList<cpedsDirection>::takeFirst;
+    using cpedsList<cpedsDirection>::takeLast;
 
-/* ---------------------------------------------------------------------------------------------------- */
-/* CLASS PUBLIC MEMBERS */
-/* ---------------------------------------------------------------------------------------------------- */
- public:
+    /* ------------- */
+    /* CLASS FRIENDS */
+    /* ------------- */
 
-	using  cpedsList<cpedsDirection>::append;
-	using  cpedsList<cpedsDirection>::size;
-	using  cpedsList<cpedsDirection>::count;
-	using  cpedsList<cpedsDirection>::clear;
-	using  cpedsList<cpedsDirection>::value;
-	using  cpedsList<cpedsDirection>::at;
-	using  cpedsList<cpedsDirection>::first;
-	using  cpedsList<cpedsDirection>::last;
-	using  cpedsList<cpedsDirection>::operator[];
-	using  cpedsList<cpedsDirection>::operator<<;
-	using  cpedsList<cpedsDirection>::takeFirst;
-	using  cpedsList<cpedsDirection>::takeLast;
+    /* ---------------------------- */
+    /* CONSTRUCTORS AND DESTRUCTORS */
+    /* ---------------------------- */
+    cpedsDirectionSet();
+    cpedsDirectionSet(const cpedsList<cpedsDirection>& q);
+    cpedsDirectionSet(const cpedsDirectionSet& q);
+    cpedsDirectionSet(long N, double* lon, double* lat);
+    cpedsDirectionSet(long N, double* lon, double* lat, double* val);
+    cpedsDirectionSet(const cpedsList<double>& lon,
+                      const cpedsList<double>& lat,
+                      const cpedsList<double>& val);
+    ~cpedsDirectionSet();
 
-/* ------------- */
-/* CLASS FRIENDS */
-/* ------------- */
+    /* ---------------------------- */
+    /* PUBLIC METHODS */
+    /* ---------------------------- */
 
+    double* getLonVals(long* size) const;
+    double* getLatVals(long* size) const;
+    double* getVals(long* size) const;
 
-/* ---------------------------- */
-/* CONSTRUCTORS AND DESTRUCTORS */
-/* ---------------------------- */
-  cpedsDirectionSet();
-  cpedsDirectionSet(const cpedsList<cpedsDirection> &q);
-  cpedsDirectionSet(const cpedsDirectionSet &q);
-  cpedsDirectionSet(long N, double *lon, double *lat);
-  cpedsDirectionSet(long N, double *lon, double *lat, double *val);
-  cpedsDirectionSet(const cpedsList<double>& lon, const cpedsList<double>& lat, const cpedsList<double>& val);
-  ~cpedsDirectionSet();
+    void getRanges(double& minLon, double& maxLon, double& minLat,
+                   double& maxLat) const;
+    double minLon() const;
+    double maxLon() const;
+    double minLat() const;
+    double maxLat() const;
+    /*!
+          \brief calculate the mean direction out of the set
+          \details
+          @return mean direction in radians
 
-/* ---------------------------- */
-/* PUBLIC METHODS */
-/* ---------------------------- */
+          It is assumed that the set is given in radians
 
-  double* getLonVals(long* size) const;
-  double* getLatVals(long* size) const;
-  double* getVals(long* size) const;
+          The mean is calculated as the mean vector after converting coordinates
+       to rectangular coordinates
 
-  void getRanges(double &minLon, double &maxLon, double &minLat, double &maxLat) const;
-  double minLon() const;
-  double maxLon() const;
-  double minLat() const;
-  double maxLat() const;
-  /*!
-	\brief calculate the mean direction out of the set
-	\details 
-	@return mean direction in radians
-	
-	It is assumed that the set is given in radians
-	
-	The mean is calculated as the mean vector after converting coordinates to rectangular coordinates
-
-	\date Jun 9, 2017, 10:28:38 AM
-*/
-  cpedsDirection mean() const;
-
-  virtual cpedsDirectionSet& operator=(const cpedsDirectionSet &rhs);
-  virtual cpedsDirectionSet& operator=(const cpedsList<cpedsDirection> &rhs);
-
-  /*!
-    \brief sets the length of the set to n using default values;
-    \details
-    If n is larger than the current length of the set then new directions will be appended.
-    If n is smaller then the current length of the set then  the elements will be deleted from the beginning of the set.
+          \date Jun 9, 2017, 10:28:38 AM
   */
-  void setLength(long n);
+    cpedsDirection mean() const;
 
-  void sort();
+    virtual cpedsDirectionSet& operator=(const cpedsDirectionSet& rhs);
+    virtual cpedsDirectionSet& operator=(const cpedsList<cpedsDirection>& rhs);
 
+    /*!
+      \brief sets the length of the set to n using default values;
+      \details
+      If n is larger than the current length of the set then new directions will
+      be appended. If n is smaller then the current length of the set then  the
+      elements will be deleted from the beginning of the set.
+    */
+    void setLength(long n);
 
-  void print() const;
-  long save(string fname, string how="", bool withVals=false) const;
-  /*!
-    \brief loads set from file
-    \details
-    @param how - "binary" indicates that the file is binary, "float" - 4byte binary file
-    @para withVals - true: three columns are assumed, false: two columns are assumed
-    @return load status: 0 - ok
+    void sort();
 
-    \date 2010/03/12 00:35:21
-    \author Bartosz Lew
-  */
-  long load(string fname, string how="", bool withVals=false);
+    void print() const;
+    long save(string fname, string how = "", bool withVals = false) const;
+    /*!
+      \brief loads set from file
+      \details
+      @param how - "binary" indicates that the file is binary, "float" - 4byte
+      binary file
+      @para withVals - true: three columns are assumed, false: two columns are
+      assumed
+      @return load status: 0 - ok
 
-  /*!
-	\brief exports the list as 2 dimentional matrix with 2 or 3 columns.
-	\details
-	@param withVals: true - 3 columns (lon, lat, val), false - two columns export (lon, lat) only
-	@return
+      \date 2010/03/12 00:35:21
+      \author Bartosz Lew
+    */
+    long load(string fname, string how = "", bool withVals = false);
 
-	\date May 17, 2010, 3:01:03 PM
-	\author Bartosz Lew
-  */
-  const matrix<double> exportAsMatrix(bool withVals=false) const;
-  /*!
-    \brief imports data from matrix m
-    \details
-    @param withVals - only used in case of column vector matrices\n
-    if true - every triplet of rows will be treated as lon,lat,val for generating the direction set.\n
-    if false - every duplet of rows will be treated as lon,lat for generating the direction set. the value will be assigned zero value\n
-  */
-  void importMatrix(const matrix<double>& m, bool withVals=false) ;
+    /*!
+          \brief exports the list as 2 dimentional matrix with 2 or 3 columns.
+          \details
+          @param withVals: true - 3 columns (lon, lat, val), false - two columns
+       export (lon, lat) only
+          @return
 
+          \date May 17, 2010, 3:01:03 PM
+          \author Bartosz Lew
+    */
+    const matrix<double> exportAsMatrix(bool withVals = false) const;
+    /*!
+      \brief imports data from matrix m
+      \details
+      @param withVals - only used in case of column vector matrices\n
+      if true - every triplet of rows will be treated as lon,lat,val for
+      generating the direction set.\n if false - every duplet of rows will be
+      treated as lon,lat for generating the direction set. the value will be
+      assigned zero value\n
+    */
+    void importMatrix(const matrix<double>& m, bool withVals = false);
 
-/* ---------------------------------------------------------------------------------------------------- */
-/* CLASS PROTECTED MEMBERS */
-/* ---------------------------------------------------------------------------------------------------- */
- protected:
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PROTECTED MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  protected:
+    /* ---------------------------- */
+    /* PROTECTED METHODS */
+    /* ---------------------------- */
 
+    /* ---------------------------- */
+    /* PROTECTED STRUCTURES */
+    /* ---------------------------- */
+    //  cpedsList<cpedsDirection> _ps; // points set
 
-/* ---------------------------- */
-/* PROTECTED METHODS */
-/* ---------------------------- */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+    /* CLASS PRIVATE MEMBERS */
+    /* ----------------------------------------------------------------------------------------------------
+     */
+  private:
+    /* ---------------------------- */
+    /* PRIVATE METHODS */
+    /* ---------------------------- */
+    double extremal(bool lon, bool max) const;
 
-
-/* ---------------------------- */
-/* PROTECTED STRUCTURES */
-/* ---------------------------- */
-//  cpedsList<cpedsDirection> _ps; // points set
-
-
-/* ---------------------------------------------------------------------------------------------------- */
-/* CLASS PRIVATE MEMBERS */
-/* ---------------------------------------------------------------------------------------------------- */
- private:
-
-/* ---------------------------- */
-/* PRIVATE METHODS */
-/* ---------------------------- */
-  double extremal(bool lon, bool max) const;
-
-
-/* ---------------------------- */
-/* PRIVATE STRUCTURES */
-/* ---------------------------- */
-
-
- };
+    /* ---------------------------- */
+    /* PRIVATE STRUCTURES */
+    /* ---------------------------- */
+};
 #endif /* CPEDDIRECTIONSET */

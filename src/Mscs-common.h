@@ -21,7 +21,8 @@
   The core of the package is the Mscs library on which several programs operate.
   These programs will be documented elsewhere.
 
-  The general structure of the Mscs package can be viewed <a href="../../Mscs-structure-by-UML/Mscs-structure-by-UML.html">here</a>
+  The general structure of the Mscs package can be viewed <a
+  href="../../Mscs-structure-by-UML/Mscs-structure-by-UML.html">here</a>
 
   \section advanced Compilation and Requirements
   To compile this code several other libraries are required, see
@@ -51,11 +52,11 @@
   \author Bartosz Lew
 */
 
-//#include <complex>
-#include <string>
+// #include <complex>
 #include "matrix.h"
+#include <string>
 
-//#include "Mscs-map.h"
+// #include "Mscs-map.h"
 
 #ifndef _NO_NAMESPACE
 using namespace std;
@@ -71,29 +72,32 @@ using namespace math;
 
 #define MSCS_NUMERICAL_ACCURACY 1e-8
 
-
 /* #ifndef __MscsTypeDefs__ */
 /* #define __MscsTypeDefs__ */
-//typedef char filenamestr[1000];
-//typedef const char strarg[500];
-//typedef filenamestr package_dirs[30];
-//typedef strarg strarg_dirs[30];
-typedef struct { long r,b,g; } MscsColor; //!< color structure defined on tripet of longs; The intensities should be within range of [0,255]
-typedef struct { double r,b,g; } MscsColorD; //!< color structure defined on tripet of doubles; The intensities should be within range of [0,1]
+// typedef char filenamestr[1000];
+// typedef const char strarg[500];
+// typedef filenamestr package_dirs[30];
+// typedef strarg strarg_dirs[30];
+typedef struct {
+    long r, b, g;
+} MscsColor; //!< color structure defined on tripet of longs; The intensities
+             //!< should be within range of [0,255]
+typedef struct {
+    double r, b, g;
+} MscsColorD; //!< color structure defined on tripet of doubles; The intensities
+              //!< should be within range of [0,1]
 
 typedef struct {
-	int procNum; //!< number of threads that is running
-	int st_thread;//!< starting number of the thread
-	int en_thread; //!< ending number of the thread
-	char sim_run_file_pref[500]; //!< prefix of the run file that holds the current status information (includes absolute path)
-	char sim_run_file_suff[100]; //!< suffix of the run file that holds the current status information
+    int procNum;                 //!< number of threads that is running
+    int st_thread;               //!< starting number of the thread
+    int en_thread;               //!< ending number of the thread
+    char sim_run_file_pref[500]; //!< prefix of the run file that holds the
+                                 //!< current status information (includes
+                                 //!< absolute path)
+    char sim_run_file_suff[100]; //!< suffix of the run file that holds the
+                                 //!< current status information
 } Mscs_run_control_t;
-
 
 /* #endif */
 
-
-
-
 #endif
-

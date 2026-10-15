@@ -7,27 +7,28 @@
 #include <MCparameterSpace.h>
 
 MCparameterSpace::MCparameterSpace() {
-	// TODO Auto-generated constructor stub
-	
+    // TODO Auto-generated constructor stub
 }
 
 MCparameterSpace::~MCparameterSpace() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
-void MCparameterSpace::addParameter(const mscsFunction& p, string parameter_name, string parameter_full_name) {
-	append(p);
-	last().checkRanges();
+void MCparameterSpace::addParameter(const mscsFunction& p,
+                                    string parameter_name,
+                                    string parameter_full_name) {
+    append(p);
+    last().checkRanges();
 
-	names_latex().append(parameter_full_name);
-	names().append(parameter_name);
-	
+    names_latex().append(parameter_full_name);
+    names().append(parameter_name);
 }
 
-const MCparameterSpace& MCparameterSpace::operator =(const MCparameterSpace& rhs) {
-	if (this!=&rhs) {
-		cpedsList<mscsFunction>::operator=(rhs);
-		_MCparameterSpace_data=rhs._MCparameterSpace_data;
-	}
-	return *this;
+const MCparameterSpace&
+MCparameterSpace::operator=(const MCparameterSpace& rhs) {
+    if (this != &rhs) {
+        cpedsList<mscsFunction>::operator=(rhs);
+        _MCparameterSpace_data = rhs._MCparameterSpace_data;
+    }
+    return *this;
 }

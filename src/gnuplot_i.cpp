@@ -7,12 +7,12 @@
    Created on   :   Fri Sept 26 1997
    Language     :   ANSI C
    Description  :   C interface to gnuplot
-  
+
     gnuplot is a freely available, command-driven graphical display tool for
     Unix. It compiles and works quite well on a number of Unix flavours as
     well as other operating systems. The following module enables sending
     display requests to gnuplot through simple C calls.
-  
+
  ---------------------------------------------------------------------------*/
 
 /*
@@ -35,21 +35,17 @@
  ---------------------------------------------------------------------------*/
 
 /* Maximal size of a gnuplot command */
-#define GP_CMD_SIZE     1024
+#define GP_CMD_SIZE 1024
 /* Maximal size of a plot title */
-#define GP_TITLE_SIZE   80
+#define GP_TITLE_SIZE 80
 /* Maximal size for an equation */
-#define GP_EQ_SIZE      512
-
+#define GP_EQ_SIZE 512
 
 /*---------------------------------------------------------------------------
                             Function codes
  ---------------------------------------------------------------------------*/
 
-
-
-
-int check_X_display ( int activate )
+int check_X_display(int activate)
 /*-------------------------------------------------------------------------*/
 /**
   @name		check_X_display
@@ -66,24 +62,20 @@ int check_X_display ( int activate )
  */
 /*--------------------------------------------------------------------------*/
 {
-  char *display;
+    char* display;
 
-  if ( !activate ) 
-  {
-    return 1;
-  }
+    if (!activate) {
+        return 1;
+    }
 
-  display = getenv ( "DISPLAY" );
+    display = getenv("DISPLAY");
 
-  if ( display == NULL )
-  {
-    fprintf ( stderr, "cannot find DISPLAY variable: is it set?\n");
-    return 1 ;
-  } 
-  else
-  {
-    return 0 ;
-  }
+    if (display == NULL) {
+        fprintf(stderr, "cannot find DISPLAY variable: is it set?\n");
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -114,57 +106,58 @@ int check_X_display ( int activate )
   \item gnuplot_get_program_path("csh") returns "/usr/bin"
   \item gnuplot_get_program_path("/bin/ls") returns NULL
   \end{itemize}
-  
+
  */
 /*-------------------------------------------------------------------------*/
 
-#define MAXNAMESZ       4096
-char * gnuplot_get_program_path(char * pname)
-{
-    int         i, j, lg;
-    char    *   path;
+#define MAXNAMESZ 4096
+char* gnuplot_get_program_path(char* pname) {
+    int i, j, lg;
+    char* path;
     static char buf[MAXNAMESZ];
 
     /* Trivial case: try in CWD */
-    sprintf(buf, "./%s", pname) ;
-    if (access(buf, X_OK)==0) {
+    sprintf(buf, "./%s", pname);
+    if (access(buf, X_OK) == 0) {
         sprintf(buf, ".");
-        return buf ;
+        return buf;
     }
     /* Try out in all paths given in the PATH variable */
     buf[0] = 0;
-    path = getenv("PATH") ;
-    if (path!=NULL) {
-        for (i=0; path[i]; ) {
-            for (j=i ; (path[j]) && (path[j]!=':') ; j++);
+    path = getenv("PATH");
+    if (path != NULL) {
+        for (i = 0; path[i];) {
+            for (j = i; (path[j]) && (path[j] != ':'); j++)
+                ;
             lg = j - i;
             strncpy(buf, path + i, lg);
-            if (lg == 0) buf[lg++] = '.';
+            if (lg == 0)
+                buf[lg++] = '.';
             buf[lg++] = '/';
             strcpy(buf + lg, pname);
             if (access(buf, X_OK) == 0) {
                 /* Found it! */
-                break ;
+                break;
             }
             buf[0] = 0;
             i = j;
-            if (path[i] == ':') i++ ;
+            if (path[i] == ':')
+                i++;
         }
     }
     /* If the buffer is still empty, the command was not found */
-    if (buf[0] == 0) return NULL ;
+    if (buf[0] == 0)
+        return NULL;
     /* Otherwise truncate the command name to yield path only */
-    lg = strlen(buf) - 1 ;
-    while (buf[lg]!='/') {
-        buf[lg]=0 ;
-        lg -- ;
+    lg = strlen(buf) - 1;
+    while (buf[lg] != '/') {
+        buf[lg] = 0;
+        lg--;
     }
     buf[lg] = 0;
-    return buf ;
+    return buf;
 }
 #undef MAXNAMESZ
-
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -179,34 +172,33 @@ char * gnuplot_get_program_path(char * pname)
  */
 /*--------------------------------------------------------------------------*/
 
-gnuplot_ctrl * gnuplot_init ( void )
-{
-    gnuplot_ctrl *  handle ;
+gnuplot_ctrl* gnuplot_init(void) {
+    gnuplot_ctrl* handle;
 
-    if (check_X_display(1)) return NULL ;
+    if (check_X_display(1))
+        return NULL;
 
-	if (gnuplot_get_program_path("gnuplot")==NULL) {
-	  fprintf(stderr, "cannot find gnuplot in your PATH");
-	  return NULL ;
-	}
+    if (gnuplot_get_program_path("gnuplot") == NULL) {
+        fprintf(stderr, "cannot find gnuplot in your PATH");
+        return NULL;
+    }
 
-    /* 
+    /*
      * Structure initialization:
      */
-    handle = malloc(sizeof(gnuplot_ctrl)) ;
-    handle->nplots = 0 ;
-    gnuplot_setstyle(handle, "points") ;
-    handle->ntmp = 0 ;
+    handle = malloc(sizeof(gnuplot_ctrl));
+    handle->nplots = 0;
+    gnuplot_setstyle(handle, "points");
+    handle->ntmp = 0;
 
-    handle->gnucmd = popen("gnuplot", "w") ;
+    handle->gnucmd = popen("gnuplot", "w");
     if (handle->gnucmd == NULL) {
-        fprintf(stderr, "error starting gnuplot\n") ;
-        free(handle) ;
-        return NULL ;
+        fprintf(stderr, "error starting gnuplot\n");
+        free(handle);
+        return NULL;
     }
     return handle;
 }
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -223,23 +215,22 @@ gnuplot_ctrl * gnuplot_init ( void )
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_close(gnuplot_ctrl * handle)
-{
-    int     i ;
-    if (check_X_display(1)) return ;
+void gnuplot_close(gnuplot_ctrl* handle) {
+    int i;
+    if (check_X_display(1))
+        return;
     if (handle->ntmp) {
-        for (i=0 ; i<handle->ntmp ; i++) {
-            remove(handle->to_delete[i]) ;
+        for (i = 0; i < handle->ntmp; i++) {
+            remove(handle->to_delete[i]);
         }
     }
     if (pclose(handle->gnucmd) == -1) {
-        fprintf(stderr, "problem closing communication to gnuplot\n") ;
-        return ;
+        fprintf(stderr, "problem closing communication to gnuplot\n");
+        return;
     }
-    free(handle) ;
-    return ;
+    free(handle);
+    return;
 }
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -265,10 +256,9 @@ void gnuplot_close(gnuplot_ctrl * handle)
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_cmd ( gnuplot_ctrl *  handle, char *  cmd, ...)
-{
-    va_list ap ;
-    char    local_cmd[GP_CMD_SIZE];
+void gnuplot_cmd(gnuplot_ctrl* handle, char* cmd, ...) {
+    va_list ap;
+    char local_cmd[GP_CMD_SIZE];
 
     va_start(ap, cmd);
     vsprintf(local_cmd, cmd, ap);
@@ -276,11 +266,10 @@ void gnuplot_cmd ( gnuplot_ctrl *  handle, char *  cmd, ...)
 
     strcat(local_cmd, "\n");
 
-    fputs(local_cmd, handle->gnucmd) ;
-    fflush(handle->gnucmd) ;
-    return ;
+    fputs(local_cmd, handle->gnucmd);
+    fflush(handle->gnucmd);
+    return;
 }
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -308,25 +297,19 @@ void gnuplot_cmd ( gnuplot_ctrl *  handle, char *  cmd, ...)
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_setstyle(gnuplot_ctrl * h, char * plot_style) 
-{
-    if (strcmp(plot_style, "lines") &&
-        strcmp(plot_style, "points") &&
-        strcmp(plot_style, "linespoints") &&
-        strcmp(plot_style, "impulses") &&
-        strcmp(plot_style, "dots") &&
-        strcmp(plot_style, "steps") &&
-        strcmp(plot_style, "errorbars") &&
-        strcmp(plot_style, "boxes") &&
+void gnuplot_setstyle(gnuplot_ctrl* h, char* plot_style) {
+    if (strcmp(plot_style, "lines") && strcmp(plot_style, "points") &&
+        strcmp(plot_style, "linespoints") && strcmp(plot_style, "impulses") &&
+        strcmp(plot_style, "dots") && strcmp(plot_style, "steps") &&
+        strcmp(plot_style, "errorbars") && strcmp(plot_style, "boxes") &&
         strcmp(plot_style, "boxerrorbars")) {
-        fprintf(stderr, "warning: unknown requested style: using points\n") ;
-        (void)strcpy(h->pstyle, "points") ;
+        fprintf(stderr, "warning: unknown requested style: using points\n");
+        (void)strcpy(h->pstyle, "points");
     } else {
-        (void)strcpy(h->pstyle, plot_style) ;
+        (void)strcpy(h->pstyle, plot_style);
     }
-    return ;
+    return;
 }
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -341,15 +324,13 @@ void gnuplot_setstyle(gnuplot_ctrl * h, char * plot_style)
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_set_xlabel(gnuplot_ctrl * h, char * label)
-{
-    char    cmd[GP_CMD_SIZE] ;
+void gnuplot_set_xlabel(gnuplot_ctrl* h, char* label) {
+    char cmd[GP_CMD_SIZE];
 
-    (void)sprintf(cmd, "set xlabel \"%s\"", label) ;
-    gnuplot_cmd(h, cmd) ;
-    return ;
+    (void)sprintf(cmd, "set xlabel \"%s\"", label);
+    gnuplot_cmd(h, cmd);
+    return;
 }
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -364,15 +345,13 @@ void gnuplot_set_xlabel(gnuplot_ctrl * h, char * label)
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_set_ylabel(gnuplot_ctrl * h, char * label)
-{
-    char    cmd[GP_CMD_SIZE] ;
+void gnuplot_set_ylabel(gnuplot_ctrl* h, char* label) {
+    char cmd[GP_CMD_SIZE];
 
-    (void)sprintf(cmd, "set ylabel \"%s\"", label) ;
-    gnuplot_cmd(h, cmd) ;
-    return ;
+    (void)sprintf(cmd, "set ylabel \"%s\"", label);
+    gnuplot_cmd(h, cmd);
+    return;
 }
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -387,26 +366,23 @@ void gnuplot_set_ylabel(gnuplot_ctrl * h, char * label)
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_resetplot(gnuplot_ctrl * h)
-{
-    int     i ;
+void gnuplot_resetplot(gnuplot_ctrl* h) {
+    int i;
     if (h->ntmp) {
-        for (i=0 ; i<h->ntmp ; i++) {
-            remove(h->to_delete[i]) ;
+        for (i = 0; i < h->ntmp; i++) {
+            remove(h->to_delete[i]);
         }
     }
-    h->ntmp = 0 ;
-    h->nplots = 0 ;
-    return ;
+    h->ntmp = 0;
+    h->nplots = 0;
+    return;
 }
-
-
 
 /*-------------------------------------------------------------------------*/
 /**
   @name		gnuplot_plot1d_var1
   @memo		Plots a 2d graph from a list of doubles.
-  @param	handle	Gnuplot session control handle.	
+  @param	handle	Gnuplot session control handle.
   @param	d		Pointer to a list of doubles.
   @param	n_point	Number of doubles in the list.
   @param	title	Title of the plot.
@@ -436,69 +412,62 @@ void gnuplot_resetplot(gnuplot_ctrl * h)
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_plot1d_var1(
-    gnuplot_ctrl    *   handle,
-    double          *   d,
-    int                 n_point,
-    char            *   title
-)
-{
-    int         i ;
-    FILE    *   tmp ;
-    char    *   name ;
-    char        cmd[GP_CMD_SIZE] ;
-    char        line[GP_CMD_SIZE] ;
+void gnuplot_plot1d_var1(gnuplot_ctrl* handle, double* d, int n_point,
+                         char* title) {
+    int i;
+    FILE* tmp;
+    char* name;
+    char cmd[GP_CMD_SIZE];
+    char line[GP_CMD_SIZE];
 
     /* can we open one more temporary file? */
     if (handle->ntmp == GP_MAX_TMP_FILES - 1) {
         fprintf(stderr,
                 "maximum # of temporary files reached (%d): cannot open more",
-                GP_MAX_TMP_FILES) ;
-        return ;
+                GP_MAX_TMP_FILES);
+        return;
     }
 
     /* Open temporary file for output   */
     if ((name = tmpnam(NULL)) == (char*)NULL) {
-        fprintf(stderr,"cannot create temporary file: exiting plot") ;
-        return ;
+        fprintf(stderr, "cannot create temporary file: exiting plot");
+        return;
     }
     if ((tmp = fopen(name, "w")) == NULL) {
-        fprintf(stderr, "cannot create temporary file: exiting plot") ;
-        return ;
+        fprintf(stderr, "cannot create temporary file: exiting plot");
+        return;
     }
 
     /* Store file name in array for future deletion */
-    (void)strcpy(handle->to_delete[handle->ntmp], name) ;
-    handle->ntmp ++ ;
+    (void)strcpy(handle->to_delete[handle->ntmp], name);
+    handle->ntmp++;
 
     /* Write data to this file  */
-    for (i=0 ; i<n_point ; i++) {
-        (void)fprintf(tmp, "%g\n", d[i]) ;
+    for (i = 0; i < n_point; i++) {
+        (void)fprintf(tmp, "%g\n", d[i]);
     }
-    (void)fflush(tmp) ;
-    (void)fclose(tmp) ;
+    (void)fflush(tmp);
+    (void)fclose(tmp);
 
     /* Command to be sent to gnuplot    */
     if (handle->nplots > 0) {
-        (void)strcpy(cmd, "replot") ;
+        (void)strcpy(cmd, "replot");
     } else {
-        (void)strcpy(cmd, "plot") ;
+        (void)strcpy(cmd, "plot");
     }
-    
+
     if (title == NULL) {
-        (void)sprintf(line, "%s \"%s\" with %s", cmd, name, handle->pstyle) ;
+        (void)sprintf(line, "%s \"%s\" with %s", cmd, name, handle->pstyle);
     } else {
-        (void)sprintf(line, "%s \"%s\" title \"%s\" with %s", cmd, name,
-                      title, handle->pstyle) ;
+        (void)sprintf(line, "%s \"%s\" title \"%s\" with %s", cmd, name, title,
+                      handle->pstyle);
     }
 
     /* send command to gnuplot  */
-    gnuplot_cmd(handle, line) ;
-    handle->nplots++ ;
-    return ;
+    gnuplot_cmd(handle, line);
+    handle->nplots++;
+    return;
 }
-
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -532,69 +501,62 @@ void gnuplot_plot1d_var1(
  */
 /*--------------------------------------------------------------------------*/
 
-void gnuplot_plot1d_var2(
-    gnuplot_ctrl    *   handle,
-    dpoint          *   d,
-    int                 n_points,
-    char            *   title
-)
-{
-    int         i ;
-    FILE    *   tmp ;
-    char    *   name ;
-    char        cmd[GP_CMD_SIZE] ;
-    char        line[GP_CMD_SIZE] ;
+void gnuplot_plot1d_var2(gnuplot_ctrl* handle, dpoint* d, int n_points,
+                         char* title) {
+    int i;
+    FILE* tmp;
+    char* name;
+    char cmd[GP_CMD_SIZE];
+    char line[GP_CMD_SIZE];
 
     /* can we open one more temporary file? */
     if (handle->ntmp == GP_MAX_TMP_FILES - 1) {
         fprintf(stderr,
                 "maximum # of temporary files reached (%d): cannot open more",
-                GP_MAX_TMP_FILES) ;
-        return ;
+                GP_MAX_TMP_FILES);
+        return;
     }
 
     /* Open temporary file for output   */
     if ((name = tmpnam(NULL)) == (char*)NULL) {
-        fprintf(stderr,"cannot create temporary file: exiting plot") ;
-        return ;
+        fprintf(stderr, "cannot create temporary file: exiting plot");
+        return;
     }
     if ((tmp = fopen(name, "w")) == NULL) {
-        fprintf(stderr,"cannot create temporary file: exiting plot") ;
-        return ;
+        fprintf(stderr, "cannot create temporary file: exiting plot");
+        return;
     }
 
     /* Store file name in array for future deletion */
-    (void)strcpy(handle->to_delete[handle->ntmp], name) ;
-    handle->ntmp ++ ;
+    (void)strcpy(handle->to_delete[handle->ntmp], name);
+    handle->ntmp++;
 
     /* Write data to this file  */
-    for (i=0 ; i<n_points ; i++) {
-        (void)fprintf(tmp, "%g %g\n", d[i].x, d[i].y) ;
+    for (i = 0; i < n_points; i++) {
+        (void)fprintf(tmp, "%g %g\n", d[i].x, d[i].y);
     }
-    (void)fflush(tmp) ;
-    (void)fclose(tmp) ;
+    (void)fflush(tmp);
+    (void)fclose(tmp);
 
     /* Command to be sent to gnuplot    */
     if (handle->nplots > 0) {
-        (void)strcpy(cmd, "replot") ;
+        (void)strcpy(cmd, "replot");
     } else {
-        (void)strcpy(cmd, "plot") ;
+        (void)strcpy(cmd, "plot");
     }
-    
+
     if (title == NULL) {
-        (void)sprintf(line, "%s \"%s\" with %s", cmd, name, handle->pstyle) ;
+        (void)sprintf(line, "%s \"%s\" with %s", cmd, name, handle->pstyle);
     } else {
-        (void)sprintf(line, "%s \"%s\" title \"%s\" with %s", cmd, name,
-                      title, handle->pstyle) ;
+        (void)sprintf(line, "%s \"%s\" title \"%s\" with %s", cmd, name, title,
+                      handle->pstyle);
     }
 
     /* send command to gnuplot  */
-    gnuplot_cmd(handle, line) ;
-    handle->nplots++ ;
-    return ;
+    gnuplot_cmd(handle, line);
+    handle->nplots++;
+    return;
 }
-
-
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -609,7 +571,7 @@ void gnuplot_plot1d_var2(
 
   Plot a slope on a gnuplot session. The provided slope has an
   equation of the form:
-  
+
   \begin{verbatim}
   y = ax+b
   \end{verbatim}
@@ -625,42 +587,33 @@ void gnuplot_plot1d_var2(
     sleep(2) ;
     gnuplot_close(h) ;
   \end{verbatim}
-  
+
  */
 /*--------------------------------------------------------------------------*/
-    
 
-void gnuplot_plot_slope(
-    gnuplot_ctrl    *   handle,
-    double              a,
-    double              b,
-    char            *   title
-)
-{
-    char    stitle[GP_TITLE_SIZE] ;
-    char    cmd[GP_CMD_SIZE] ;
+void gnuplot_plot_slope(gnuplot_ctrl* handle, double a, double b, char* title) {
+    char stitle[GP_TITLE_SIZE];
+    char cmd[GP_CMD_SIZE];
 
     if (title == NULL) {
-        (void)strcpy(stitle, "no title") ;
+        (void)strcpy(stitle, "no title");
     } else {
-        (void)strcpy(stitle, title) ;
+        (void)strcpy(stitle, title);
     }
 
     if (handle->nplots > 0) {
-        (void)sprintf(cmd, "replot %g * x + %g title \"%s\" with %s",
-                      a, b, title, handle->pstyle) ;
+        (void)sprintf(cmd, "replot %g * x + %g title \"%s\" with %s", a, b,
+                      title, handle->pstyle);
     } else {
-        (void)sprintf(cmd, "plot %g * x + %g title \"%s\" with %s",
-                      a, b, title, handle->pstyle) ;
+        (void)sprintf(cmd, "plot %g * x + %g title \"%s\" with %s", a, b, title,
+                      handle->pstyle);
     }
-    gnuplot_cmd(handle, cmd) ;
-    handle->nplots++ ;
-    return ;
+    gnuplot_cmd(handle, cmd);
+    handle->nplots++;
+    return;
 }
 
-
-
-void gnuplot_plot_equation ( gnuplot_ctrl *h, char *equation, char *title )
+void gnuplot_plot_equation(gnuplot_ctrl* h, char* equation, char* title)
 /*-------------------------------------------------------------------------*/
 /**
   @name		gnuplot_plot_equation
@@ -690,35 +643,28 @@ void gnuplot_plot_equation ( gnuplot_ctrl *h, char *equation, char *title )
 /*--------------------------------------------------------------------------*/
 
 {
-  char  cmd[GP_CMD_SIZE];
-  char  plot_str[GP_EQ_SIZE];
-  char  title_str[GP_TITLE_SIZE];
+    char cmd[GP_CMD_SIZE];
+    char plot_str[GP_EQ_SIZE];
+    char title_str[GP_TITLE_SIZE];
 
-  if ( title == NULL )
-  {
-    ( void ) strcpy ( title_str, "no title" );
-  } 
-  else
-  {
-    ( void ) strcpy ( title_str, title);
-  }
+    if (title == NULL) {
+        (void)strcpy(title_str, "no title");
+    } else {
+        (void)strcpy(title_str, title);
+    }
 
-  if ( h->nplots > 0 )
-  {
-    ( void ) strcpy ( plot_str, "replot" );
-  } 
-  else
-  {
-    ( void ) strcpy ( plot_str, "plot" );
-  }
+    if (h->nplots > 0) {
+        (void)strcpy(plot_str, "replot");
+    } else {
+        (void)strcpy(plot_str, "plot");
+    }
 
-  ( void ) sprintf ( cmd, "%s %s title \"%s\" with %s", 
-    plot_str, equation, title_str, h->pstyle );
+    (void)sprintf(cmd, "%s %s title \"%s\" with %s", plot_str, equation,
+                  title_str, h->pstyle);
 
-  gnuplot_cmd ( h, cmd );
+    gnuplot_cmd(h, cmd);
 
-  h->nplots++;
+    h->nplots++;
 
-  return;
+    return;
 }
-

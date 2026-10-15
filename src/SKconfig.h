@@ -17,4 +17,3 @@ long map_st_num = 1;
 long map_en_num = 1;
 
 string outfile_name = "dupa";
-

@@ -151,8 +151,8 @@ long mscsMapPlot::plot(long sizeX, long sizeY, string projection, double l,
     // publications that the l rises form the center of the figure left-wise,
     // jumps to the right edge and rises from pi->2pi towards the picture center
     // // 	p = pj_inv(p,pj);
-    // // 	if (p.v==HUGE_VAL or p.u==HUGE_VAL) { mask(j,i)=-1; tab[k]=m(j,i) =
-    // HUGE_VAL; }
+    // // 	if (p.v==HUGE_VAL or p.u==HUGE_VAL) { mask(j,i)=-1;
+    // tab[k]=m(j,i) = HUGE_VAL; }
     // // 	else {
     // // 	  fmb = p.v;      fml = -p.u; if (fml < 0) fml=twoPI+fml;
     // // 	  tab[k]=m(j,i) = get_T(fml,fmb);
@@ -429,9 +429,9 @@ long mscsMapPlot::plot(long sizeX, long sizeY, string projection, double l,
                 1, nside(), &tmpd, &tmpd, true);
             flat.mapSph().calculate_map_stats(1);
             tab = replot(flat, Tmin, Tmax, m, mask);
-        }                //  if (flat_coord_loaded == 0)
-                         //  calculate_flat_coord(projection,dl-180,db);
-                         //  create_resized_flat_map(0); }
+        } //  if (flat_coord_loaded == 0)
+          //  calculate_flat_coord(projection,dl-180,db);
+          //  create_resized_flat_map(0); }
         if (ch == 'N') { /* printf("give nside start: "); cin >> i; */
             reference_dir = flat.mapSph().maximize_map_momentum(
                 1, nside(), &tmpd, &tmpd, false);

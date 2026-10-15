@@ -3,7 +3,4 @@
 
 using namespace std;
 
-int main() {
-mscsAlms dupa;
-
-}
+int main() { mscsAlms dupa; }

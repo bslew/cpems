@@ -8,11 +8,11 @@
 #include "mscsFunctionLinSolve.h"
 #include <armadillo>
 
-//mscsFunctionLinSolve::mscsFunctionLinSolve() {
+// mscsFunctionLinSolve::mscsFunctionLinSolve() {
 //	// TODO Auto-generated constructor stub
 //
-//}
+// }
 
 mscsFunctionLinSolve::~mscsFunctionLinSolve() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }

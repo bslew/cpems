@@ -6,266 +6,300 @@
  */
 
 #include "cpeds_angular_correlation_fn.h"
-#include <omp.h>
 #include <assert.h>
+#include <omp.h>
 
-
-mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, cpedsList<double> th) {
-	mscsFunction Cth;
-	return Cth;
+mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds,
+                                                    cpedsList<double> th) {
+    mscsFunction Cth;
+    return Cth;
 }
-mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds, double theta_min, double theta_max, double resolution) {
+mscsFunction cpeds_calculate_angular_correlation_fn(cpedsDirectionSet ds,
+                                                    double theta_min,
+                                                    double theta_max,
+                                                    double resolution) {
 
-	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"
-			"is smaller than the bin resolution.\n");
-	
-	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution))+1;
-//	printf("size: %li\n",point_num_C_th);
-	cpedsList<double> separation_number;
-//	cpedsList<double> separation_vals;
-	
-	mscsFunction Cth;
-	Cth.setPointsNum(point_num_C_th);
-	separation_number.makeLength(point_num_C_th);
-//	separation_vals.makeLength(point_num_C_th);
+    if (theta_min < resolution)
+        printf("INFO: The requested minimal angle in the correlation function"
+               "is smaller than the bin resolution.\n");
 
-	long i,j,Ndone=0;
-	long pix_num = ds.size();
+    long point_num_C_th = (int)(ceil((theta_max - theta_min) / resolution)) + 1;
+    //	printf("size: %li\n",point_num_C_th);
+    cpedsList<double> separation_number;
+    //	cpedsList<double> separation_vals;
+
+    mscsFunction Cth;
+    Cth.setPointsNum(point_num_C_th);
+    separation_number.makeLength(point_num_C_th);
+    //	separation_vals.makeLength(point_num_C_th);
+
+    long i, j, Ndone = 0;
+    long pix_num = ds.size();
 //	omp_set_num_threads(1);
-#pragma omp parallel 
-	{
-		double ang=0;
-		long corr_i=0;
-		mscsFunction Cth_priv=Cth;
-		cpedsList<double> separation_number_priv=separation_number;
-		
-#pragma omp for schedule(dynamic)
-		for (long i = 0; i < pix_num-1; i++) {
-			cpedsDirection d1=ds[i];
-			for (long j = i+1; j < pix_num; j++) {
-				cpedsDirection d2=ds[j];
-				ang=d1.angle(d2);
-//				printf("i: %li j: %li, ang: %lf\n",i,j,ang*PI180inv);
-				
-				if ((ang >= theta_min) && (ang <= theta_max)) {
-					corr_i = (long) round((ang - theta_min) / resolution);
-//					printf("corr_i: %li \n",corr_i);
-					separation_number_priv[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
-					//				separation_vals[corr_i].append()++; // this stores the number of given separations on a sky ( for normalization purposes)
-					Cth_priv[corr_i].x() += ang;
-					Cth_priv[corr_i].y() += d1.val() * d2.val();
-//					CthX[corr_i] += ang;
-//					CthY[corr_i] += ds[i].val() * ds[j].val(); 
-				}
-			}
-#pragma omp critical
-			{
-			Ndone=Ndone+1;
-			if (Ndone%10==0) {
-				printf("calculating: %li of %li\r", Ndone, pix_num);
-			}
-			}
-		}
-#pragma omp single
-		printf("\ndone\ncombining results\n");
-		
-#pragma omp critical
-		{
-			for (long k=0; k<point_num_C_th; k++) {
-				Cth[k].x()+=Cth_priv[k].x();
-				Cth[k].y()+=Cth_priv[k].y();
-				separation_number[k]+=separation_number_priv[k];
-			}
-		}
-	}
-/*
-	for (i = 0; i < pix_num; i++) {
-		for (j = i; j < pix_num; j++) {
-			
-			ang = ds[i].angle(ds[j]); 
-			
-			if ((ang >= theta_min) && (ang <= theta_max)) {
-				corr_i = (long) round((ang - theta_min) / resolution);
-				separation_number[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
-//				separation_vals[corr_i].append()++; // this stores the number of given separations on a sky ( for normalization purposes)
-				Cth[corr_i].x() += ang;
-				Cth[corr_i].y() += ds[i].val() * ds[j].val();
-			}
-		}
-		
-		printf("calculating: %li of %li\r", i, pix_num);
-	}
-*/
+#pragma omp parallel
+    {
+        double ang = 0;
+        long corr_i = 0;
+        mscsFunction Cth_priv = Cth;
+        cpedsList<double> separation_number_priv = separation_number;
 
-	// normalization and averaging
-	printf("normalization\n");
-	
-	for (long i = 0; i < point_num_C_th; i++) {
-//		if (separation_number[i]>0) {
-			Cth[i].x() *= PI180inv/separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
-			Cth[i].y() /= separation_number[i]; // normalization of C(th)
-//		}
-	}
-	
-	printf("cleaning up\n");
-	Cth.removeNans();
-	printf("Cth done\n");
-	
-	return Cth;
+#pragma omp for schedule(dynamic)
+        for (long i = 0; i < pix_num - 1; i++) {
+            cpedsDirection d1 = ds[i];
+            for (long j = i + 1; j < pix_num; j++) {
+                cpedsDirection d2 = ds[j];
+                ang = d1.angle(d2);
+                //				printf("i: %li j: %li, ang:
+                //%lf\n",i,j,ang*PI180inv);
+
+                if ((ang >= theta_min) && (ang <= theta_max)) {
+                    corr_i = (long)round((ang - theta_min) / resolution);
+                    //					printf("corr_i: %li
+                    //\n",corr_i);
+                    separation_number_priv[corr_i]++; // this stores the number
+                                                      // of given separations on
+                                                      // a sky ( for
+                                                      // normalization purposes)
+                    //				separation_vals[corr_i].append()++;
+                    //// this stores the number of given separations on a sky (
+                    //for normalization purposes)
+                    Cth_priv[corr_i].x() += ang;
+                    Cth_priv[corr_i].y() += d1.val() * d2.val();
+                    //					CthX[corr_i] += ang;
+                    //					CthY[corr_i] +=
+                    //ds[i].val() * ds[j].val();
+                }
+            }
+#pragma omp critical
+            {
+                Ndone = Ndone + 1;
+                if (Ndone % 10 == 0) {
+                    printf("calculating: %li of %li\r", Ndone, pix_num);
+                }
+            }
+        }
+#pragma omp single
+        printf("\ndone\ncombining results\n");
+
+#pragma omp critical
+        {
+            for (long k = 0; k < point_num_C_th; k++) {
+                Cth[k].x() += Cth_priv[k].x();
+                Cth[k].y() += Cth_priv[k].y();
+                separation_number[k] += separation_number_priv[k];
+            }
+        }
+    }
+    /*
+            for (i = 0; i < pix_num; i++) {
+                    for (j = i; j < pix_num; j++) {
+
+                            ang = ds[i].angle(ds[j]);
+
+                            if ((ang >= theta_min) && (ang <= theta_max)) {
+                                    corr_i = (long) round((ang - theta_min) /
+    resolution); separation_number[corr_i]++; // this stores the number of given
+    separations on a sky ( for normalization purposes)
+    //				separation_vals[corr_i].append()++; // this
+    stores the number of given separations on a sky ( for normalization
+    purposes) Cth[corr_i].x() += ang; Cth[corr_i].y() += ds[i].val() *
+    ds[j].val();
+                            }
+                    }
+
+                    printf("calculating: %li of %li\r", i, pix_num);
+            }
+    */
+
+    // normalization and averaging
+    printf("normalization\n");
+
+    for (long i = 0; i < point_num_C_th; i++) {
+        //		if (separation_number[i]>0) {
+        Cth[i].x() *=
+            PI180inv /
+            separation_number[i]; // th  -- this gives the average angle over
+                                  // all angles that fall into this range (bin)
+                                  // limited by the resolution parameter
+        Cth[i].y() /= separation_number[i]; // normalization of C(th)
+                                            //		}
+    }
+
+    printf("cleaning up\n");
+    Cth.removeNans();
+    printf("Cth done\n");
+
+    return Cth;
 }
 
-/* ******************************************************************************************** */
-void cpeds_calculate_angular_correlation_fn_wisdom(cpedsDirectionSet ds, std::vector<long> hp_idx, double theta_min, double theta_max, double resolution, Cthwisdom* wisdom) {
+/* ********************************************************************************************
+ */
+void cpeds_calculate_angular_correlation_fn_wisdom(
+    cpedsDirectionSet ds, std::vector<long> hp_idx, double theta_min,
+    double theta_max, double resolution, Cthwisdom* wisdom) {
 
-	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"
-			"is smaller than the bin resolution.\n");
-	
-//	long point_num_C_th = 
-	long point_num_C_th = 0;
-	if (wisdom==0) { (int) (ceil((theta_max - theta_min) / resolution)); }
-	else { point_num_C_th = wisdom->size();	}
-	
-	assert(point_num_C_th>0);
-	
-//	cpedsList<double> separation_number;
-	
-//	mscsFunction Cth;
-//	Cth.setPointsNum(point_num_C_th);
-//	separation_number.makeLength(point_num_C_th);
-//	separation_vals.makeLength(point_num_C_th);
+    if (theta_min < resolution)
+        printf("INFO: The requested minimal angle in the correlation function"
+               "is smaller than the bin resolution.\n");
 
-	long i,j,Ndone=0;
-	long ndir = ds.size();
-//#pragma omp parallel 
-	{
-//		mscsFunction Cth_priv=Cth;
-//		cpedsList<double> separation_number_priv=separation_number;
-		
-//#pragma omp for schedule(dynamic)
-		for (long i = 0; i < ndir-1; i++) {
-			cpedsDirection d1=ds[i];
-			
-			for (long j = i+1; j < ndir; j++) {
-				cpedsDirection d2=ds[j];
-				double ang=d1.angle(d2)*PI180inv;
-				wisdom->add_wisdom(ang,hp_idx[i],hp_idx[j]);
-			}
-//#pragma omp critical
-			{
-			Ndone=Ndone+1;
-			if (Ndone%10==0) {
-				printf("calculating: %li of %li\r", Ndone, ndir);
-			}
-			}
-		}
-//#pragma omp single
-//		printf("\ndone\ncombining results\n");
-		
-//#pragma omp critical
-//		{
-//			for (long k=0; k<point_num_C_th; k++) {
-//				Cth[k].rx()+=Cth_priv[k].rx();
-//				Cth[k].ry()+=Cth_priv[k].ry();
-//				separation_number[k]+=separation_number_priv[k];
-//			}
-//		}
-	}
+    //	long point_num_C_th =
+    long point_num_C_th = 0;
+    if (wisdom == 0) {
+        (int)(ceil((theta_max - theta_min) / resolution));
+    } else {
+        point_num_C_th = wisdom->size();
+    }
 
-	wisdom->compile();
-	
-//	return Cth;
-//	return wisdom;
+    assert(point_num_C_th > 0);
+
+    //	cpedsList<double> separation_number;
+
+    //	mscsFunction Cth;
+    //	Cth.setPointsNum(point_num_C_th);
+    //	separation_number.makeLength(point_num_C_th);
+    //	separation_vals.makeLength(point_num_C_th);
+
+    long i, j, Ndone = 0;
+    long ndir = ds.size();
+    // #pragma omp parallel
+    {
+        //		mscsFunction Cth_priv=Cth;
+        //		cpedsList<double>
+        //separation_number_priv=separation_number;
+
+        // #pragma omp for schedule(dynamic)
+        for (long i = 0; i < ndir - 1; i++) {
+            cpedsDirection d1 = ds[i];
+
+            for (long j = i + 1; j < ndir; j++) {
+                cpedsDirection d2 = ds[j];
+                double ang = d1.angle(d2) * PI180inv;
+                wisdom->add_wisdom(ang, hp_idx[i], hp_idx[j]);
+            }
+            // #pragma omp critical
+            {
+                Ndone = Ndone + 1;
+                if (Ndone % 10 == 0) {
+                    printf("calculating: %li of %li\r", Ndone, ndir);
+                }
+            }
+        }
+        // #pragma omp single
+        //		printf("\ndone\ncombining results\n");
+
+        // #pragma omp critical
+        //		{
+        //			for (long k=0; k<point_num_C_th; k++) {
+        //				Cth[k].rx()+=Cth_priv[k].rx();
+        //				Cth[k].ry()+=Cth_priv[k].ry();
+        //				separation_number[k]+=separation_number_priv[k];
+        //			}
+        //		}
+    }
+
+    wisdom->compile();
+
+    //	return Cth;
+    //	return wisdom;
 }
 
-/* ******************************************************************************************** */
-mscsFunction cpeds_calculate_angular_S_correlation_statistic(cpedsDirectionSet ds, double theta_min, double theta_max, double resolution) {
-	if (theta_min<resolution) printf("INFO: The requested minimal angle in the correlation function"
-			"is smaller than the bin resolution.\n");
-	
-	long point_num_C_th = (int) (ceil((theta_max - theta_min) / resolution));
-	
-	cpedsList<double> separation_number;
-	
-	mscsFunction Cth;
-	Cth.setPointsNum(point_num_C_th);
-	cpedsList<double> auto_term1,auto_term2;
-	
-	separation_number.makeLength(point_num_C_th);
-	auto_term1.makeLength(point_num_C_th);
-	auto_term2.makeLength(point_num_C_th);
+/* ********************************************************************************************
+ */
+mscsFunction cpeds_calculate_angular_S_correlation_statistic(
+    cpedsDirectionSet ds, double theta_min, double theta_max,
+    double resolution) {
+    if (theta_min < resolution)
+        printf("INFO: The requested minimal angle in the correlation function"
+               "is smaller than the bin resolution.\n");
 
-	long i,j,Ndone=0;
-	long pix_num = ds.size();
-#pragma omp parallel 
-	{
-		double ang=0;
-		long corr_i=0;
-		mscsFunction cross_term_priv=Cth;
-//		mscsFunction auto_term1=Cth;
-//		mscsFunction auto_term2=Cth;
-		cpedsList<double> separation_number_priv=separation_number;
-		cpedsList<double> auto_term1_priv=separation_number;
-		cpedsList<double> auto_term2_priv=separation_number;
-		
+    long point_num_C_th = (int)(ceil((theta_max - theta_min) / resolution));
+
+    cpedsList<double> separation_number;
+
+    mscsFunction Cth;
+    Cth.setPointsNum(point_num_C_th);
+    cpedsList<double> auto_term1, auto_term2;
+
+    separation_number.makeLength(point_num_C_th);
+    auto_term1.makeLength(point_num_C_th);
+    auto_term2.makeLength(point_num_C_th);
+
+    long i, j, Ndone = 0;
+    long pix_num = ds.size();
+#pragma omp parallel
+    {
+        double ang = 0;
+        long corr_i = 0;
+        mscsFunction cross_term_priv = Cth;
+        //		mscsFunction auto_term1=Cth;
+        //		mscsFunction auto_term2=Cth;
+        cpedsList<double> separation_number_priv = separation_number;
+        cpedsList<double> auto_term1_priv = separation_number;
+        cpedsList<double> auto_term2_priv = separation_number;
+
 #pragma omp for schedule(dynamic)
-		for (long i = 0; i < pix_num-1; i++) {
-			cpedsDirection d1=ds[i];
-			for (long j = i+1; j < pix_num; j++) {
-				cpedsDirection d2=ds[j];
-				ang=d1.angle(d2);
-				
-				if ((ang >= theta_min) && (ang <= theta_max)) {
-					corr_i = (long) round((ang - theta_min) / resolution);
-					separation_number_priv[corr_i]++; // this stores the number of given separations on a sky ( for normalization purposes)
-					cross_term_priv[corr_i].x() += ang;
-					cross_term_priv[corr_i].y() += d1.val() * d2.val();
+        for (long i = 0; i < pix_num - 1; i++) {
+            cpedsDirection d1 = ds[i];
+            for (long j = i + 1; j < pix_num; j++) {
+                cpedsDirection d2 = ds[j];
+                ang = d1.angle(d2);
 
-					auto_term1_priv[corr_i]+=d1.val()*d1.val();
-					auto_term2_priv[corr_i]+=d2.val()*d2.val();
+                if ((ang >= theta_min) && (ang <= theta_max)) {
+                    corr_i = (long)round((ang - theta_min) / resolution);
+                    separation_number_priv[corr_i]++; // this stores the number
+                                                      // of given separations on
+                                                      // a sky ( for
+                                                      // normalization purposes)
+                    cross_term_priv[corr_i].x() += ang;
+                    cross_term_priv[corr_i].y() += d1.val() * d2.val();
 
-				
-				}
-			}
+                    auto_term1_priv[corr_i] += d1.val() * d1.val();
+                    auto_term2_priv[corr_i] += d2.val() * d2.val();
+                }
+            }
 #pragma omp critical
-			{
-			Ndone=Ndone+1;
-			if (Ndone%10==0) {
-				printf("calculating: %li of %li\r", Ndone, pix_num);
-			}
-			}
-		}
+            {
+                Ndone = Ndone + 1;
+                if (Ndone % 10 == 0) {
+                    printf("calculating: %li of %li\r", Ndone, pix_num);
+                }
+            }
+        }
 #pragma omp single
-		printf("\ndone\ncombining results\n");
-		
-#pragma omp critical
-		{
-			for (long k=0; k<point_num_C_th; k++) {
-				Cth[k].x()+=cross_term_priv[k].x();
-				Cth[k].y()+=cross_term_priv[k].y();
-				separation_number[k]+=separation_number_priv[k];
-				auto_term1[k]+=auto_term1_priv[k];
-				auto_term2[k]+=auto_term2_priv[k];
-			}
-		}
-	}
+        printf("\ndone\ncombining results\n");
 
-	// normalization and averaging
-	printf("normalization\n");
-	
-	for (long i = 0; i < point_num_C_th; i++) {
-//		if (separation_number[i]>0) {
-			Cth[i].x() *= PI180inv/separation_number[i]; // th  -- this gives the average angle over all angles that fall into this range (bin) limited by the resolution parameter
-			Cth[i].y() *= 2.0/separation_number[i]; // normalization of C(th)
-			auto_term1[i]/=separation_number[i];
-			auto_term2[i]/=separation_number[i];
-			Cth[i].y() /= (auto_term1[i] + auto_term2[i]);
-//		}
-	}
-	
-	printf("cleaning up\n");
-	Cth.removeNans();
-	printf("Cth done\n");
-	
-	return Cth;
-	
+#pragma omp critical
+        {
+            for (long k = 0; k < point_num_C_th; k++) {
+                Cth[k].x() += cross_term_priv[k].x();
+                Cth[k].y() += cross_term_priv[k].y();
+                separation_number[k] += separation_number_priv[k];
+                auto_term1[k] += auto_term1_priv[k];
+                auto_term2[k] += auto_term2_priv[k];
+            }
+        }
+    }
+
+    // normalization and averaging
+    printf("normalization\n");
+
+    for (long i = 0; i < point_num_C_th; i++) {
+        //		if (separation_number[i]>0) {
+        Cth[i].x() *=
+            PI180inv /
+            separation_number[i]; // th  -- this gives the average angle over
+                                  // all angles that fall into this range (bin)
+                                  // limited by the resolution parameter
+        Cth[i].y() *= 2.0 / separation_number[i]; // normalization of C(th)
+        auto_term1[i] /= separation_number[i];
+        auto_term2[i] /= separation_number[i];
+        Cth[i].y() /= (auto_term1[i] + auto_term2[i]);
+        //		}
+    }
+
+    printf("cleaning up\n");
+    Cth.removeNans();
+    printf("Cth done\n");
+
+    return Cth;
 }

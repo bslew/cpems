@@ -4,12 +4,20 @@
   \enum cpeds_messageImportance
   \brief list of available verbosity levels
   \details
-  Zero by default does not produce any output, while Top prints out all messages.
+  Zero by default does not produce any output, while Top prints out all
+  messages.
 
   \date 2009/05/27 00:25:05
   \author Bartosz Lew
 */
-typedef enum { Zero=0, Low, Medium, High, Top, MustSee } cpeds_messageImportance;
+typedef enum {
+    Zero = 0,
+    Low,
+    Medium,
+    High,
+    Top,
+    MustSee
+} cpeds_messageImportance;
 typedef cpeds_messageImportance cpeds_VerbosityLevel;
 #define CPEDS_defaultVerbosityLevel High
 #endif
@@ -24,7 +32,14 @@ typedef cpeds_messageImportance cpeds_VerbosityLevel;
   \date 2009/05/27 00:26:35
   \author Bartosz Lew
 */
-typedef enum { cpedsHorizontalCS, cpedsEquatorialFirstCS, cpedsEquatorialSecondCS, cpedsEclipticalCS, cpedsGalacticCS, cpedsPolarAzimuthalCS } cpedsCStype;
+typedef enum {
+    cpedsHorizontalCS,
+    cpedsEquatorialFirstCS,
+    cpedsEquatorialSecondCS,
+    cpedsEclipticalCS,
+    cpedsGalacticCS,
+    cpedsPolarAzimuthalCS
+} cpedsCStype;
 #endif
 
 #ifndef filenamestr
@@ -45,7 +60,6 @@ typedef struct {
     double x;
     double y;
 } cpeds_point;
-
 
 typedef struct {
     long x;
@@ -80,12 +94,11 @@ typedef struct {
   \author Bartosz Lew
 */
 typedef struct {
-    double *T; // temerature
-    double *N; // number of observations
-    double *m; // mask
-    cpeds_direction *n;
+    double* T; // temerature
+    double* N; // number of observations
+    double* m; // mask
+    cpeds_direction* n;
 } cpeds_pixel;
-
 
 /*!
   \enum
@@ -95,21 +108,25 @@ typedef struct {
   \date 2009/05/29 00:24:00
   \author Bartosz Lew
 */
-typedef enum { cpedsSuccess=0, cpedsNoSuchFile, cannotOpenFile, wrongFormat, cpedsCannotWriteToFile, cannotConnect, cpedsError, cpedsNoSuchHDF5dataset } cpedsStatusCodes;
-
+typedef enum {
+    cpedsSuccess = 0,
+    cpedsNoSuchFile,
+    cannotOpenFile,
+    wrongFormat,
+    cpedsCannotWriteToFile,
+    cannotConnect,
+    cpedsError,
+    cpedsNoSuchHDF5dataset
+} cpedsStatusCodes;
 
 #endif
 
-
 #ifndef __cpeds_common__
 #define __cpeds_common__
-#include <vector>
 #include <string>
+#include <vector>
 
-std::vector<std::string> cpeds_strsplit(std::string cmd,char delim);
-std::vector<std::string> cpeds_strToVec(std::string s,char delim=',');
-
-
-
+std::vector<std::string> cpeds_strsplit(std::string cmd, char delim);
+std::vector<std::string> cpeds_strToVec(std::string s, char delim = ',');
 
 #endif

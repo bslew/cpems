@@ -1,13 +1,6 @@
 #include "cpeds-math.h"
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-
-class likelihood_data {
-
-  
-
-
-
-};
+class likelihood_data {};

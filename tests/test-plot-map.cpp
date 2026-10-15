@@ -1,10 +1,8 @@
 #include "Mscs-map_plot.h"
 
+int main() {
+    mscsMapPlot m;
 
-int main () {
-  mscsMapPlot m;
-
-  m.loadbinT("/home/blew/ilc5-Tn-bin");
-  m.plot(500,250);
-
+    m.loadbinT("/home/blew/ilc5-Tn-bin");
+    m.plot(500, 250);
 }

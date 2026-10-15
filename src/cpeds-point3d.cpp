@@ -8,5 +8,5 @@
 #include "cpeds-point3d.h"
 
 ostream& operator<<(ostream& s, cpedsPoint3D& p) {
-	return s << "(" << p.x() << "," << p.y() << "," << p.z() << ")";
+    return s << "(" << p.x() << "," << p.y() << "," << p.z() << ")";
 }

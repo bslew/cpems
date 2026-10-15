@@ -57,12 +57,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-class Date
-{
+class Date {
 
-private:
-
-    long        lJulianDay;
+  private:
+    long lJulianDay;
 
     //
     // Function      : YmdToJd
@@ -80,7 +78,7 @@ private:
     // Internal routine that does the physical conversion
     // from YMD form to Julian day number.
     //
-    static long YmdToJd( const int iYear, const int iMonth, const int iDay );
+    static long YmdToJd(const int iYear, const int iMonth, const int iDay);
 
     //
     // Function      : JdToYmd
@@ -98,11 +96,9 @@ private:
     // Internal routine that reverses the conversion, turning a Julian
     // day number into YMD values.
     //
-    static void JdToYmd( const long lJD, int *piYear, int *piMonth,
-                         int *piDay );
+    static void JdToYmd(const long lJD, int* piYear, int* piMonth, int* piDay);
 
-public:
-
+  public:
     //
     // Function      : IsLeapYear
     //
@@ -115,12 +111,11 @@ public:
     // Return values : 1 if the year given is a leap year
     //                 0 if it is not
     //
-    static int IsLeapYear( const int iYear )
-    {
+    static int IsLeapYear(const int iYear) {
         long jd1, jd2;
-        jd1 = YmdToJd( iYear, 2, 28 );
-        jd2 = YmdToJd( iYear, 3, 1 );
-        return ( ( jd2 - jd1 ) > 1 );
+        jd1 = YmdToJd(iYear, 2, 28);
+        jd2 = YmdToJd(iYear, 3, 1);
+        return ((jd2 - jd1) > 1);
     }
 
     //
@@ -138,10 +133,7 @@ public:
     //
     // Constructs a new object initialized to 1 Jan 4713BC
     //
-    Date()
-    {
-        lJulianDay = 0L;
-    }
+    Date() { lJulianDay = 0L; }
 
     //
     // Function      : copy constructor
@@ -150,13 +142,12 @@ public:
     //
     // Creation date : 13 Mar 1996
     //
-    // Parameters    : 
+    // Parameters    :
     //
-    // Return values : 
+    // Return values :
     //
-    Date( const Date& Orig ) { lJulianDay = Orig.lJulianDay; }
-    Date& operator=( const Date& Orig )
-    {
+    Date(const Date& Orig) { lJulianDay = Orig.lJulianDay; }
+    Date& operator=(const Date& Orig) {
         lJulianDay = Orig.lJulianDay;
         return *this;
     }
@@ -177,16 +168,15 @@ public:
     // Constructs an object initialized to the date
     // represented by a system time value.
     //
-    Date( const time_t tSysTime )
-    {
-        struct tm *ptm;
+    Date(const time_t tSysTime) {
+        struct tm* ptm;
         int y, m, d;
 
-        ptm = localtime( &tSysTime );
+        ptm = localtime(&tSysTime);
         y = ptm->tm_year + 1900;
         m = ptm->tm_mon + 1;
         d = ptm->tm_mday;
-        lJulianDay = YmdToJd( y, m, d );
+        lJulianDay = YmdToJd(y, m, d);
     }
 
     //
@@ -206,10 +196,7 @@ public:
     // The string is formatted as the ASCII representation
     // of the long Julian day number.
     //
-    Date( const char *String )
-    {
-        lJulianDay = atol( String );
-    }
+    Date(const char* String) { lJulianDay = atol(String); }
 
     //
     // Function      : year/month/day constructor
@@ -227,9 +214,8 @@ public:
     // Constructs an object initialized to
     // the date given by the arguments
     //
-    Date( const int iDay, const int iMonth, const int iYear )
-    {
-        lJulianDay = YmdToJd( iYear, iMonth, iDay );
+    Date(const int iDay, const int iMonth, const int iYear) {
+        lJulianDay = YmdToJd(iYear, iMonth, iDay);
     }
 
     //
@@ -258,45 +244,34 @@ public:
     // year, month and day values directly into three integer variables,
     // for times when you need all three at the same time.
     //
-    int Year( void ) const
-    {
+    int Year(void) const {
         int y, m, d;
 
-        JdToYmd( lJulianDay, &y, &m, &d );
+        JdToYmd(lJulianDay, &y, &m, &d);
         return y;
     }
-    int Month( void ) const
-    {
+    int Month(void) const {
         int y, m, d;
 
-        JdToYmd( lJulianDay, &y, &m, &d );
+        JdToYmd(lJulianDay, &y, &m, &d);
         return m;
     }
-    int Day( void ) const
-    {
+    int Day(void) const {
         int y, m, d;
 
-        JdToYmd( lJulianDay, &y, &m, &d );
+        JdToYmd(lJulianDay, &y, &m, &d);
         return d;
     }
-    int DayOfYear( void ) const;
-    int DayOfWeek( void ) const
-    {
-        return ( ( ( (int) ( lJulianDay % 7L ) ) + 1 ) % 7 );
-    }
-    int DayOfWorkWeek( void ) const
-    {
-        return ( (int) ( lJulianDay % 7L ) );
-    }
-    int IsLeapYear( void ) const
-    {
+    int DayOfYear(void) const;
+    int DayOfWeek(void) const { return ((((int)(lJulianDay % 7L)) + 1) % 7); }
+    int DayOfWorkWeek(void) const { return ((int)(lJulianDay % 7L)); }
+    int IsLeapYear(void) const {
         int y, m, d;
-        JdToYmd( lJulianDay, &y, &m, &d );
-        return IsLeapYear( y );
+        JdToYmd(lJulianDay, &y, &m, &d);
+        return IsLeapYear(y);
     }
-    void YMD( int *pY, int *pM, int *pD )
-    {
-        JdToYmd( lJulianDay, pY, pM, pD );
+    void YMD(int* pY, int* pM, int* pD) {
+        JdToYmd(lJulianDay, pY, pM, pD);
         return;
     }
 
@@ -319,44 +294,35 @@ public:
     // is not defined. Subtracting two dates yields the difference
     // between them in days.
     //
-    friend Date operator+( const Date& Left, const long Right )
-    {
+    friend Date operator+(const Date& Left, const long Right) {
         Date Temp = Left;
         Temp.lJulianDay += Right;
         return Temp;
     }
-    friend Date operator+( const long Left, const Date& Right )
-    {
+    friend Date operator+(const long Left, const Date& Right) {
         Date Temp = Right;
         Temp.lJulianDay += Left;
         return Temp;
     }
-    Date& operator+=( const long Right )
-    {
+    Date& operator+=(const long Right) {
         lJulianDay += Right;
         return *this;
     }
-    friend Date operator-( const Date& Left, const long Right )
-    {
+    friend Date operator-(const Date& Left, const long Right) {
         Date Temp = Left;
         Temp.lJulianDay -= Right;
         return Temp;
     }
-    friend Date operator-( const long Left, const Date& Right )
-    {
+    friend Date operator-(const long Left, const Date& Right) {
         Date Temp = Right;
         Temp.lJulianDay -= Left;
         return Temp;
     }
-    Date& operator-=( const long Right )
-    {
+    Date& operator-=(const long Right) {
         lJulianDay -= Right;
         return *this;
     }
-    long operator-( const Date& Right )
-    {
-        return lJulianDay - Right.lJulianDay;
-    }
+    long operator-(const Date& Right) { return lJulianDay - Right.lJulianDay; }
 
     //
     // Function      : ++ and -- operators, prefix and postfix forms
@@ -369,24 +335,20 @@ public:
     //
     // Return values : New Date
     //
-    Date& operator++()
-    {
+    Date& operator++() {
         lJulianDay++;
         return *this;
     }
-    Date operator++( int )
-    {
+    Date operator++(int) {
         Date Temp = *this;
         lJulianDay++;
         return Temp;
     }
-    Date& operator--()
-    {
+    Date& operator--() {
         lJulianDay--;
         return *this;
     }
-    Date operator--( int )
-    {
+    Date operator--(int) {
         Date Temp = *this;
         lJulianDay--;
         return Temp;
@@ -410,7 +372,7 @@ public:
     // The string is a fixed-length 12-character string, including
     // the NUL terminator;
     //
-    void ToString( char *szBuffer ) const;
+    void ToString(char* szBuffer) const;
 
     //
     // Function      : comparison operators
@@ -424,28 +386,22 @@ public:
     // Return values : non-zero if the comparison succeeds
     //                 0 if it fails
     //
-    int operator==( const Date& Right ) const
-    {
+    int operator==(const Date& Right) const {
         return lJulianDay == Right.lJulianDay;
     }
-    int operator!=( const Date& Right ) const
-    {
+    int operator!=(const Date& Right) const {
         return lJulianDay != Right.lJulianDay;
     }
-    int operator<( const Date& Right ) const
-    {
+    int operator<(const Date& Right) const {
         return lJulianDay < Right.lJulianDay;
     }
-    int operator<=( const Date& Right ) const
-    {
+    int operator<=(const Date& Right) const {
         return lJulianDay <= Right.lJulianDay;
     }
-    int operator>( const Date& Right ) const
-    {
+    int operator>(const Date& Right) const {
         return lJulianDay > Right.lJulianDay;
     }
-    int operator>=( const Date& Right ) const
-    {
+    int operator>=(const Date& Right) const {
         return lJulianDay >= Right.lJulianDay;
     }
 
@@ -465,8 +421,7 @@ public:
     // Converts the date to a time_t value
     // representing midnight of that date.
     //
-    time_t ToSysTime( void ) const;
-
+    time_t ToSysTime(void) const;
 };
 
 #endif

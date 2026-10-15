@@ -1,9 +1,8 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
 #include "Mscs-common.h"
-
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef _NO_NAMESPACE
 using namespace std;
@@ -29,6 +28,5 @@ using namespace math;
 
 /* filenamestr GLOBAL_Plmsfile_forward; */
 /* filenamestr GLOBAL_Plmsfile_inverse; */
-
 
 // definition of common routines for programs of Mscs package

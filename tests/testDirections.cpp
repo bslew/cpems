@@ -16,7 +16,7 @@
 #include <string.h>
 #include <tclap/CmdLine.h>
 #include <time.h>
-//#include "Mscs-function.h"
+// #include "Mscs-function.h"
 #include "Mscs-function.h"
 #include "cpeds-direction.h"
 #include "cpedsMoonDirection.h"
@@ -24,7 +24,7 @@
 #include "matrix.h"
 #include "novas.h"
 
-//#include "rt32com"
+// #include "rt32com"
 
 #ifndef _NO_NAMESPACE
 using namespace std;
@@ -585,8 +585,9 @@ void calculateNextSolstice(cpedsMsgs& msgs) {
     double timeLimit = JDutc + period;
     long N = period / dt + 1;
     long i = 0;
-    //	while (JD<=timeLimit) {			i++;			JD+=dt;		} // first
-    //pass to learn how big matrix to allocate 	N=i; 	matrix<double> m(N,4);
+    //	while (JD<=timeLimit) {			i++;			JD+=dt;
+    //} // first pass to learn how big matrix to allocate 	N=i;
+    // matrix<double> m(N,4);
     FILE* f = fopen("Solstice.txt", "w");
     i = 0;
     JD = JDutc;
