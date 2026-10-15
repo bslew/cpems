@@ -1445,7 +1445,7 @@ int expb_fdf(const gsl_vector* x, void* data, gsl_vector* f, gsl_matrix* J) {
 }
 
 void print_state(size_t iter, gsl_multifit_fdfsolver* s) {
-    printf("iter: %3u x = % 15.8f % 15.8f % 15.8f "
+    printf("iter: %3zu x = % 15.8f % 15.8f % 15.8f "
            "|f(x)| = %g\n",
            iter, gsl_vector_get(s->x, 0), gsl_vector_get(s->x, 1),
            gsl_vector_get(s->x, 2), gsl_blas_dnrm2(s->f));

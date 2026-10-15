@@ -577,8 +577,8 @@ long mscsMapPlot::plot(long sizeX, long sizeY, string projection, double l,
             fmY = getMatrixCoord(
                 y, ymin, ymax,
                 sizeY); //      fmY=(double)((y-ymin)*(float)sizeY/(ymax-ymin));
-            printf("xw: %f, yw: %f||| fmX:%f fmY:%f xpix_num_flat=%i "
-                   "ypix_num_flat:%i\n",
+            printf("xw: %f, yw: %f||| fmX:%f fmY:%f xpix_num_flat=%li "
+                   "ypix_num_flat:%li\n",
                    x, y, fmX, fmY, sizeX, sizeY);
             // convert to proj projected coordinates
             n = flat.getCoordLB(long(fmX), long(fmY));

@@ -12,6 +12,8 @@
 #ifndef CPEDS_TEMPLATES
 #define CPEDS_TEMPLATES
 #include "cpeds-common.h"
+#include <cstddef>
+#include <iterator>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -209,13 +211,19 @@ typedef cpeds_queue<long> cpeds_queue_long;
 #endif
 
 template <class T>
-class cpeds_queue_iterator : public std::iterator<std::input_iterator_tag, T> {
+class cpeds_queue_iterator {
   public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = T*;
+    using reference = T&;
+
     typename cpeds_queue<T>::queue_type* p;
     cpeds_queue_iterator(typename cpeds_queue<T>::queue_type* x) : p(x) {}
     cpeds_queue_iterator(const cpeds_queue_iterator& mit) : p(mit.p) {}
-    const cpeds_queue_iterator<T>& operator=(const cpeds_queue_iterator& rhs) {
-        p = &rhs;
+    cpeds_queue_iterator<T>& operator=(const cpeds_queue_iterator& rhs) {
+        p = rhs.p;
         return *this;
     }
     //  const cpeds_queue_iterator<T>& operator=(const

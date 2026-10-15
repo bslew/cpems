@@ -8,6 +8,13 @@ cmake_minimum_required (VERSION 3.11)
 project (cpems CXX C)
 #enable_language(<lang> [OPTIONAL] )
 
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options($<$<COMPILE_LANGUAGE:C>:-Werror>)
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Werror>)
+endif()
+
 ################################################################
 ################################################################
 ################################################################

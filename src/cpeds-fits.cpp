@@ -736,6 +736,7 @@ cpedsStatusCodes cpedsFits::readBinTable(string Tname, double** data,
 
     delete[] nularray;
     delete[] anynul;
+    return cpedsSuccess;
 }
 /***************************************************************************************/
 cpedsStatusCodes cpedsFits::readBinTableColumn(string Tname, int col,
@@ -790,6 +791,7 @@ cpedsStatusCodes cpedsFits::readBinTableColumn(string Tname, int col,
         delete[] nularray;
         delete[] anynul;
     }
+    return cpedsSuccess;
 }
 /***************************************************************************************/
 cpedsStatusCodes

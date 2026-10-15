@@ -740,7 +740,11 @@ long cpedsList<T>::load(string file, bool binary, string type, bool Append) {
         else {
 
             T* v = new T[N];
-            fread(v, sizeof(T), N, F);
+            if (fread(v, sizeof(T), N, F) != static_cast<size_t>(N)) {
+                delete[] v;
+                fclose(F);
+                return -1;
+            }
             fromCarray(v, N);
             delete[] v;
             //			printf("size of T is : %i\n",int(sizeof(T)));

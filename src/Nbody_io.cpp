@@ -10,6 +10,15 @@
 #include "Nbody_io.h"
 #include "cpeds-cosmo.h"
 #include <stdio.h>
+#include <stdexcept>
+
+namespace {
+void read_exact(FILE* file, void* buffer, size_t itemSize, size_t itemCount) {
+    if (file == NULL || fread(buffer, itemSize, itemCount, file) != itemCount) {
+        throw std::runtime_error("Failed to read complete N-body data record");
+    }
+}
+} // namespace
 
 Nbody_io::Nbody_io() {
     msgs = new cpedsMsgs("Nbody IO");
@@ -36,7 +45,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
     int i, j, k, dummy, ntot_withmasses;
     int t, n, off, pc, pc_new, pc_sph;
 
-#define SKIP fread(&dummy, sizeof(dummy), 1, fd);
+#define SKIP read_exact(fd, &dummy, sizeof(dummy), 1);
 
     for (i = 0, pc = 1; i < files; i++, pc = pc_new) {
         if (files > 1)
@@ -55,7 +64,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
         // read in the header information from the file
         //
         SKIP;
-        fread(&gadget_header, sizeof(gadget_header), 1, fd);
+        read_exact(fd, &gadget_header, sizeof(gadget_header), 1);
         SKIP;
 
         if (files == 1) {
@@ -84,7 +93,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
         SKIP;
         for (k = 0, pc_new = pc; k < 6; k++) {
             for (n = 0; n < gadget_header.npart[k]; n++) {
-                fread(&P[pc_new].Pos[0], sizeof(float), 3, fd);
+                read_exact(fd, &P[pc_new].Pos[0], sizeof(float), 3);
                 pc_new++;
                 //				printf("%li\n",n);
             }
@@ -95,7 +104,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
         SKIP;
         for (k = 0, pc_new = pc; k < 6; k++) {
             for (n = 0; n < gadget_header.npart[k]; n++) {
-                fread(&P[pc_new].Vel[0], sizeof(float), 3, fd);
+                read_exact(fd, &P[pc_new].Vel[0], sizeof(float), 3);
                 pc_new++;
             }
         }
@@ -105,7 +114,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
         SKIP;
         for (k = 0, pc_new = pc; k < 6; k++) {
             for (n = 0; n < gadget_header.npart[k]; n++) {
-                fread(&Id[pc_new], sizeof(int), 1, fd);
+                read_exact(fd, &Id[pc_new], sizeof(int), 1);
                 pc_new++;
             }
         }
@@ -119,7 +128,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
                 P[pc_new].Type = k;
 
                 if (gadget_header.mass[k] == 0)
-                    fread(&P[pc_new].Mass, sizeof(float), 1, fd);
+                    read_exact(fd, &P[pc_new].Mass, sizeof(float), 1);
                 else
                     P[pc_new].Mass = gadget_header.mass[k];
                 pc_new++;
@@ -132,7 +141,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
             SKIP;
             msgs->say("reading internal energy", Medium);
             for (n = 0, pc_sph = pc; n < gadget_header.npart[0]; n++) {
-                fread(&P[pc_sph].U, sizeof(float), 1, fd);
+                read_exact(fd, &P[pc_sph].U, sizeof(float), 1);
                 pc_sph++;
             }
             SKIP;
@@ -140,7 +149,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
             SKIP;
             msgs->say("reading density", Medium);
             for (n = 0, pc_sph = pc; n < gadget_header.npart[0]; n++) {
-                fread(&P[pc_sph].Rho, sizeof(float), 1, fd);
+                read_exact(fd, &P[pc_sph].Rho, sizeof(float), 1);
                 pc_sph++;
             }
             SKIP;
@@ -149,7 +158,7 @@ cpedsStatusCodes Nbody_io::loadGadgetSnapshot(string fname, long files,
                 SKIP;
                 msgs->say("reading Ne", Medium);
                 for (n = 0, pc_sph = pc; n < gadget_header.npart[0]; n++) {
-                    fread(&P[pc_sph].Ne, sizeof(float), 1, fd);
+                    read_exact(fd, &P[pc_sph].Ne, sizeof(float), 1);
                     pc_sph++;
                 }
                 SKIP;
@@ -781,17 +790,17 @@ cpedsStatusCodes Nbody_io::convertGadgetToGadget2(string fname, string outfile,
                           blockSize, getLocalNumberOfParticles(gadget_header),
                           Medium);
                 fwrite(&blockSize, sizeof(int), 1, fout); // initiate the block
-                fread(&blockSize2, sizeof(int), 1, fin);  // initiate the block
+                read_exact(fin, &blockSize2, sizeof(int), 1);
                 float vec[3];
                 for (long pt = 0; pt < usedParticleTypes; pt++) {
                     Npart = gadget_header.npart[pt];
                     for (long i = 0; i < Npart; i++) {
-                        fread(&vec[0], sizeof(float), 3, fin);
+                        read_exact(fin, &vec[0], sizeof(float), 3);
                         fwrite(&vec[0], sizeof(float), 3, fout);
                     }
                 }
                 fwrite(&blockSize, sizeof(int), 1, fout); // finish the block
-                fread(&blockSize2, sizeof(int), 1, fin);  // finish the block
+                read_exact(fin, &blockSize2, sizeof(int), 1);
 
                 break;
 
@@ -806,18 +815,18 @@ cpedsStatusCodes Nbody_io::convertGadgetToGadget2(string fname, string outfile,
                 infoBlk.next = blockSize + 8;
                 writeGadgetInfoBlock(&infoBlk, &fout);
                 fwrite(&blockSize, sizeof(int), 1, fout); // initiate the bloc
-                fread(&blockSize2, sizeof(int), 1, fin);  // initiate the block
+                read_exact(fin, &blockSize2, sizeof(int), 1);
 
                 int id;
                 for (long pt = 0; pt < usedParticleTypes; pt++) {
                     Npart = gadget_header.npart[pt];
                     for (long i = 0; i < Npart; i++) {
-                        fread(&id, sizeof(int), 1, fin);
+                        read_exact(fin, &id, sizeof(int), 1);
                         fwrite(&id, sizeof(int), 1, fout);
                     }
                 }
                 fwrite(&blockSize, sizeof(int), 1, fout); // finish the block
-                fread(&blockSize2, sizeof(int), 1, fin);  // finish the block
+                read_exact(fin, &blockSize2, sizeof(int), 1);
                 break;
 
             case Masses:
@@ -871,8 +880,7 @@ cpedsStatusCodes Nbody_io::convertGadgetToGadget2(string fname, string outfile,
                     writeGadgetInfoBlock(&infoBlk, &fout);
                     fwrite(&blockSize, sizeof(int), 1,
                            fout); // initiate the bloc
-                    fread(&blockSize2, sizeof(int), 1,
-                          fin); // initiate the block
+                    read_exact(fin, &blockSize2, sizeof(int), 1);
 
                     float f;
                     if (block == InternalEnergy) {
@@ -880,14 +888,14 @@ cpedsStatusCodes Nbody_io::convertGadgetToGadget2(string fname, string outfile,
                         //(long pt = 0; pt < usedParticleTypes; pt++) {
                         Npart = gadget_header.npart[0];
                         for (long i = 0; i < Npart; i++) {
-                            fread(&f, sizeof(float), 1, fin);
+                            read_exact(fin, &f, sizeof(float), 1);
                             fwrite(&f, sizeof(float), 1, fout);
                         }
                         //						}
                     }
                     fwrite(&blockSize, sizeof(int), 1,
                            fout);                            // finish the block
-                    fread(&blockSize2, sizeof(int), 1, fin); // finish the block
+                    read_exact(fin, &blockSize2, sizeof(int), 1);
                 }
                 break;
 
@@ -952,9 +960,9 @@ Nbody_io::grafic_level0_header_t Nbody_io::read_grafic_header(string fname) {
 
     //	msgs->say("reading file:"+fname,High);
     f = fopen(fname.c_str(), "rb");
-    fread(&w, sizeof(w), 1, f);
-    fread(&header, sizeof(grafic_level0_header_t), 1, f);
-    fread(&w, sizeof(w), 1, f);
+    read_exact(f, &w, sizeof(w), 1);
+    read_exact(f, &header, sizeof(grafic_level0_header_t), 1);
+    read_exact(f, &w, sizeof(w), 1);
     fclose(f);
 
     return header;
@@ -981,7 +989,7 @@ double* Nbody_io::read_grafic_slice(FILE** f, long* cellsInSlice) {
     bool dataTypeDouble;
     double* slice = NULL;
 
-    fread(&sliceSize, sizeof(uint32_t), 1, *f);
+    read_exact(*f, &sliceSize, sizeof(uint32_t), 1);
     dataTypeDouble = grafic_data_is_double(grafic_header, sliceSize);
     if (dataTypeDouble) {
         *cellsInSlice = sliceSize / 8;
@@ -991,17 +999,17 @@ double* Nbody_io::read_grafic_slice(FILE** f, long* cellsInSlice) {
 
     slice = new double[*cellsInSlice];
     if (dataTypeDouble) {
-        fread(slice, sizeof(double), *cellsInSlice, *f);
+        read_exact(*f, slice, sizeof(double), *cellsInSlice);
     } else {
         float* slicef = new float[*cellsInSlice];
-        fread(slicef, sizeof(float), *cellsInSlice, *f);
+        read_exact(*f, slicef, sizeof(float), *cellsInSlice);
         for (long i = 0; i < *cellsInSlice; i++) {
             slice[i] = slicef[i];
         }
         delete[] slicef;
     }
 
-    fread(&sliceSize2, sizeof(uint32_t), 1, *f);
+    read_exact(*f, &sliceSize2, sizeof(uint32_t), 1);
     if (sliceSize != sliceSize2) {
         msgs->criticalError(
             "Internal file error. The slice sizes at the beginning and at the "
@@ -1034,7 +1042,7 @@ bool Nbody_io::grafic_data_is_double(string fname) {
     grafic_level0_header_t h = read_grafic_header(fname);
     FILE* f = fopen(fname.c_str(), "rb");
     fseek(f, get_grafic_header_size(), SEEK_SET);
-    fread(&sliceSize, sizeof(uint32_t), 1, f);
+    read_exact(f, &sliceSize, sizeof(uint32_t), 1);
     fclose(f);
     return grafic_data_is_double(h, sliceSize);
 }
@@ -1046,7 +1054,10 @@ double Nbody_io::getVelocityFactor(string dirname) {
         msgs->criticalError("no such file: " + fname, High);
     }
     double vf = 0;
-    fscanf(f, "%lE", &vf);
+    if (fscanf(f, "%lE", &vf) != 1) {
+        fclose(f);
+        throw std::runtime_error("Failed to read velocity factor");
+    }
     fclose(f);
     return vf;
 }
@@ -1060,7 +1071,7 @@ Nbody_io::read_grafic_parameters(string dirname) {
     if (f == NULL) {
         msgs->criticalError("no such file: " + fname, High);
     }
-    fread(&params, sizeof(grafic_program_parameters_t), 1, f);
+    read_exact(f, &params, sizeof(grafic_program_parameters_t), 1);
     fclose(f);
     return params;
 }
@@ -1100,7 +1111,7 @@ Nbody_io::read_grafic_cosmo_parameters(string dirname) {
     if (f == NULL) {
         msgs->criticalError("no such file: " + fname, High);
     }
-    fread(&params, sizeof(grafic_cosmoData_t), 1, f);
+    read_exact(f, &params, sizeof(grafic_cosmoData_t), 1);
     fclose(f);
     return params;
 }
@@ -1164,7 +1175,7 @@ Nbody_io::readGadgetBlock(string fname, string blockName, int particleType,
         if (infoBlk.ID == blockName) {
             //			msgs->say("Found the requested block:
             //"+blockName,High);
-            fread(&length, sizeof(length), 1, f);
+            read_exact(f, &length, sizeof(length), 1);
 
             status = 1;
             if (particleType == 1) { // seek to next type of particles
@@ -1176,7 +1187,7 @@ Nbody_io::readGadgetBlock(string fname, string blockName, int particleType,
 
             *npart = gadget_header.npart[particleType] * infoBlk.sizeFactor;
             data = new float[*npart];
-            fread(data, sizeof(float), *npart, f);
+            read_exact(f, data, sizeof(float), *npart);
             fclose(f);
             return data;
         } else {
@@ -1436,7 +1447,7 @@ cpedsStatusCodes Nbody_io::dumpGadgetSnapshot2Tipsy(string fname, int files) {
     //
     fseek(f,gadget_header.npart[0]*infoBlk.sizeFactor*sizeof(float),SEEK_CUR);
     ////
-    fread(&P[pc_new].Pos[0], sizeof(float), 3, fd);
+    read_exact(fd, &P[pc_new].Pos[0], sizeof(float), 3);
     //						}
     //
     //
@@ -1546,9 +1557,9 @@ int Nbody_io::readGadgetHeader(gadget_snapshot_file_header_t* gadget_header,
     // read in the header information from the file
     //
     int length, length2;
-    fread(&length, sizeof(length), 1, *f);
-    fread(gadget_header, sizeof(gadget_snapshot_file_header_t), 1, *f);
-    fread(&length2, sizeof(length2), 1, *f);
+    read_exact(*f, &length, sizeof(length), 1);
+    read_exact(*f, gadget_header, sizeof(gadget_snapshot_file_header_t), 1);
+    read_exact(*f, &length2, sizeof(length2), 1);
     if (length != length2) {
         msgs->error(
             "the sizes of the block opening flag and closing flag do not match",
@@ -1599,10 +1610,10 @@ Nbody_io::gadget_snapshot_type2_block_t
 Nbody_io::readGadgetSnapshotType2InfoBlock(FILE** f) {
     gadget_snapshot_type2_block_t b;
     char id[4];
-    fread(&b.size, sizeof(int), 1, *f);
-    fread(&id[0], sizeof(char), 4, *f);
-    fread(&b.next, sizeof(int), 1, *f);
-    fread(&b.size_check, sizeof(int), 1, *f);
+    read_exact(*f, &b.size, sizeof(int), 1);
+    read_exact(*f, &id[0], sizeof(char), 4);
+    read_exact(*f, &b.next, sizeof(int), 1);
+    read_exact(*f, &b.size_check, sizeof(int), 1);
     b.ID = id;
     b.ID = b.ID.substr(0, 4);
     b.sizeFactor = 1;
@@ -1669,7 +1680,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
     double gamma = 5.0 / 3;
     double u, T;
 
-    fread(&blockSize, sizeof(int), 1, *fd); // initiate the bloc read
+    read_exact(*fd, &blockSize, sizeof(int), 1);
 
     switch (block) {
     case Coordinates:
@@ -1696,7 +1707,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
                       Medium);
             if (n > 0) {
                 for (long j = 0; j < n; j++) {
-                    fread(&vecd[0], sizeof(float), 3, *fd);
+                    read_exact(*fd, &vecd[0], sizeof(float), 3);
                     fprintf(f, "%E %E %E\n", vecd[0], vecd[1], vecd[2]);
                 }
             }
@@ -1718,7 +1729,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
                       Medium);
             if (n > 0) {
                 for (long j = 0; j < n; j++) {
-                    fread(&id, sizeof(int), 1, *fd);
+                    read_exact(*fd, &id, sizeof(int), 1);
                     fprintf(f, "%i\n", id);
                 }
             }
@@ -1740,7 +1751,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
                       Medium);
             if (n > 0) {
                 for (long j = 0; j < n; j++) {
-                    fread(&vecd[0], sizeof(float), 1, *fd);
+                    read_exact(*fd, &vecd[0], sizeof(float), 1);
                     fprintf(f, "%E\n", vecd[0]);
                 }
             }
@@ -1775,7 +1786,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
                 msgs->say("This is NOT DEBUGED: PLEASE CHECK THE CODE", Top);
                 if (block == InternalEnergy)
                     for (long j = 0; j < n; j++) {
-                        fread(&vecd[0], sizeof(float), 1, *fd);
+                        read_exact(*fd, &vecd[0], sizeof(float), 1);
                         /* convert internal energy to keV units */
                         u = vecd[0] * GADGET2_UnitEnergy_in_cgs * 1e-4 *
                             CPEDS_e; // * 1e-7 * CPEDS_e * 1e3 (conversion to
@@ -1791,7 +1802,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
                         //4.0/(3*Xh+1+4*Xh*P[i].Ne) * CPEDS_m_p;
                         T = MeanWeight / (CPEDS_kB * 1e7) * (gamma - 1) *
                             u; // 1e7 - conversion from J/K to erg/K
-                        fread(&vecd[0], sizeof(float), 1, *fd);
+                        read_exact(*fd, &vecd[0], sizeof(float), 1);
                         fprintf(f, "%E\n", T);
                     }
                 }
@@ -1817,7 +1828,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
                       Medium);
             if (n > 0) {
                 for (long j = 0; j < n; j++) {
-                    fread(&vecd[0], sizeof(float), 1, *fd);
+                    read_exact(*fd, &vecd[0], sizeof(float), 1);
                     fprintf(f, "%E\n", vecd[0]);
                 }
             }
@@ -1845,7 +1856,7 @@ void Nbody_io::dumpGadgetSnapshotBlock(FILE** fd, string outputFile,
         break;
     }
 
-    fread(&blockSize, sizeof(int), 1, *fd); // finish the bloc read
+    read_exact(*fd, &blockSize, sizeof(int), 1);
 
     //	for (block = Coordinates; block <= SmoothingLength;
     //block=gadget_IC_blocks(block+1)) {
@@ -2548,7 +2559,7 @@ cpedsStatusCodes Nbody_io::loadTipsy(string fname) {
     if (cpeds_fileExists(fname)) {
         // read tipsy header
         tf = fopen(fname.c_str(), "rb");
-        fread(&tipsyHeader, sizeof(Nbody_io::tipsyHeader_t), 1, tf);
+        read_exact(tf, &tipsyHeader, sizeof(Nbody_io::tipsyHeader_t), 1);
 
         //		printf("h.nbodies: %li\n", tipsyHeader.nbodies);
         //		printf("h.ndark: %li\n", tipsyHeader.ndark);
@@ -2562,7 +2573,7 @@ cpedsStatusCodes Nbody_io::loadTipsy(string fname) {
         if (Npart > 0) {
             tipsyPgas = new tipsy_gas_particle_t[Npart];
             for (long j = 0; j < Npart; j++) {
-                fread(&GASpart, sizeof(tipsy_gas_particle_t), 1, tf);
+                read_exact(tf, &GASpart, sizeof(tipsy_gas_particle_t), 1);
                 tipsyPgas[j] = GASpart;
                 //				printf("z:
                 //%lE\n",GASpart.pos[2]);
@@ -2573,12 +2584,13 @@ cpedsStatusCodes Nbody_io::loadTipsy(string fname) {
         if (Npart > 0) {
             tipsyPdark = new tipsy_dark_particle_t[Npart];
             for (long j = 0; j < Npart; j++) {
-                fread(&DMpart, sizeof(tipsy_dark_particle_t), 1, tf);
+                read_exact(tf, &DMpart, sizeof(tipsy_dark_particle_t), 1);
                 tipsyPdark[j] = DMpart;
             }
         }
 
         fclose(tf);
+        return cpedsSuccess;
     } else {
         return cpedsError;
     }

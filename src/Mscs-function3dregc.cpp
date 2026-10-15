@@ -455,11 +455,22 @@ cpedsStatusCodes mscsFunction3dregc::loadtxtLin(string filename, int how) {
     for (long i = 0; i < nx; i++) {
         for (long j = 0; j < ny; j++) {
             for (long k = 0; k < nz; k++) {
-                fscanf(f, "%lE", &re);
+                if (fscanf(f, "%lE", &re) != 1) {
+                    msgs->error("mscsFunction3dregc::loadtxtLin> invalid real "
+                                "value in input file",
+                                High);
+                    fclose(f);
+                    return cpedsError;
+                }
                 if (how == 0)
                     im = 0;
-                if (how == 1)
-                    fscanf(f, "%lE", &im);
+                if (how == 1 && fscanf(f, "%lE", &im) != 1) {
+                    msgs->error("mscsFunction3dregc::loadtxtLin> invalid "
+                                "imaginary value in input file",
+                                High);
+                    fclose(f);
+                    return cpedsError;
+                }
                 setf(i, j, k, re, im);
             }
         }
@@ -1693,8 +1704,7 @@ mscsFunction3dregc& mscsFunction3dregc::mkDensityFieldScatter(
         //		positions[i].print_point();
         //		neighbors=D.getNeighbors(positions[i],NeighborsMin,
         //&hsml,acc);
-        D.getNeighbors(positions[i], NeighborsMin, NeighborsMin, &hsml, acc)
-            .size();
+        D.getNeighbors(positions[i], NeighborsMin, NeighborsMin, &hsml, acc);
 
         //		int n=D.getNeighbors(positions[i],NeighborsMin,
         //&(sml[i]),acc).size();

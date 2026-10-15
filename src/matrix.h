@@ -113,6 +113,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <string>
 #endif
@@ -156,7 +157,7 @@ typedef int bool;
 #endif
 #define _NO_THROW throw()
 // #  define _THROW_MATRIX_ERROR     throw (matrix_error)
-#define _THROW_MATRIX_ERROR throw()
+#define _THROW_MATRIX_ERROR
 #endif
 
 // #ifndef __MINMAX_DEFINED // commented out on Jun 15, 2011, 1:38:48 PM
@@ -316,7 +317,7 @@ class matrix {
                 for (size_t i = 0; i < row; i++) {
                     Val[i] = new T[col];
                     if (v)
-                        memcpy(Val[i], v[i], rowlen);
+                        std::memcpy(Val[i], v[i], rowlen);
                 }
             } else {
                 Val = NULL;
@@ -401,7 +402,7 @@ MAT_TEMPLATE inline void matrixTbl::realloc(size_t row, size_t col) {
     size_t minRow = min(_m->Row, row);
 
     for (size_t i = 0; i < minRow; i++)
-        memcpy(m1->Val[i], _m->Val[i], colSize);
+        std::memcpy(m1->Val[i], _m->Val[i], colSize);
 
     if (--_m->Refcnt == 0)
         delete _m;

@@ -25,6 +25,7 @@
 #include "cpeds-math.h"
 #include "cpeds-templates.h"
 #include "sys/stat.h"
+#include <chrono>
 // #include "matrix.h"
 #include "../external_packages/novas/novas.h"
 #include <fftw3.h>
@@ -695,7 +696,7 @@ string cpeds_JDToYMDhms(double JD, string fmt) {
 string cpeds_unixToYMDhms(double u, string fmt) {
     time_t t;
     long msec = round((u - floor(u)) * 1000);
-    printf("%.15lf %li %li\n", u, floor(u), msec);
+    printf("%.15lf %li %li\n", u, static_cast<long>(floor(u)), msec);
     if (u == -1) {
         t = time(0);
     } else {
@@ -1655,8 +1656,6 @@ double* cpeds_random_gauss_numbers(double m, double s, long int pix_num,
     unsigned long int rng_seed;
     long pix_num_total;
     double npd, a;
-    FILE* f;
-
     gtab = new double[pix_num];
     if ((method == 1) || (method == 2) ||
         (method == 3)) { // inverse gaussCDF methods
@@ -1673,18 +1672,17 @@ double* cpeds_random_gauss_numbers(double m, double s, long int pix_num,
             if (sims_fast) {
                 //----- patch to avoid same generations if called in the same
                 //second TODO: do this in some object, cause this is stupid
-                rng_seed = (unsigned long)(time(NULL) / 1000);
-                system("date +%N |colrm 4 10 > .mk_gauss_map.tmpfile");
-                f = fopen(".mk_gauss_map.tmpfile", "r");
-                fscanf(f, "%li\n", &i);
-                fclose(f);
-                rng_seed = rng_seed * 1000 + i;
+                const auto now = std::chrono::system_clock::now();
+                rng_seed = static_cast<unsigned long>(
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                        now.time_since_epoch())
+                        .count());
                 //----
             } else {
                 rng_seed = (unsigned long int)time(NULL);
             }
 
-            printf("rng seed: %li\n", rng_seed);
+            printf("rng seed: %lu\n", rng_seed);
             gsl_rng_set(r, rng_seed + seed_offset);
         }
 
@@ -1813,7 +1811,7 @@ double* cpeds_random_gauss_numbers(double m, double s, long int pix_num,
         T = gsl_rng_default;
         r = gsl_rng_alloc(T);
         rng_seed = (unsigned long int)time(NULL);
-        printf("rng seed: %li\n", rng_seed);
+        printf("rng seed: %lu\n", rng_seed);
         gsl_rng_set(r, rng_seed + seed_offset);
 
         pix_num_total = pix_num;
@@ -5070,7 +5068,7 @@ const matrix<double> cpeds_matrix_load(string fileName, string how,
                                        long* result) {
     unsigned long i, j;
     FILE* f = NULL;
-    long row, col;
+    long row = 0, col = 0;
     double tmp;
     char c;
     cpeds_queue<long>* finfo;
@@ -5102,7 +5100,12 @@ const matrix<double> cpeds_matrix_load(string fileName, string how,
     }
 
     if (header) {
-        fscanf(f, "%li %li", &row, &col);
+        if (fscanf(f, "%li %li", &row, &col) != 2) {
+            fclose(f);
+            if (result != NULL)
+                *result = -1;
+            return matrix<double>();
+        }
     } else {
         if (binary) {
 #ifdef DEBUG_CPEDS_MATH
@@ -5158,16 +5161,24 @@ const matrix<double> cpeds_matrix_load(string fileName, string how,
     if (binary) {
         size_t ret, siz;
         float flt;
-        if (header)
-            fread(
-                &c, sizeof(c), 1,
-                f); // read in the \n character-- 1 byte to get the right values
-                    // !! this might be system dependent or library dependent !!
+        if (header &&
+            fread(&c, sizeof(c), 1, f) != 1) {
+            fclose(f);
+            if (result != NULL)
+                *result = -1;
+            return M;
+        }
         if (fourbyte) {
             siz = sizeof(flt);
             for (i = 0; i < M.RowNo(); i++) {
                 for (j = 0; j < M.ColNo(); j++) {
                     ret = fread(&flt, siz, 1, f);
+                    if (ret != 1) {
+                        fclose(f);
+                        if (result != NULL)
+                            *result = -1;
+                        return M;
+                    }
                     M(i, j) = flt;
                 }
             }
@@ -5176,6 +5187,12 @@ const matrix<double> cpeds_matrix_load(string fileName, string how,
             for (i = 0; i < M.RowNo(); i++) {
                 for (j = 0; j < M.ColNo(); j++) {
                     ret = fread(&tmp, siz, 1, f);
+                    if (ret != 1) {
+                        fclose(f);
+                        if (result != NULL)
+                            *result = -1;
+                        return M;
+                    }
                     M(i, j) = tmp;
                 }
             }
@@ -5185,6 +5202,12 @@ const matrix<double> cpeds_matrix_load(string fileName, string how,
         for (i = 0; i < M.RowNo(); i++) {
             for (j = 0; j < M.ColNo(); j++) {
                 ret = fscanf(f, "%lE ", &tmp);
+                if (ret != 1) {
+                    fclose(f);
+                    if (result != NULL)
+                        *result = -1;
+                    return M;
+                }
                 M(i, j) = tmp;
             } // printf("i=%li, j =%li\n",i,j); }
         }

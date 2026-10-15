@@ -12,7 +12,15 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdexcept>
 #include <string.h>
+
+inline void lssKitReadExact(FILE* file, void* buffer, size_t itemSize,
+                            size_t itemCount) {
+    if (file == NULL || fread(buffer, itemSize, itemCount, file) != itemCount) {
+        throw std::runtime_error("Failed to read complete LSS-kit data record");
+    }
+}
 
 #define lssKitPyramidSliceFileHeaderSize                                       \
     500 // defines the size of the header in bytes
@@ -124,7 +132,8 @@ void lssKitSave3NNdata(string fname, float* data1, float* data2,
                                     "the code. I will stop now.",
                                 Top);
         } else {
-            fread(&headerOld, sizeof(lssPyramidSliceFileHeader_t), 1, f);
+            lssKitReadExact(f, &headerOld, sizeof(lssPyramidSliceFileHeader_t),
+                            1);
             header = headerOld;
             printf("previous particles count: %li\n", headerOld.Npart);
             fclose(f);
@@ -251,7 +260,8 @@ void lssKitSave3NNNdata(string fname, float* data1, float* data2, float* data3,
                                     "the code. I will stop now.",
                                 Top);
         } else {
-            fread(&headerOld, sizeof(lssPyramidSliceFileHeader_t), 1, f);
+            lssKitReadExact(f, &headerOld, sizeof(lssPyramidSliceFileHeader_t),
+                            1);
             header = headerOld;
             printf("previous particles count: %li\n", headerOld.Npart);
             fclose(f);
@@ -326,7 +336,8 @@ void lssKitSave3NNNdata(string fname, float* data1, float* data2, float* data3,
                                     "the code. I will stop now.",
                                 Top);
         } else {
-            fread(&headerOld, sizeof(lssPyramidSliceFileHeader_t), 1, f);
+            lssKitReadExact(f, &headerOld, sizeof(lssPyramidSliceFileHeader_t),
+                            1);
             header = headerOld;
             printf("previous particles count: %li\n", headerOld.Npart);
             fclose(f);
@@ -433,7 +444,7 @@ lssPyramidSliceFileHeader_t lssKitPrint3NNData(string fname, cpedsMsgs* msgs,
     if (f == NULL) {
         msgs->criticalError("could not open file:" + fname, High);
     }
-    fread(&h, sizeof(lssPyramidSliceFileHeader_t), 1, f);
+    lssKitReadExact(f, &h, sizeof(lssPyramidSliceFileHeader_t), 1);
     lssKitPrint3NNFileHeader(h);
     fseek(f, lssKitPyramidSliceFileHeaderSize, SEEK_SET);
     if (printAll) {
@@ -441,7 +452,7 @@ lssPyramidSliceFileHeader_t lssKitPrint3NNData(string fname, cpedsMsgs* msgs,
         size_t pSize = sizeof(float) * Ncols;
         float data[Ncols];
         for (long i = 0; i < h.Npart; i++) {
-            fread(data, pSize, 1, f);
+            lssKitReadExact(f, data, pSize, 1);
             for (long j = 0; j < Ncols; j++) {
                 printf("%lE ", data[j]);
             }
@@ -458,13 +469,13 @@ lssPyramidSliceFileQuadruplet_t* lssKitLoad3NNData(string fname, long* N) {
     lssPyramidSliceFileQuadruplet_t* data;
 
     FILE* f = fopen(fname.c_str(), "rb");
-    fread(&h, sizeof(lssPyramidSliceFileHeader_t), 1, f);
+    lssKitReadExact(f, &h, sizeof(lssPyramidSliceFileHeader_t), 1);
     //	lssKitPrint3NNFileHeader(h);
     fseek(f, lssKitPyramidSliceFileHeaderSize, SEEK_SET);
     *N = h.Npart;
     data = new lssPyramidSliceFileQuadruplet_t[*N];
     //	for (long i = 0; i < h.Npart; i++) {
-    fread(data, sizeof(lssPyramidSliceFileQuadruplet_t), *N, f);
+    lssKitReadExact(f, data, sizeof(lssPyramidSliceFileQuadruplet_t), *N);
     //	}
 
     fclose(f);
@@ -476,15 +487,17 @@ float* lssKitLoad3NNNData(string fname, lssPyramidSliceFileHeader_t* H) {
     float* data = NULL;
 
     FILE* f = fopen(fname.c_str(), "rb");
-    fread(&h, sizeof(lssPyramidSliceFileHeader_t), 1, f);
+    lssKitReadExact(f, &h, sizeof(lssPyramidSliceFileHeader_t), 1);
     fseek(f, lssKitPyramidSliceFileHeaderSize, SEEK_SET);
     size_t pSize = sizeof(float) * (h.scalarColNum);
     *H = h;
-    if (h.Npart == 0)
+    if (h.Npart == 0) {
+        fclose(f);
         return NULL;
+    }
     data = new float[h.Npart * (h.scalarColNum)];
     //	for (long i = 0; i < h.Npart; i++) {
-    fread(data, pSize, h.Npart, f);
+    lssKitReadExact(f, data, pSize, h.Npart);
     //	}
 
     fclose(f);
@@ -498,7 +511,7 @@ lssKitLoad3NNData(string fname, lssPyramidSliceFileQuadruplet_t** data = NULL,
 
     FILE* f = fopen(fname.c_str(), "rb");
     if (f != NULL) {
-        fread(&h, sizeof(lssPyramidSliceFileHeader_t), 1, f);
+        lssKitReadExact(f, &h, sizeof(lssPyramidSliceFileHeader_t), 1);
 
         if (data != NULL) {
             fseek(f, lssKitPyramidSliceFileHeaderSize, SEEK_SET);
@@ -508,7 +521,8 @@ lssKitLoad3NNData(string fname, lssPyramidSliceFileQuadruplet_t** data = NULL,
             printf("memory allocated\n");
             //			for (long i = 0; i < h.Npart; i++) {
             //				printf("reading particle: %li\n",i);
-            fread(*data, sizeof(lssPyramidSliceFileQuadruplet_t), *N, f);
+            lssKitReadExact(f, *data, sizeof(lssPyramidSliceFileQuadruplet_t),
+                            *N);
             //			}
         }
 

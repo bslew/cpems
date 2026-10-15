@@ -13,6 +13,7 @@
 #include <string.h>
 #include <tclap/CmdLine.h>
 #include <time.h>
+#include <unistd.h>
 // #include "qtbase.h"
 #include "Mscs-map.h"
 #include "cpeds-consts.h"
@@ -84,7 +85,10 @@ int main(int argc, char** argv) {
     //
     if (_outDir != "" and _outDir != "." and _outDir != "./") {
         mkdir(_outDir.c_str(), 0755);
-        chdir(_outDir.c_str());
+        if (chdir(_outDir.c_str()) != 0) {
+            perror("mk_gauss_map: chdir");
+            return 1;
+        }
         _Cl = string("../" + _Cl);
     }
 

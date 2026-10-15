@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     } else {
         if (argc != 3 and argc != 4) {
             printUsage();
-            printf("arg num: %li\n", argc);
+            printf("arg num: %i\n", argc);
             exit(0);
         }
         f.load(argv[1]);

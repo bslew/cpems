@@ -1866,7 +1866,11 @@ void cpedsMCMC::mkOutputDir() {
 
     string cmd = "if [ ! -d " + getPartialFilesDirFull() +
                  " ]; then mkdir -p " + getPartialFilesDirFull() + "; fi";
-    system(cmd.c_str());
+    if (system(cmd.c_str()) != 0) {
+        msgs->error("Unable to create output directory: " +
+                        getPartialFilesDirFull(),
+                    High);
+    }
     /*
     string dname=getPartialFilesDirFull();
     mkdir(dname.c_str(),0755);
@@ -2469,7 +2473,7 @@ MscsPDF1D cpedsMCMC::get1Dposterior(int paramID, long pdfPoints,
 
         // we will use gaussian PDF with fwhm = dx
         double x0 = pdf.getX(pdf.getMaxValueIdx());
-        printf("the number of PDF points for parameter %li is < 6, assuming "
+        printf("the number of PDF points for parameter %i is < 6, assuming "
                "gaussian PDF around %lE with fwhm=%lE\n",
                paramID, x0, dx);
         pdf.clearFunction();

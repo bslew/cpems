@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         f.f(_from, &from);
         _from = from;
         x = f.getX(_from);
-        printf("binning will start from: %lE, idx: %li\n", x, _from);
+        printf("binning will start from: %lE, idx: %lE\n", x, _from);
     }
 
     if (_bintab.size() == 0) {

@@ -664,7 +664,8 @@ void mscsWMAPsimulation::saveSimulation(string outDir, string pref, long num,
     for (int i = 0; i < sim.count(); ++i) {
         dir = subDir + sim.value(i)->getName() + "/";
         cmd = "mkdir -p " + dir;
-        system(cmd.c_str());
+        if (system(cmd.c_str()) != 0)
+            msgs->error("Could not create directory: " + dir, High);
         sim.value(i)->savebinT(dir + fname);
     }
 
@@ -674,7 +675,8 @@ void mscsWMAPsimulation::saveSimulation(string outDir, string pref, long num,
         string subDir = _outDir + "/" + ws.getVersion(_dr) + "/";
         string dir = subDir + "alms/";
         cmd = "mkdir -p " + dir;
-        system(cmd.c_str());
+        if (system(cmd.c_str()) != 0)
+            msgs->error("Could not create directory: " + dir, High);
 
         mscsAlms alms("alms");
         alms = getSignalAlms();
@@ -712,7 +714,8 @@ void mscsWMAPsimulation::savePartialSimulations(string outDir, string pref,
         for (int i = 0; i < inc.getMaps().count(); ++i) {
             dir = subDir + inc.getMaps().value(i)->getName() + "/";
             cmd = "mkdir -p " + dir;
-            system(cmd.c_str());
+            if (system(cmd.c_str()) != 0)
+                msgs->error("Could not create directory: " + dir, High);
             inc.getMaps().value(i)->savebinT(dir + fname);
         }
     }
@@ -731,7 +734,8 @@ string mscsWMAPsimulation::getPartialSimulationFileName(DAnames da) {
 
         dir = subDir + ws.getDA(da) + "/";
         cmd = "mkdir -p " + dir;
-        system(cmd.c_str());
+        if (system(cmd.c_str()) != 0)
+            msgs->error("Could not create directory: " + dir, High);
         return dir + fname;
     }
     return "";

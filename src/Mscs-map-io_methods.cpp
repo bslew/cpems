@@ -1456,10 +1456,10 @@ long mscsMap::savefits(string fileName, string hdu) {
     ff.addBinTableData(1, 1, T());
     ff.addKey("NSIDE", nside(), "NSIDE");
     if (ordering() == nested) {
-        ff.addKeyCH("ORDERING", "NESTED", "map ordering");
+        ff.addKey("ORDERING", "NESTED", "map ordering");
     }
     if (ordering() == ring) {
-        ff.addKeyCH("ORDERING", "RING", "map ordering");
+        ff.addKey("ORDERING", "RING", "map ordering");
     }
     ff.closeFile();
     return 0;

@@ -1145,8 +1145,11 @@ int main(int argc, char** argv) {
          * %s",_input_file.c_str(),_color_num,_zrange_min,_zrange_max,_dpi,_bgcolor.c_str(),_fgcolor.c_str(),_mytitle.c_str(),_colorbar.c_str(),meridians,plotNS,_delta_latitude,_delta_longitude,_labels_format.c_str(),_colorbar_label.c_str(),_colorbar_fontsize,_meridians_fontsize,
          * _plot_taken_vals.c_str()); */
         printf("executing: %s\n", commandstr);
-        system(commandstr);
-        exit(0);
+        if (system(commandstr) != 0) {
+            fprintf(stderr, "Failed to execute map plotting command\n");
+            return 1;
+        }
+        return 0;
     }
 
     //-----------------------------------------------------------------------------------------------------

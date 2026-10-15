@@ -185,7 +185,7 @@ void MClink::printParams() const {
     if (_likelihood != -1) {
         printf("likelihood:  %lE\n", _likelihood);
     }
-    printf("idx:  %li\n", _idx);
+    printf("idx:  %lE\n", _idx);
     if (isAccepted())
         printf("The link is accepted\n");
     else
@@ -297,7 +297,7 @@ MClink& operator*(double v, MClink& l) {
 void MClink::printParamsLine(string info) const {
     std::cout << info;
     for (long i = 0; i < dims(); i++) {
-        printf("p%i: %lE ", i, getParam(i));
+        printf("p%li: %lE ", i, getParam(i));
     }
     printf("\n");
 }

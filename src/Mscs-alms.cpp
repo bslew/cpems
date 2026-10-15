@@ -328,7 +328,7 @@ long mscsAlms::savetxtAlms(string alms_file,
             for (int l = 0; l < lmax(); ++l) {
                 for (int m = -l; m <= l; ++m) {
                     mscsAlm alm = get(l, m);
-                    fprintf(f, "%li %li %lf %lf\n", l, m, alm.R(), alm.I());
+                    fprintf(f, "%i %i %lf %lf\n", l, m, alm.R(), alm.I());
                 }
             }
             fclose(f);
