@@ -5,7 +5,6 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
-//#include <cpgplot.h>
 #include "matrix.h"
 #include "Mscs-topo-dodecahedron.h"
 //#include "cpeds-consts.h"

@@ -3,7 +3,6 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
-/* #include <cpgplot.h> */
 /* #include <fitsio.h> */
 /* #include <gsl/gsl_rng.h> */
 /* #include <gsl/gsl_randist.h> */

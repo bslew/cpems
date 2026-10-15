@@ -1,19 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
-//#ifdef withPGPLOT
-#include <cpgplot.h>
-//#endif
 #include <math.h>
 #include <fitsio.h>
 #include <string.h>
 #include <tclap/CmdLine.h>
-//#include <tclap/ValuesConstraint.h>
-// #include "cpeds-consts.h"
 #include "cpeds-math.h"
 #include "cpeds-msgs.h"
 #include "cpeds-direction.h"
 #include "Mscs-global-defs.h"
-// #include "Mscs-map.h"
 #include "Mscs-map_plot.h"
 #include "Mscs-alms.h"
 #include "Mscs-function.h"

@@ -9,9 +9,6 @@
 #include <sys/resource.h>
 #include <gsl/gsl_sf_erf.h>
 #include <gsl/gsl_errno.h>
-#ifdef PGPLOT
-#include <cpgplot.h>
-#endif
 
 #include "Mscs-function.h"
 

@@ -10,7 +10,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <cpgplot.h>
 #include <math.h>
 #include <string.h>
 #include  "cpeds-msgs.h"

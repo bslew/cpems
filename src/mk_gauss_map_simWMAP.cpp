@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <cpgplot.h>
 #include <math.h>
 #include <cfitsio/fitsio.h>
 #include <string.h>

@@ -1,7 +1,6 @@
 //#define _ISOC99_SOURCE
 //#include <features.h>
 //#include <sys/stat.h>
-//#include <cpgplot.h>
 //#include <proj_api.h>
 #include <errno.h>
 #include "Mscs-map.h"

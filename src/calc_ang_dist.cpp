@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-//#include <cpgplot.h>
 #include <math.h>
 //#include <iostream>
 //#include <fstream>
